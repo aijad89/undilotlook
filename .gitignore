@@ -1,0 +1,52 @@
+# Dependencies and build output
+/node_modules
+/vendor
+/public/storage
+/storage/*.key
+/storage/pail
+
+# Environment. `.env` is per-machine and carries the app key and DB password.
+.env
+.env.backup
+.env.production
+
+# Local-only environment for the Playwright suite. Each machine points it at
+# its own copy of the database; see tests/e2e/serve.js for why the suite insists
+# on a copy rather than the development database.
+.env.e2e
+
+# Test output
+/.phpunit.cache
+.phpunit.result.cache
+/test-results
+/playwright-report
+/blob-report
+/playwright/.cache
+
+# Editors and tooling, per-machine
+/.fleet
+/.idea
+/.nova
+/.vscode
+/.zed
+.phpactor.json
+/auth.json
+
+# Claude Code writes permission grants into `.local.json` every time anyone
+# approves a command, and they carry absolute paths that mean nothing on another
+# machine. `.claude/settings.json` stays tracked — that one is shared project
+# configuration. Only the per-machine half leaves.
+/.claude/settings.local.json
+
+# Participant lists exported from Excel. These carry real IC and phone numbers,
+# and git never forgets: once pushed, personal data stays in the history even if
+# the file is deleted later. Read at run time; never committed.
+/*.csv
+
+# OS noise
+.DS_Store
+Thumbs.db
+*.log
+
+# NOTE: no rule here excludes *.md, on purpose. Every document in this repo is
+# tracked — the decisions are the part that is hardest to recover.
