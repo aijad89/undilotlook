@@ -407,6 +407,26 @@ return new class extends Migration
             $table->timestamps();
         });
 
+        /* ── Notifications ───────────────────────────────────────────────── */
+
+        /**
+         * Laravel's own notifications table, written out here rather than
+         * published, so the whole schema stays in one file.
+         *
+         * It is NOT optional even before any announcement screen exists:
+         * AppServiceProvider's `notifications.unread-count` binding calls
+         * `unreadNotifications()` for any signed-in user, so a missing table is a
+         * 500 on every portal page rather than a feature that is merely absent.
+         */
+        Schema::create('notifications', function (Blueprint $table) {
+            $table->uuid('id')->primary();
+            $table->string('type');
+            $table->morphs('notifiable');
+            $table->text('data');
+            $table->timestamp('read_at')->nullable();
+            $table->timestamps();
+        });
+
         /* ── Announcements ───────────────────────────────────────────────── */
 
         Schema::create('announcements', function (Blueprint $table) {
@@ -459,6 +479,7 @@ return new class extends Migration
             'social_links',
             'footer_menus',
             'announcements',
+            'notifications',
             'preset_allocations',
             'polls',
             'event_registrations',

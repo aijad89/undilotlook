@@ -28,13 +28,12 @@ use Illuminate\Support\Facades\Cache;
  * recorded in.
  *
  * If you are here because you want scoping enforced centrally, that is a real
- * design change and it is not this file's job today. Add it deliberately, and
- * update the 103 controllers that currently do it themselves.
+ * design change and it is not this file's job. Add it deliberately, and move
+ * every controller that does it by hand through App\Support\EventVisibility.
  *
  * @see \App\Http\Middleware\EnforceUserIsActive  the web-guard twin, which DOES
- *      enforce something — it logs out a deactivated user. It was called
- *      TrackUserLastSeen until 2026-09-09 and this note used to say "despite its
- *      name"; backlog entry 2 renamed it, and the alias with it.
+ *      enforce something — it logs out a deactivated user. The two are named
+ *      for what they do, which is why only one of them reads like a guard.
  */
 class TrackAdminLastSeen
 {

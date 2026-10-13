@@ -27,9 +27,8 @@ use App\Models\AuditTrail;
  *
  * WHAT CLOSES IT, on the models where the cascade reaches something worth
  * recording: auditDeletionSummary() below, overridden to count the reach BEFORE
- * the DELETE. Six do it as of 2026-09-17 — Company (20 tables), Event (12), User,
- * CompanyStaff, CompanyCertification and CompanyKraf — all in one shape, so the
- * audit trail screen renders any of them without knowing which model it has.
+ * the DELETE. Company, Event and User do it, all in one shape, so the audit
+ * trail screen renders any of them without knowing which model it has.
  *
  * TWO THINGS IT STILL DOES NOT COVER, and both are deliberate:
  *
@@ -38,10 +37,13 @@ use App\Models\AuditTrail;
  *   plan rewrites are the live case, and they record their own `plan_rewrite` /
  *   `plan_cleared` row against the surviving Event to make up for it.
  *
- *   THE SURVEY TREE is audited by nothing — entry 50 in docs/audits/backlog.md.
+ *   A MODEL WITHOUT A SUMMARY says nothing about its reach. The trait cannot
+ *   know what a given model's delete cascades into, so silence here means
+ *   "not measured", never "nothing was taken".
  *
- * If you are about to rely on `audit_trails` to answer "what was removed", read
- * that entry and the summaries above before trusting a row's silence.
+ * If you are about to rely on `audit_trails` to answer "what was removed",
+ * check that the model overrides auditDeletionSummary() before trusting a
+ * row's silence.
  */
 trait Auditable
 {
@@ -85,9 +87,9 @@ trait Auditable
                 ->except($model->getAuditExclude())
                 ->toArray();
 
-            // `new_values` on a delete used to be null, which is where the counts
-            // now go for a model that can produce them. See
-            // auditDeletionSummary() below and Company::collectDeletionCounts().
+            // `new_values` on a delete would otherwise be null. It is where the
+            // cascade counts go for a model that can produce them — see
+            // auditDeletionSummary() below.
             AuditTrail::record('deleted', $model, $values, $model->auditDeletionSummary());
         });
     }
@@ -97,10 +99,9 @@ trait Auditable
      *
      * Null by default: the trait cannot know a model's reach, and most models
      * have none worth recording. A model that CAN say overrides this — see
-     * Company::auditDeletionSummary(), which answers office decision 5 by
-     * counting all twenty tables a company delete reaches, with `cascade_deleted`
-     * and `links_cleared` kept apart so a nulled plot is never reported as
-     * destroyed.
+     * Company::auditDeletionSummary(), which counts every table a company
+     * delete reaches, with `cascade_deleted` and `links_cleared` kept apart so
+     * a plot that merely lost its allocatee is never reported as destroyed.
      *
      * Five models followed it, and the shape is the point rather than the count:
      * Event, User, CompanyStaff, CompanyCertification and CompanyKraf all return
