@@ -488,6 +488,12 @@
                     'match'   => ['admin.events.*'],
                 ],
                 [
+                    'label' => 'Lot Draw',
+                    'icon'  => 'grid-3x3-gap',
+                    'route' => 'admin.polling.index',
+                    'match' => ['admin.polling.*'],
+                ],
+                [
                     'label' => 'Companies',
                     'icon'  => 'building',
                     'route' => 'admin.companies.index',

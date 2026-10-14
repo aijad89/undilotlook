@@ -154,12 +154,22 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
   `polls.user_id` NOT NULL akan menggagalkan seluruh larian pukal
 - Pembantu `PlotSize` yang tiada pemanggil (`isFullyAllocated`,
   `remaining_quantity`, `display_name`) tidak disalin
-- [ ] `Admin/PollingController` — pembina pelan (`savePlan()`, pemadanan
-      (lokasi, saiz)), jana plot, buka/tutup polling, keputusan, assign unvoted
-  - [ ] Bawa tiga penulisan `AuditTrail` tangan: `plan_rewrite`, `plan_cleared`,
+- [x] `Admin/PollingController` — pembina pelan (`savePlan()`, pemadanan
+      (lokasi, saiz)), jana plot, buka/tutup polling, keputusan, assign unvoted.
+      Partial pelan disalin; `show` ditulis semula ringkas (empat tab, bukan
+      1,714 baris). Ujian: `TheLotPlanBuildsWhatItSaysTest`
+  - [x] Bawa tiga penulisan `AuditTrail` tangan: `plan_rewrite`, `plan_cleared`,
         `plots_generated`
+  - Berbeza daripada `daftar`: `validateBidangIds()` menerima **kod** sahaja
+    (id kategori membina plot yang tiada pendaftaran boleh padan); `update()`
+    tidak lagi menulis tajuk acara; cabang "pulihkan preset" dalam `update()`
+    dibuang — `planIsFrozen()` sudah menolak sebarang lot dipegang, jadi ia
+    tidak pernah berjalan; `completed` ditolak selagi ada yang belum duduk;
+    dropdown status pada borang sunting (yang `update()` abaikan) diganti
+    paparan baca sahaja
 - [ ] `Admin/PlotPainterController` (`polling2`) — susun atur plot visual
-- [ ] Penetapan awal (preset assign) — sudah dalam `PollingController`
+- [x] Penetapan awal (preset assign) — dalam `PollingController`, dengan
+      pengesahan pelayar bila merentas kod
 - [ ] Sisi pengguna: `EventRegistrationController::showVote()` / `submitVote()`,
       `zvote/vote.blade.php`, `zvote/partials/lot-reveal.blade.php`
 - [ ] Tambah entri `$apNav` untuk cabutan

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntRegistrationController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\PollingController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\HomeController;
@@ -76,6 +77,35 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::put('{registration}', [EntRegistrationController::class, 'update'])->name('update');
                 Route::delete('{registration}', [EntRegistrationController::class, 'destroy'])->name('destroy');
             });
+
+        /*
+         * The lot draw. Reads are open to every role and scope themselves;
+         * everything that writes the plan or moves the draw is super/hq only.
+         * The static paths are declared before `{event}` so "create" is never
+         * read as an event id.
+         */
+        Route::prefix('polling')->name('polling.')->group(function () {
+            Route::get('/', [PollingController::class, 'index'])->name('index');
+
+            Route::middleware('can:manage-events')->group(function () {
+                Route::get('create', [PollingController::class, 'create'])->name('create');
+                Route::post('create', [PollingController::class, 'storeSettings'])->name('store-settings');
+                Route::get('create/plan', [PollingController::class, 'createPlan'])->name('create-plan');
+                Route::post('/', [PollingController::class, 'store'])->name('store');
+                Route::get('{event}/edit', [PollingController::class, 'edit'])->name('edit');
+                Route::put('{event}', [PollingController::class, 'update'])->name('update');
+                Route::delete('{event}', [PollingController::class, 'destroyPolling'])->name('destroy');
+                Route::post('{event}/generate-plots', [PollingController::class, 'generatePlots'])->name('generate-plots');
+                Route::post('{event}/status', [PollingController::class, 'changeStatus'])->name('change-status');
+                Route::post('{event}/process', [PollingController::class, 'processResults'])->name('process');
+                Route::post('{event}/draw-animation', [PollingController::class, 'updateDrawAnimation'])->name('draw-animation');
+                Route::post('{event}/preset', [PollingController::class, 'presetAssign'])->name('preset-assign');
+                Route::post('{event}/plots/{plot}/unassign', [PollingController::class, 'unassignPlot'])->name('unassign-plot');
+            });
+
+            Route::get('{event}', [PollingController::class, 'show'])->name('show');
+            Route::get('{event}/sizes/{plotSize}', [PollingController::class, 'viewPlotsBySize'])->name('plots.by-size');
+        });
 
         /*
          * Companies. Not gated: a state admin manages the companies in their own
