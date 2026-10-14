@@ -46,6 +46,33 @@ class Company extends Model
     }
 
     /**
+     * The draw lists this company is on.
+     *
+     * NAMED `eventRegistrations()`, NOT `registrations()`. A relation called by
+     * the wrong name is not an error on a model — Eloquent resolves `$company->
+     * registrations` as a missing attribute, which under
+     * `preventAccessingMissingAttributes()` throws in tests and, in production,
+     * would simply read as nothing. `User::registrations()` is the hasManyThrough
+     * that reaches these rows from the other side.
+     */
+    public function eventRegistrations()
+    {
+        return $this->hasMany(EventRegistration::class);
+    }
+
+    /**
+     * The craft categories this company carries, primary first.
+     *
+     * Each row is a (category, sub-category) pair from the craft hierarchy — the
+     * `code` IS NULL half of `kraf_bidangs`. The craft CODE that a draw matches
+     * on is not here; it is `event_registrations.code`, set per event.
+     */
+    public function krafSelections()
+    {
+        return $this->hasMany(CompanyKraf::class)->orderByDesc('is_primary')->orderBy('id');
+    }
+
+    /**
      * A government agency or similar, rather than a craft entrepreneur.
      *
      * This is what lets a plot be preset for a body that belongs to no craft

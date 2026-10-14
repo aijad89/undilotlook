@@ -34,11 +34,10 @@ class EntrepreneurCategories extends ManagedList
      * place them — and their registration code has no reason to match the craft
      * category coded into that lot. So a code mismatch on their preset is
      * expected, and warning about it would put a dialog in front of the routine
-     * case (see ).
+     * case.
      *
-     * Deliberately NOT editable in Settings, for the same reason as
-     * AwardTypes::RECOGNITION: the list above says what may be recorded, this
-     * says what the draw treats differently, and that is a rule rather than a
+     * Deliberately NOT editable in Settings: the list above says what may be
+     * recorded, this says what the draw treats differently, and that is a rule rather than a
      * dropdown. Renaming one of these two in Settings without changing it here
      * would quietly start warning about every government booth.
      *

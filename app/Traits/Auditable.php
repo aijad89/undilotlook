@@ -103,18 +103,18 @@ trait Auditable
      * delete reaches, with `cascade_deleted` and `links_cleared` kept apart so
      * a plot that merely lost its allocatee is never reported as destroyed.
      *
-     * Five models followed it, and the shape is the point rather than the count:
-     * Event, User, CompanyStaff, CompanyCertification and CompanyKraf all return
-     * the same two keys, with every key present on every delete including the
-     * zeros. That is what lets admin/audit-trails/show.blade.php read a summary
-     * without naming a single model.
+     * Event returns the same two keys for the same reason, and any model that
+     * grows a reach must do the same: every key present on every delete,
+     * including the zeros. The shape is the point rather than the count — it is
+     * what lets the audit trail screen read a summary without naming a single
+     * model.
      *
      * The counting itself CANNOT live in this trait. Trait boot methods run inside
      * Model::boot(), before booted(), so a `deleting` listener registered here
      * fires before a model's own guards — for Company that would mean counting
-     * ahead of decision 3's plot_id refusal and discarding the work on every
-     * blocked delete. Each model collects in its own `deleting` hook, after its own
-     * guards, and hands the result here.
+     * ahead of its refusal to delete a company holding a lot, and discarding the
+     * work on every blocked delete. Each model collects in its own `deleting`
+     * hook, after its own guards, and hands the result here.
      *
      * @return array<string, mixed>|null
      */

@@ -479,6 +479,35 @@
                     'icon'  => 'square-half',
                     'route' => 'admin.dashboard',
                 ],
+                [
+                    'section' => 'The draw',
+                    'label'   => 'Events',
+                    'icon'    => 'calendar-event',
+                    'route'   => 'admin.events.index',
+                    // The draw list lives under an event, so it lights this up too.
+                    'match'   => ['admin.events.*'],
+                ],
+                [
+                    'label' => 'Companies',
+                    'icon'  => 'building',
+                    'route' => 'admin.companies.index',
+                    'match' => ['admin.companies.*'],
+                ],
+                [
+                    'section'  => 'Settings',
+                    'label'    => 'Dropdown Lists',
+                    'icon'     => 'sliders',
+                    'route'    => 'admin.settings.lists',
+                    'match'    => ['admin.settings.*'],
+                    // National lists. A state admin editing one would be editing
+                    // thirteen other zones' vocabulary.
+                    'when'     => fn ($admin) => $admin->hasGlobalAccess(),
+                    'children' => [
+                        ['label' => 'Zones & sizes', 'route' => 'admin.settings.lists'],
+                        ['label' => 'Craft Category Code', 'route' => 'admin.settings.kraf-codes'],
+                        ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy'],
+                    ],
+                ],
             ];
 
             $visible = array_values(array_filter(

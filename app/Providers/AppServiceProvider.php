@@ -201,6 +201,33 @@ class AppServiceProvider extends ServiceProvider
         });
 
         /*
+         * Who may create, edit and delete events — and with them the draw that
+         * lives inside each one.
+         *
+         * READ IS NOT GATED. A state admin has to reach an event to reach its
+         * draw list, so the listing and the draw list stay open to every role and
+         * are SCOPED instead, by EventVisibility and by the queries themselves.
+         * Gating the read as well would leave a state admin unable to see the
+         * event their own companies are drawing in.
+         */
+        Gate::define('manage-events', function (Admin $admin) {
+            return $admin->canManageEvents();
+        });
+
+        /*
+         * The dropdown lists, the craft hierarchy and the coding sheet.
+         *
+         * National, every one of them: one craft code list is read by all
+         * fourteen zones, so a state admin editing it is editing thirteen other
+         * zones' vocabulary. Zones themselves are stricter still and are checked
+         * again inside SettingController — they decide who sees what, so they are
+         * super-only.
+         */
+        Gate::define('manage-settings', function (Admin $admin) {
+            return $admin->hasGlobalAccess();
+        });
+
+        /*
          * ┌─ THE VIEWS THAT READ $unreadNotificationCount. ADD A FOURTH HERE. ─┐
          *
          * Any view that starts reading `$unreadNotificationCount` MUST be named in

@@ -32,28 +32,66 @@ saiz gerai.
 
 Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 
-- [ ] `EventVisibility.php` — **gerbang skop negeri**. Diperlukan oleh setiap
-      controller admin di bawah
-- [ ] `RegistrationStates.php` — senarai negeri (extends `ManagedList`)
-- [ ] `AdminZones.php` — zon pejabat
-- [ ] `PlotSizes.php` — senarai saiz gerai
-- [ ] `KrafPicker.php` — pemilih hierarki kraf
-- [ ] `RejectionReasons.php` — dibaca oleh `partials/rejection-reason-options`
-- [ ] `partials/state-options.blade.php`, `partials/rejection-reason-options.blade.php`
+- [x] `EventVisibility.php` — **gerbang skop negeri**. Diperlukan oleh setiap
+      controller admin di bawah. Ujiannya menunggu model `Event` (2.2/2.4)
+- [x] `AdminZones.php` — zon pejabat. `ZonesCarryTheirRowsWhenRenamedTest`
+      menahan `rename()` dan `isInUse()`
+- [x] `PlotSizes.php` — senarai saiz gerai
+- [x] `KrafPicker.php` — pemilih hierarki kraf. Tapisan senarai kategori ditukar
+      kepada `whereNull('code')`; `daftar` guna `pecahan_bidang`, yang betul
+      hanya kerana datanya kebetulan sejajar
+- [x] `partials/zone-options.blade.php` — pasangan view untuk `AdminZones`
+
+**Tidak disalin — tiada lajur untuk disuap dalam skema ini:**
+
+- `RegistrationStates.php` + `partials/state-options.blade.php` — senarai
+  geografi. Penggunanya dalam `daftar` ialah `company_premises.state` (jadual
+  itu tiada di sini) dan `events.state` (di sini ia **zon**, salah satu daripada
+  tiga lajur yang `AdminZones::rename()` tulis). Salin bila ada lajur tempat
+  sebenar
+- `RejectionReasons.php` + `partials/rejection-reason-options.blade.php` — tiada
+  aliran tolak di sini: kewujudan baris pendaftaran ialah kelulusannya, dan
+  tiada lajur `notes`/`reason` dalam skema
 
 ### 2.2 Model
 
-- [ ] `Event` — `use Auditable`. Const `STATUSES` dan `POLLING_STATUSES`
+- [x] `Event` — `use Auditable`. Const `STATUSES` dan `POLLING_STATUSES`
       (**bukan** enum lajur). Relasi: `registrations`, `plotSizes`,
-      `bidangAllocations`, `plots`, `polls`, `presetAllocations`
-- [ ] `EventRegistration` — `use Auditable`. **Jangan** salin relasi `polls()`:
-      ia rosak dalam `daftar`, memadan pada `polls.company_id` yang tidak wujud
-- [ ] `KrafBidang`, `KrafSubBidang`, `KrafPengelasan`, `KrafProduk`, `CompanyKraf`
-- [ ] Tambah pada `Company`: relasi **`eventRegistrations()`** —
-      **bukan** `registrations()`. Tiada method bernama `registrations()` pada
-      model itu dalam `daftar`, jadi nama yang salah memulangkan null secara
-      senyap
-- [ ] Factory untuk setiap satu, **menamakan setiap lajur**
+      `bidangAllocations`, `plots`, `polls`, `presetAllocations`.
+      `collectDeletionCounts()` guna query builder, bukan relasi, supaya ia
+      berfungsi sebelum model Fasa 3 wujud
+- [x] `EventRegistration` — `use Auditable`. Tiada `polls()`, tiada `status`,
+      tiada hook: kewujudan baris ialah kelulusannya
+- [x] `KrafBidang`, `KrafSubBidang`, `KrafPengelasan`, `KrafProduk`, `CompanyKraf`.
+      `KrafBidang::categories()` / `::codes()` ialah cara menyatakan separuh mana
+- [x] Tambah pada `Company`: relasi **`eventRegistrations()`** dan
+      **`krafSelections()`**
+- [x] Factory untuk setiap satu, **menamakan setiap lajur** — termasuk
+      `CompanyFactory` yang sebelum ini tiada
+- [x] Ujian: `TheTwoCraftListsStayApartTest`, `AnEventDeleteSaysWhatTheCascadeTookTest`
+
+**Dibetulkan sambil lalu:**
+
+- Komen `company_krafs.bidang_id` dalam migration baseline berkata ia memegang
+  separuh **berkod**. Ia salah: `bidang_id` ialah separuh **kategori** (sama
+  dengan `kraf_sub_bidangs.bidang_id`, yang membuat pasangan itu konsisten).
+  Dalam `daftar` 277/277 baris mengesahkannya. Komen dibetulkan
+- `KrafPicker` dipangkas kepada dua aras. `daftar` menyimpan pengelasan dan
+  produk per pilihan melalui dua jadual pivot (`company_kraf_pengelasan`,
+  `company_kraf_produk`); kedua-duanya tiada dalam skema ini
+
+**Perangkap yang ditemui, belum ditangani:**
+
+- Memadam acara mencetuskan **dua** cascade yang berlanggar: `events` →
+  `event_registrations` (CASCADE) dan `events` → `plots` (CASCADE), sedangkan
+  `event_registrations.plot_id` ialah `NO ACTION`. Jika pangkalan data memadam
+  `plots` dahulu, DELETE itu gagal. `EventController::destroy()` (2.3) mesti
+  mengosongkan `plot_id` dahulu — sama seperti penulisan semula pelan
+- Memadam satu baris `kraf_bidangs` cascade ke enam jadual (`company_krafs`,
+  `kraf_sub_bidangs`, `kraf_produks`, `plots`, `preset_allocations`,
+  `bidang_allocations`) dan **tidak meninggalkan satu pun baris audit**. Bila
+  skrin Dropdown Lists dibina (2.3), `KrafBidang` perlu `use Auditable` dengan
+  `auditDeletionSummary()`
 
 ### 2.3 Skrin admin
 

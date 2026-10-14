@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Models;
+
+use App\Traits\Auditable;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * One company's place in one event's draw.
+ *
+ * THE EXISTENCE OF THE ROW IS THE APPROVAL. There is no status column and no
+ * workflow: an admin puts a company into the list with a craft code and a booth
+ * size, and that is what being in the draw means. The system this replaces
+ * carried a seven-value status and the screens around it; the draw read none of
+ * it.
+ *
+ * TWO KEYS, TWO QUESTIONS. `company_id` is ownership — NOT NULL, foreign-keyed,
+ * and what every "whose is this" question asks. `user_id` is the ACCOUNT that
+ * draws: `polls`, `plots.allocated_to` and the preset allocations all key on it,
+ * and it is nullable. Asking the wrong one of the two is how a company with no
+ * account yet disappears off a screen that should list it.
+ *
+ * `code` is a STRING, not a reference. It holds a craft code from the coding
+ * sheet (TBPS, RKP) and is matched against `kraf_bidangs.code` on the rows plots
+ * are categorised by. That string-against-key mismatch is deliberate: it is what
+ * the allocator compares, and changing it means rewriting the allocator.
+ */
+class EventRegistration extends Model
+{
+    use Auditable, HasFactory;
+
+    protected $fillable = [
+        'event_id',
+        'company_id',
+        'user_id',
+        'code',
+        'code_updated_at',
+        'plot_size',
+        'plot_id',
+        'confirmed_participation',
+        'confirmed_at',
+    ];
+
+    /**
+     * `reminded_at` is deliberately out of $fillable: it is stamped when the
+     * close reminder is QUEUED, by the command that queues it and by nothing
+     * else. The delivery record lives in `notifications`.
+     */
+    protected $casts = [
+        'code_updated_at' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'reminded_at' => 'datetime',
+        'confirmed_participation' => 'boolean',
+    ];
+
+    public function event()
+    {
+        return $this->belongsTo(Event::class);
+    }
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class);
+    }
+
+    /** The account that draws. Null until the company has one — see the docblock. */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function plot()
+    {
+        return $this->belongsTo(Plot::class);
+    }
+}

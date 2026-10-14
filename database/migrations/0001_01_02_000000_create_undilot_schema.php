@@ -210,8 +210,11 @@ return new class extends Migration
             $table->id();
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
 
-            // Carries the CODED half of kraf_bidangs; `sub_bidang_id` is the
-            // readable craft category. Both are NOT NULL.
+            // `bidang_id` is the CATEGORY half of kraf_bidangs (`code` IS NULL) —
+            // the same half `kraf_sub_bidangs.bidang_id` points at, which is what
+            // makes the pair below consistent. A selection's craft CODE is reached
+            // through `kraf_sub_bidangs.kraf_bidang_code_id`, never from this
+            // column. Both are NOT NULL.
             $table->foreignId('bidang_id')->constrained('kraf_bidangs')->cascadeOnDelete();
             $table->foreignId('sub_bidang_id')->constrained('kraf_sub_bidangs')->cascadeOnDelete();
 
