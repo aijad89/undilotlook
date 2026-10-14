@@ -32,7 +32,8 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'password' => static::$password ??= bcrypt('password'),
             'phone' => fake()->numerify('01#-#######'),
-            'ic_number' => fake()->numerify('############'),
+            // Dashed, as the Companies screen stores it.
+            'ic_number' => fake()->unique()->numerify('######-##-####'),
             'is_active' => true,
             'last_seen_at' => null,
             'remember_token' => Str::random(10),

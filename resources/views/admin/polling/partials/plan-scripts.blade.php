@@ -438,13 +438,19 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="plot-size-row mb-3" data-size-idx="${idx}" style="border:1px solid rgba(60,60,67,0.12);border-radius:12px;overflow:hidden;">
                 <div class="p-3 px-4" style="background:rgba(0,0,0,0.02);">
                     <div class="row g-2 align-items-end">
-                        <div class="col-md-8">
+                        <div class="col-md-5">
                             <label class="mac-label">Location <span class="text-danger">*</span></label>
                             <input type="text" name="plot_sizes[${idx}][location]" class="mac-form-control plot-location" placeholder="e.g., B" required>
                         </div>
                         <div class="col-md-3">
                             <label class="mac-label">Quantity <span class="text-danger">*</span></label>
                             <input type="number" name="plot_sizes[${idx}][quantity]" class="mac-form-control plot-quantity" placeholder="e.g., 30" required min="1" value="1">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="mac-label" title="The plots no allocation below claims. They are the open pool, drawn by anyone whose code has run out — at this size.">Size of the rest</label>
+                            <select name="plot_sizes[${idx}][size]" class="mac-select plot-leftover-size" required>
+                                ${getSizesHtml()}
+                            </select>
                         </div>
                         <div class="col-md-1 d-flex align-items-end">
                             <button type="button" class="mac-action-btn-danger mac-action-btn-field remove-size" aria-label="Remove this location" title="Remove location"><i class="bi bi-trash" aria-hidden="true"></i></button>

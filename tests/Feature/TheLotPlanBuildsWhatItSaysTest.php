@@ -20,7 +20,7 @@ function planPost(Event $event, array $allocations = [], ?array $locations = nul
         'event_id' => $event->id,
         'polling_start_date' => '2026-11-01T09:00',
         'polling_deadline' => '2026-11-05T17:00',
-        'plot_sizes' => $locations ?? [['location' => 'Hall A', 'quantity' => 5]],
+        'plot_sizes' => $locations ?? [['location' => 'Hall A', 'quantity' => 5, 'size' => '3x3']],
         'bidang_allocations' => $allocations,
     ];
 }
@@ -43,8 +43,32 @@ it('builds plots from a plan: coded where allocated, open pool for the rest', fu
             ->toBe(['HALL A-RKP1', 'HALL A-RKP2'])
         ->and(Plot::whereNull('bidang_id')->count())->toBe(3)
         ->and(PlotSize::where('event_id', $event->id)->pluck('quantity', 'size')->all())
-            ->toEqual(['3x6' => 2, '' => 3])
+            ->toEqual(['3x6' => 2, '3x3' => 3])
         ->and(AuditTrail::where('action', 'plots_generated')->value('new_values')['plots'])->toBe(5);
+});
+
+it('refuses a location with no size for its spare plots, which nobody could ever draw', function () {
+    $event = Event::factory()->create();
+
+    $this->actingAs(superAdmin(), 'admin')
+        ->post(route('admin.polling.store'), planPost($event, [], [['location' => 'Hall A', 'quantity' => 2]]))
+        ->assertSessionHasErrors('plot_sizes.0.size');
+
+    expect(Plot::count())->toBe(0);
+});
+
+it('shows a location its spare plots size back on the edit form', function () {
+    $event = Event::factory()->create();
+    $rkp = KrafBidang::factory()->code('RKP')->create();
+    $admin = superAdmin();
+
+    $this->actingAs($admin, 'admin')->post(route('admin.polling.store'), planPost($event, [
+        ['bidang_id' => $rkp->id, 'plot_size_index' => 0, 'size' => '3x3', 'plots_count' => 2],
+    ], [['location' => 'Hall A', 'quantity' => 5, 'size' => '3x6']]));
+
+    $this->actingAs($admin, 'admin')->get(route('admin.polling.edit', $event))
+        ->assertOk()
+        ->assertSee('<option value="3x6" selected>3x6</option>', false);
 });
 
 it('refuses a craft category in a code allocation, because no registration can match it', function () {
@@ -81,7 +105,7 @@ it('rewrites the plan and records what the rewrite destroyed', function () {
 
     $this->actingAs($admin, 'admin')->post(route('admin.polling.store'), planPost($event));
     $this->actingAs($admin, 'admin')
-        ->put(route('admin.polling.update', $event), planPost($event, [], [['location' => 'Hall B', 'quantity' => 2]]))
+        ->put(route('admin.polling.update', $event), planPost($event, [], [['location' => 'Hall B', 'quantity' => 2, 'size' => '3x3']]))
         ->assertRedirect(route('admin.polling.show', $event));
 
     $rewrite = AuditTrail::where('action', 'plan_rewrite')->sole();
@@ -273,7 +297,7 @@ it('renders every page of the lot draw', function () {
     // The settings came from the session; the form posts only the plan.
     $this->actingAs($admin, 'admin')
         ->post(route('admin.polling.store'), [
-            'plot_sizes' => [['location' => 'A', 'quantity' => 2]],
+            'plot_sizes' => [['location' => 'A', 'quantity' => 2, 'size' => '3x3']],
             'bidang_allocations' => [['bidang_id' => $rkp->id, 'plot_size_index' => 0, 'size' => '3x6', 'plots_count' => 1]],
         ])
         ->assertRedirect(route('admin.polling.show', $event));

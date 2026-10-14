@@ -8,8 +8,9 @@ use Illuminate\Database\Seeder;
  * Not a data seeder — a split.
  *
  * ABOVE THE LINE: what an empty installation needs before anyone can use it.
- * Right now that is one super admin, because every screen that creates an admin
- * is behind the admin login.
+ * That is one super admin, because every screen that creates an admin is behind
+ * the admin login; and the craft coding sheet with its five categories, because
+ * no company can be given a craft, and no draw a code, without them.
  *
  * BELOW THE LINE: demo and test data, which must never run on a live box. There
  * is none yet. When there is, it goes behind the `isProduction()` guard below
@@ -29,6 +30,10 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call(AdminSeeder::class);
+
+        // The coding sheet and the five craft categories. Re-runnable: codes
+        // match on `code`, categories on name.
+        $this->call(KrafCodeSeeder::class);
 
         if (app()->isProduction()) {
             $this->command?->newLine();

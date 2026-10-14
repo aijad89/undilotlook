@@ -31,18 +31,29 @@
     // One shape for all three sources — old input after a bounce, what is on
     // file when editing, and a single starter row when neither applies — so the
     // row below is written once instead of once per case.
+    // A location's `size` is the size of its plots no allocation claims. They
+    // are the open pool, and a lot is drawn only at the registration's own booth
+    // size — so a spare plot with no size can never be won by anyone. On file it
+    // is read back off the (location, size) row holding more than its allocations.
+    $allocatedOn = collect($event?->bidangAllocations ?? [])->groupBy('plot_size_id')->map->sum('plots_count');
+
     $locationsToRender = old('plot_sizes')
         ? collect(old('plot_sizes'))->map(fn ($s) => [
             'location' => $s['location'] ?? '',
             'quantity' => $s['quantity'] ?? 1,
+            'size' => $s['size'] ?? '',
         ])->values()
         : ($event?->plotSizes
             ->groupBy(fn ($s) => (string) $s->location)
-            ->map(fn ($rows, $loc) => ['location' => $loc, 'quantity' => $rows->sum('quantity')])
+            ->map(fn ($rows, $loc) => [
+                'location' => $loc,
+                'quantity' => $rows->sum('quantity'),
+                'size' => (string) $rows->first(fn ($r) => $r->quantity > ($allocatedOn[$r->id] ?? 0))?->size,
+            ])
             ->values() ?? collect());
 
     if ($locationsToRender->isEmpty()) {
-        $locationsToRender = collect([['location' => 'A', 'quantity' => 30]]);
+        $locationsToRender = collect([['location' => 'A', 'quantity' => 30, 'size' => '']]);
     }
 
     $locationKeys = $locationsToRender->map(fn ($l) => (string) $l['location'])->all();
@@ -75,6 +86,7 @@
     // since dropped from Settings must not lose it on the next save.
     $sizeOptions = collect(\App\Support\PlotSizes::all())
         ->merge(collect($allocationsToRender)->pluck('size'))
+        ->merge($locationsToRender->pluck('size'))
         ->map(fn ($s) => trim((string) $s))
         ->filter()
         ->unique()
@@ -92,13 +104,21 @@
     <div class="plot-size-row mb-3" data-size-idx="{{ $psIndex }}" style="border:1px solid rgba(60,60,67,0.12);border-radius:12px;overflow:hidden;">
         <div class="p-3 px-4" style="background:rgba(0,0,0,0.02);">
             <div class="row g-2 align-items-end">
-                <div class="col-md-8">
+                <div class="col-md-5">
                     <label class="mac-label">Location <span class="text-danger">*</span></label>
                     <input type="text" name="plot_sizes[{{ $psIndex }}][location]" class="mac-form-control plot-location" value="{{ $loc['location'] }}" placeholder="e.g., A" required>
                 </div>
                 <div class="col-md-3">
                     <label class="mac-label">Quantity <span class="text-danger">*</span></label>
                     <input type="number" name="plot_sizes[{{ $psIndex }}][quantity]" class="mac-form-control plot-quantity" value="{{ $loc['quantity'] }}" placeholder="e.g., 30" required min="1">
+                </div>
+                <div class="col-md-3">
+                    <label class="mac-label" title="The plots no allocation below claims. They are the open pool, drawn by anyone whose code has run out — at this size.">Size of the rest</label>
+                    <select name="plot_sizes[{{ $psIndex }}][size]" class="mac-select plot-leftover-size" required>
+                        @foreach($sizeOptions as $option)
+                            <option value="{{ $option }}" @selected($loc['size'] === $option)>{{ $option }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="col-md-1 d-flex align-items-end">
                     <button type="button" class="mac-action-btn-danger mac-action-btn-field remove-size" aria-label="Remove this location" title="Remove location" @if($locationsToRender->count() <= 1) disabled @endif><i class="bi bi-trash" aria-hidden="true"></i></button>

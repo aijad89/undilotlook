@@ -65,7 +65,10 @@ return [
     |
     */
 
-    'timezone' => 'UTC',
+    // Malaysia. Admins type voting windows in local time and they are stored as
+    // typed; now() has to be on the same clock or a draw set to open at 09:00
+    // opens at 17:00, and "Confirmed On" reads eight hours early.
+    'timezone' => 'Asia/Kuala_Lumpur',
 
     /*
     |--------------------------------------------------------------------------

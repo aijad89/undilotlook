@@ -51,9 +51,12 @@ class PollingController extends Controller
     /** The plan's own rules. Create and edit post the same form. */
     private const PLAN_RULES = [
         'plot_sizes' => 'required|array|min:1',
-        // A row is a LOCATION; the size lives on each allocation under it. A
-        // location's own size, if sent, names the size of its unallocated plots.
-        'plot_sizes.*.size' => 'nullable|string|max:50',
+        // A row is a LOCATION; each allocation under it names its own size. The
+        // location's size is the size of its UNALLOCATED plots — the open pool.
+        // Required: a lot is drawn only at a registration's own booth size, so an
+        // unsized spare plot is one nobody can ever win. `daftar`'s form never
+        // sent this field, and every spare plot it built was dead.
+        'plot_sizes.*.size' => 'required|string|max:50',
         'plot_sizes.*.quantity' => 'required|integer|min:1',
         // The plot code prefix — "HALL A-TBP1". Required, so no plot falls back
         // to a meaningless "LOC-TBP1".

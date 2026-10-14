@@ -188,6 +188,27 @@ it('creates the company and its one account from a single form', function () {
         ->and(Hash::check('kraf1234', $user->password))->toBeTrue();
 });
 
+it('stores an IC typed as twelve bare digits in its dashed form, so one IC is one spelling', function () {
+    $existing = Company::factory()->create(['state' => 'Johor']);
+    $existing->user->update(['ic_number' => '880101-01-5555']);
+
+    $post = fn (string $ic, string $email) => $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->post(route('admin.companies.store'), [
+            'name' => 'Kraf '.$email, 'state' => 'Johor', 'owner_name' => 'Owner',
+            'email' => $email, 'ic_number' => $ic,
+        ]);
+
+    // The same IC as the existing account, typed without dashes: refused as a
+    // duplicate, never stored as a second spelling.
+    $post('880101015555', 'twin@example.test')->assertSessionHasErrors('ic_number');
+
+    $post('900202 02 6666', 'new@example.test')->assertRedirect();
+    expect(User::where('email', 'new@example.test')->value('ic_number'))->toBe('900202-02-6666');
+
+    $post('12345', 'short@example.test')
+        ->assertSessionHasErrors(['ic_number' => 'An IC number has twelve digits, written 990101-01-1234.']);
+});
+
 it('refuses a second company on one email, with a message rather than a database error', function () {
     $existing = Company::factory()->create(['state' => 'Johor']);
 

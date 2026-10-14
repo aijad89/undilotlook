@@ -50,3 +50,4 @@ Thumbs.db
 
 # NOTE: no rule here excludes *.md, on purpose. Every document in this repo is
 # tracked — the decisions are the part that is hardest to recover.
+/.playwright-mcp

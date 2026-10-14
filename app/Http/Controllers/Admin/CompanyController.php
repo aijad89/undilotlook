@@ -73,9 +73,31 @@ class CompanyController extends Controller
         ]);
     }
 
+    private const IC_MESSAGES = [
+        'ic_number.regex' => 'An IC number has twelve digits, written 990101-01-1234.',
+        'ic_number.unique' => 'Another account already holds that IC number.',
+    ];
+
+    /**
+     * Twelve bare digits are the commonest way an IC is typed, and the stored
+     * form is dashed — icHash() and the unique index both compare the string,
+     * so one IC in two spellings would be two people. Dashes go in here; anything
+     * that is not twelve digits is left for the rule to refuse.
+     */
+    private function normaliseIc(Request $request): void
+    {
+        $digits = preg_replace('/\D/', '', (string) $request->input('ic_number'));
+
+        if (strlen($digits) === 12) {
+            $request->merge(['ic_number' => substr($digits, 0, 6).'-'.substr($digits, 6, 2).'-'.substr($digits, 8)]);
+        }
+    }
+
     public function store(Request $request)
     {
         $admin = $request->user('admin');
+
+        $this->normaliseIc($request);
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -91,7 +113,7 @@ class CompanyController extends Controller
             // person and the owner will set one through the reset flow.
             'password' => ['nullable', 'confirmed', Password::defaults()],
             'account_active' => ['nullable', 'boolean'],
-        ]);
+        ], self::IC_MESSAGES);
 
         // One act, or neither. Without the transaction a failing company insert
         // leaves a user behind with no company and no screen that lists them.
@@ -140,6 +162,8 @@ class CompanyController extends Controller
 
         $user = $company->user;
 
+        $this->normaliseIc($request);
+
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'state' => ['required', Rule::in($this->zonesFor($request->user('admin')))],
@@ -155,7 +179,7 @@ class CompanyController extends Controller
             // Left blank on every ordinary save. Filled only when the office is
             // resetting the password for someone who cannot do it themselves.
             'password' => ['nullable', 'confirmed', Password::defaults()],
-        ]);
+        ], self::IC_MESSAGES);
 
         DB::transaction(function () use ($request, $data, $company, $user) {
             $user->update([

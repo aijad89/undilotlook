@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\PlotPainterController;
 use App\Http\Controllers\Admin\PollingController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
+use App\Http\Controllers\DevAutoLoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LotDrawController;
 use Illuminate\Support\Facades\Route;
@@ -38,6 +39,19 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
 });
+
+/* ── Dev: click-to-login ─────────────────────────────────────────────────── */
+
+/*
+ * An authentication bypass by design, so it is registered on a developer's
+ * machine and in the suite, and nowhere else. The controller checks again.
+ */
+if (app()->environment(['local', 'testing'])) {
+    Route::get('/auto', [DevAutoLoginController::class, 'index'])->name('dev.auto');
+    Route::post('/auto/admin/{admin}', [DevAutoLoginController::class, 'loginAdmin'])->name('dev.auto.admin');
+    Route::post('/auto/user/{user}', [DevAutoLoginController::class, 'loginUser'])->name('dev.auto.user');
+    Route::post('/auto/logout', [DevAutoLoginController::class, 'logout'])->name('dev.auto.logout');
+}
 
 /* ── Admin ───────────────────────────────────────────────────────────────── */
 
