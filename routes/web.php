@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\PollingController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LotDrawController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -32,6 +33,9 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+
+    Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
+    Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
 });
 
 /* ── Admin ───────────────────────────────────────────────────────────────── */

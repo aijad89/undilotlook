@@ -580,6 +580,9 @@
                 'icon'  => 'house-door-fill',
                 'route' => 'dashboard',
                 'key'   => 'dashboard',
+                // The lot page belongs to the dashboard: every draw is listed
+                // there, and the lot is reached from its row.
+                'match' => ['dashboard', 'zvote.*'],
             ],
         ];
     @endphp

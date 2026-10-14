@@ -34,15 +34,29 @@ class HomeController extends Controller
     }
 
     /**
-     * The participant's own dashboard.
+     * The participant's own dashboard: every draw their company is in, and what
+     * is left to do in each.
      *
-     * PHASE 1: the shell, so the login flow has somewhere to land. It grows the
-     * draw list and the lot result in phase 3.
+     * A draw still in draft shows only once it has a voting window — a date is
+     * "not yet", where an empty page reads as "you have nothing". Cancelled draws
+     * do not show. How many lots exist stays withheld, as on the vote page.
      */
     public function dashboard(Request $request)
     {
+        $user = $request->user();
+
+        $entries = $user->registrations()
+            ->with(['event', 'plot.plotSize'])
+            ->get()
+            ->filter(fn ($r) => $r->event->polling_status !== 'cancelled'
+                && ($r->event->polling_status !== 'draft' || $r->event->polling_start_date))
+            ->sortBy(fn ($r) => $r->event->polling_start_date)
+            ->values();
+
         return view('dashboard', [
-            'user' => $request->user(),
+            'user' => $user,
+            'entries' => $entries,
+            'drawn' => \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip(),
         ]);
     }
 }

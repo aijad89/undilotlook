@@ -170,17 +170,32 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 - [ ] `Admin/PlotPainterController` (`polling2`) — susun atur plot visual
 - [x] Penetapan awal (preset assign) — dalam `PollingController`, dengan
       pengesahan pelayar bila merentas kod
-- [ ] Sisi pengguna: `EventRegistrationController::showVote()` / `submitVote()`,
-      `zvote/vote.blade.php`, `zvote/partials/lot-reveal.blade.php`
-- [ ] Tambah entri `$apNav` untuk cabutan
+- [x] Sisi pengguna — `LotDrawController` (`show`, `submit`), bukan
+      `EventRegistrationController`: tiada pendaftaran kendiri di sini, jadi
+      tiada apa lagi untuk controller itu pegang. Nama route `zvote.*` dikekalkan.
+      `zvote/vote.blade.php` dan `lot-reveal` disalin; butang slip PDF dibuang
+      sehingga PDF wujud (Fasa 4), pautan `profile` diganti ayat
+- [x] ~~Entri `$apNav`~~ — dashboard peserta menyenaraikan setiap cabutan dan
+      memaut ke lotnya; halaman lot menyalakan entri Dashboard. `zvote.dashboard`
+      `daftar` tidak disalin
 
 ### Ujian Fasa 3
 
-- [ ] Dua pengguna menarik serentak tidak boleh mendapat lot yang sama
-- [ ] Pengguna tidak boleh menarik dua kali (indeks unik `polls`)
-- [ ] Penulisan semula pelan mengosongkan `plot_id` sebelum memadam plot
-- [ ] Plot preset yang hilang memberi ralat yang boleh dibaca, bukan 500
-- [ ] Penetapan merentas kategori bertanya dahulu, dan menyimpan pada OK
+- [ ] Dua pengguna menarik serentak tidak boleh mendapat lot yang sama —
+      **belum diuji**. `submit()` mengunci baris pendaftaran dan
+      `inRandomOrder()->lockForUpdate()` mengunci plot, tetapi SQLite dalam satu
+      proses tidak boleh menghasilkan dua permintaan bertindih. Perlu ujian pada
+      MySQL dengan dua sambungan
+- [x] Pengguna tidak boleh menarik dua kali — `AParticipantConfirmsTheirLotTest`
+- [x] ~~Penulisan semula pelan mengosongkan `plot_id`~~ — tidak berlaku: penulisan
+      semula ditolak sebaik satu lot dipegang (`planIsFrozen()`), jadi tiada
+      `plot_id` untuk dikosongkan
+- [x] Plot preset yang hilang memberi ralat yang boleh dibaca —
+      `OneRuleSeatsEveryoneTest` (`preset_missing`)
+- [ ] Penetapan merentas kategori bertanya dahulu — `confirm()` dalam pelayar;
+      menunggu suite Playwright
+- [x] Satu cabutan penuh hujung ke hujung melalui skrin —
+      `AParticipantConfirmsTheirLotTest`
 
 ---
 
