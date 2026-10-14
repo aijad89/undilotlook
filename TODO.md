@@ -209,7 +209,10 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       dihidupkan: satu halaman 880 KB → 30 KB
 - [ ] Skrin audit trail — `Admin/AuditTrailController`
 - [ ] Pengumuman + `VotingCloseReminder` + queue worker
-- [ ] Scheduler: `events:update-statuses`, `voting:send-reminder`
+- [x] Scheduler: `events:update-statuses`, `voting:send-reminder`, dijadualkan
+      dalam `routes/console.php`. Buka automatik melalui `PollingGuard`, sama
+      seperti butang. `config/app.php` kini `Asia/Kuala_Lumpur` — pada UTC
+      draw yang ditaip 09:00 akan dibuka 17:00
 - [ ] Laporan & Eksport — `Admin/ReportController`.
       **Buang lajur City** (ia membaca premis, yang tidak dibawa)
 - [ ] Kalendar acara — ~280 baris **di dalam** `EventController` dan
