@@ -26,6 +26,7 @@
         </div>
     </div>
 
+    <div class="ap-draw-grid">
     @foreach($entries as $entry)
         @php
             $event = $entry->event;
@@ -78,5 +79,6 @@
             </div>
         </article>
     @endforeach
+    </div>
 </div>
 @endsection

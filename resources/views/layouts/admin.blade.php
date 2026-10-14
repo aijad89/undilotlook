@@ -127,7 +127,7 @@
         .card { width: 100%; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-1); }
 
         /* ── Content frame ───────────────────────── */
-        #content-main > .mac-page, .mac-page { max-width: 1360px; }
+        #content-main > .mac-page, .mac-page { max-width: none; }
 
         @media (max-width: 767.98px) {
             #sidebar { margin-left: calc(-1 * var(--adm-sidebar-w)); box-shadow: none; }

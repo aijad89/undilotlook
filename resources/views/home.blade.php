@@ -14,7 +14,7 @@
     .ev-search input:focus { outline: none; border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
     .ev-search button { min-height: 48px; padding: 0 20px; border: none; border-radius: var(--ui-r); background: var(--ui-blue); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; }
     .ev-search button:hover { background: var(--ui-blue-hover); }
-    .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .ev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
     .ev-card { display: flex; flex-direction: column; overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); transition: box-shadow var(--ui-fast) var(--ui-ease); }
     .ev-card:hover { box-shadow: var(--ui-shadow-2); }
     .ev-banner { width: 100%; aspect-ratio: 797 / 235; object-fit: cover; }

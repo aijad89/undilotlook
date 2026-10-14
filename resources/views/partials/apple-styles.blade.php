@@ -213,6 +213,8 @@
 .ap-draw .ui-stepper { margin: 22px 0 18px; }
 .ap-draw .ui-stepper .label { font-size: 0.9rem; }
 .ap-draw-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--ui-sep); font-size: 1rem; color: var(--ui-text-2); }
+.ap-draw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: start; }
+.ap-draw-grid > .ap-draw { margin: 0 !important; }
 .ap-draw-lot-link { gap: 8px; border-color: var(--ui-gold) !important; background: var(--ui-gold-tint) !important; color: var(--ui-gold-text) !important; font-size: 1.05rem; }
 .ap-draw-lot-link:hover { background: #fbe7bd !important; }
 .ap-draw-lot-link i { color: var(--ui-gold); }

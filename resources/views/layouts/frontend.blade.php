@@ -20,7 +20,7 @@
            large targets. On a desk the nav sits in the bar; on a phone it is a
            drawer, and the bar keeps only what a thumb needs. */
         :root {
-            --ap-col: 760px;
+            --ap-col: 1120px;
             --topbar-h: 64px;
             /* Old names some views still read inline. */
             --apple-blue: var(--ui-blue);
@@ -79,7 +79,7 @@
         .ap-main { min-height: 100vh; display: flex; flex-direction: column; background: var(--ui-ground); }
         .ap-topbar {
             position: sticky; top: 0; z-index: 900; flex-shrink: 0;
-            height: var(--topbar-h); padding: 0 max(16px, calc((100vw - var(--ap-col)) / 2 - 120px));
+            height: var(--topbar-h); padding: 0 max(16px, calc((100% - var(--ap-col)) / 2));
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             background: var(--ui-navy-900); color: #fff;
         }
@@ -127,7 +127,7 @@
         .ap-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
         .ap-footer-panel-body { max-height: 240px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
         .ap-footer { padding: 20px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); font-size: 0.875rem; color: var(--ui-muted); }
-        .ap-footer-copy { margin-bottom: 12px; text-align: center; }
+        .ap-footer-copy { max-width: var(--ap-col); margin: 0 auto 12px; }
         .ap-footer-brand { font-weight: 700; color: var(--ui-text); }
         .ap-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; max-width: var(--ap-col); margin: 0 auto; }
         .ap-footer-menu-rows { flex: 1; }

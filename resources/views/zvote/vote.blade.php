@@ -8,7 +8,18 @@
 
 <style>
     /* The lot page: one decision, made once, then its record. */
-    .lot-page { max-width: 640px; margin: 0 auto; }
+    /* Same column as the rest of the portal. With room, the record sits left
+       and what to do with it (code, slip) sits right; on a phone, one column. */
+    .lot-grid { display: grid; gap: 16px; align-items: start; }
+    .lot-grid > * > .ap-card { margin-bottom: 16px; }
+    .lot-side .text-center { text-align: center; }
+    .lot-split { display: grid; gap: 8px 40px; }
+    @media (min-width: 992px) {
+        .lot-grid { grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); gap: 24px; }
+        .lot-side { position: sticky; top: calc(var(--topbar-h) + 24px); }
+        .lot-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; }
+        .lot-split .lot-rules { margin-bottom: 0; }
+    }
     .lot-page .ui-stepper { margin: 4px 0 24px; }
     .lot-page .ui-stepper .label { font-size: 0.9rem; }
     @media (max-width: 576px) { .lot-page .ap-detail-row.align-items-center { align-items: flex-start !important; } .lot-page .lot-where { text-align: left; } }
@@ -75,6 +86,8 @@
 
     @if($hasVoted ?? false)
         {{-- Already voted --}}
+        <div class="lot-grid">
+        <div class="lot-main">
         <div class="ap-card ap-card-body-lg mb-3">
             <div class="lot-done-head">
                 <div class="lot-done-icon" aria-hidden="true"><i class="bi bi-check-lg"></i></div>
@@ -134,7 +147,9 @@
                 </div>
             @endif
         </div>
+        </div>
 
+        <aside class="lot-side">
         @if(isset($assignedPlot) && $assignedPlot)
             {{-- The check-in code, so a participant can be checked in from their
                  phone without printing anything — see User::icHash(). --}}
@@ -175,10 +190,13 @@
                 <i class="bi bi-arrow-left" aria-hidden="true"></i>Back to Dashboard
             </a>
         </div>
+        </aside>
+        </div>
 
     @else
         {{-- Vote form --}}
-        <div class="ap-card ap-card-body-lg mb-3">
+        <div class="ap-card ap-card-body-lg mb-3 lot-split">
+            <div>
             <div class="lot-fact">
                 <span class="lot-fact-label">Allocated Lot Category</span>
                 @if($code === 'NOT SET' || ! $code)
@@ -209,7 +227,9 @@
                     <span>You do not choose which lot, and you can only confirm once.</span>
                 </li>
             </ul>
+            </div>
 
+            <div>
             <form action="{{ route('zvote.submit', $event) }}" method="POST">
                 @csrf
 
@@ -238,6 +258,7 @@
                     {{ $event->polling_deadline?->format('d M Y, h:i A') ?? 'Not set' }}
                     &middot; Your lot is final once confirmed.</span>
             </p>
+            </div>
         </div>
     @endif
 </div>
