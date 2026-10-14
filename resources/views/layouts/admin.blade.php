@@ -500,6 +500,12 @@
                     'match' => ['admin.companies.*'],
                 ],
                 [
+                    'label' => 'Reports',
+                    'icon'  => 'download',
+                    'route' => 'admin.reports.index',
+                    'match' => ['admin.reports.*'],
+                ],
+                [
                     'label' => 'Announcements',
                     'icon'  => 'megaphone',
                     'route' => 'admin.announcements.index',

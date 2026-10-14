@@ -8,6 +8,7 @@ use App\Http\Controllers\Admin\EntRegistrationController;
 use App\Http\Controllers\Admin\EventController;
 use App\Http\Controllers\Admin\PlotPainterController;
 use App\Http\Controllers\Admin\PollingController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\DevAutoLoginController;
@@ -169,6 +170,15 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
         });
         Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+
+        /* CSV exports. Every admin; a state admin's are narrowed to their zone. */
+        Route::prefix('reports')->name('reports.')->group(function () {
+            Route::get('/', [ReportController::class, 'index'])->name('index');
+            Route::get('registrations', [ReportController::class, 'registrations'])->name('registrations');
+            Route::get('companies', [ReportController::class, 'companies'])->name('companies');
+            Route::get('event-summary', [ReportController::class, 'eventSummary'])->name('event-summary');
+            Route::get('lot-draw', [ReportController::class, 'lotDraw'])->name('lot-draw');
+        });
 
         /* The audit trail: read-only, super and hq. */
         Route::middleware('can:read-audit-trail')->group(function () {

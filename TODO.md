@@ -219,8 +219,10 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       dalam `routes/console.php`. Buka automatik melalui `PollingGuard`, sama
       seperti butang. `config/app.php` kini `Asia/Kuala_Lumpur` — pada UTC
       draw yang ditaip 09:00 akan dibuka 17:00
-- [ ] Laporan & Eksport — `Admin/ReportController`.
-      **Buang lajur City** (ia membaca premis, yang tidak dibawa)
+- [x] Laporan & Eksport — `Admin/ReportController`, ditulis semula ringkas: senarai
+      cabutan, keputusan lot, syarikat, ringkasan acara. Tiada lajur City, status
+      atau no. pendaftaran (tiada dalam skema). Pengawal formula dan skop zon
+      dikekalkan; BOM UTF-8 supaya Excel membaca nama dengan betul
 - [ ] Kalendar acara — ~280 baris **di dalam** `EventController` dan
       `ZeventController` `daftar`, bukan fail berasingan.
       Route kalendar mesti berada **di atas** `Route::resource('events')`
