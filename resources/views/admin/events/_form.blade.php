@@ -4,7 +4,7 @@
     WHAT IS DELIBERATELY NOT HERE. `polling_status`, `use_preset`,
     `draw_animation` and `total_plots` belong to the draw, which has its own
     screen; `total_plots` is computed from the plan and would be a lie if typed.
-    `colour` is a calendar tint and there is no calendar yet.
+    `colour` is the calendar tint: CalendarPalette::EVENT_COLOURS.
 
     Expects:
       $event  — the Event being edited, or a new one
@@ -101,6 +101,17 @@
             <label class="mac-label" for="max_participants">Maximum participants</label>
             <input type="number" id="max_participants" name="max_participants" class="mac-form-control"
                    value="{{ $value('max_participants', 100) }}" min="1" required>
+        </div>
+
+        <div class="col-md-6">
+            <label class="mac-label" for="colour">Calendar colour</label>
+            <select id="colour" name="colour" class="mac-select">
+                <option value="">By status</option>
+                @foreach(\App\Support\CalendarPalette::EVENT_COLOURS as $hex => $name)
+                    <option value="{{ $hex }}" @selected($value('colour') === $hex)>{{ $name }}</option>
+                @endforeach
+            </select>
+            <small class="mac-muted">Tells this event's bars apart when several run at once.</small>
         </div>
 
         <div class="col-12"><hr class="mac-divider"></div>

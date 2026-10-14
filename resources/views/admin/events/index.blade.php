@@ -14,11 +14,18 @@
             <p class="mac-muted mb-0">Every event, and how many companies are in each draw list.</p>
         </div>
 
-        @if($canManage)
-            <a href="{{ route('admin.events.create') }}" class="mac-btn-primary">
-                <i class="bi bi-plus-lg me-1"></i> New Event
+        <div class="d-flex gap-2">
+            {{-- The active filters travel with the switch, or the calendar shows a
+                 different result set from the list it came from. --}}
+            <a href="{{ route('admin.events.calendar', request()->only('search', 'status', 'state')) }}" class="mac-btn-secondary">
+                <i class="bi bi-calendar3 me-1"></i> Calendar
             </a>
-        @endif
+            @if($canManage)
+                <a href="{{ route('admin.events.create') }}" class="mac-btn-primary">
+                    <i class="bi bi-plus-lg me-1"></i> New Event
+                </a>
+            @endif
+        </div>
     </div>
 
     <form method="GET" class="mac-filter-bar mb-3">

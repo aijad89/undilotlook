@@ -223,9 +223,10 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       cabutan, keputusan lot, syarikat, ringkasan acara. Tiada lajur City, status
       atau no. pendaftaran (tiada dalam skema). Pengawal formula dan skop zon
       dikekalkan; BOM UTF-8 supaya Excel membaca nama dengan betul
-- [ ] Kalendar acara — ~280 baris **di dalam** `EventController` dan
-      `ZeventController` `daftar`, bukan fail berasingan.
-      Route kalendar mesti berada **di atas** `Route::resource('events')`
+- [x] Kalendar acara — admin sahaja (`events.calendar`, `events.calendar-data`),
+      skop dan penapis sama seperti senarai. Palet ialah pemalar, bukan Settings
+      (tiada skrin untuknya). Medan warna acara pada borang. Tiada kalendar
+      peserta: peserta tidak melayari acara di sini
 - [ ] Halaman awam — senarai acara, menu footer, pautan sosial,
       `layouts/public.blade.php`
 - [x] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja.

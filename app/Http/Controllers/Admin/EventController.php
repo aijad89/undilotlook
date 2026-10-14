@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Support\AdminZones;
+use App\Support\CalendarPalette;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -48,6 +49,85 @@ class EventController extends Controller
             'events' => $events,
             'canManage' => $admin->canManageEvents(),
         ]);
+    }
+
+    /** The same events as the list, on a month grid. */
+    public function calendar()
+    {
+        return view('admin.events.calendar', ['palette' => CalendarPalette::PALETTE]);
+    }
+
+    /**
+     * The calendar's feed: each event, its registration window and its voting
+     * window, as three bars. Same filters and the same scope as index(), so the
+     * list and the calendar show one result set.
+     */
+    public function calendarData(Request $request)
+    {
+        $admin = $request->user('admin');
+
+        $events = Event::query()
+            ->when($request->input('search'), fn ($q, $search) => $q->where(
+                fn ($w) => $w->where('title', 'like', "%{$search}%")->orWhere('location', 'like', "%{$search}%")
+            ))
+            ->when($request->input('status'), fn ($q, $status) => $q->where('status', $status))
+            ->when($request->input('state'), fn ($q, $state) => $q->where('state', $state))
+            ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('status', '!=', 'draft'))
+            ->get();
+
+        $palette = CalendarPalette::PALETTE;
+
+        return response()->json($events->flatMap(function (Event $event) use ($palette) {
+            $colour = CalendarPalette::forEvent($event);
+            $own = $event->colour !== null;
+            $link = route('admin.events.registrations.index', $event);
+
+            $bars = [[
+                'id' => 'event-'.$event->id,
+                'title' => $event->title,
+                'start' => $event->start_date->toDateString(),
+                // FullCalendar's end is exclusive.
+                'end' => $event->end_date->copy()->addDay()->toDateString(),
+                'color' => $colour,
+                'url' => $link,
+                'extendedProps' => ['status' => $event->status, 'location' => $event->location],
+            ]];
+
+            // A normal bar rather than a background tint, so concurrent windows
+            // stack on their own labelled rows instead of compounding into one
+            // darker patch that names nobody.
+            if ($event->registration_open_at && $event->registration_close_at) {
+                $bars[] = [
+                    'id' => 'reg-'.$event->id,
+                    'title' => 'Registration: '.$event->title,
+                    'start' => $event->registration_open_at->toDateString(),
+                    'end' => $event->registration_close_at->copy()->addDay()->toDateString(),
+                    'classNames' => ['reg-window'],
+                    'backgroundColor' => $own ? CalendarPalette::tint($colour) : $palette['registration_fill'],
+                    'borderColor' => $own ? $colour : $palette['registration_border'],
+                    'textColor' => $own ? $colour : $palette['registration_text'],
+                    'url' => $link,
+                    'extendedProps' => [
+                        'type' => 'registration', 'eventTitle' => $event->title,
+                        'location' => $event->location, 'status' => $event->status,
+                    ],
+                ];
+            }
+
+            if ($event->polling_start_date && $event->polling_deadline) {
+                $bars[] = [
+                    'id' => 'poll-'.$event->id,
+                    'title' => 'Voting: '.$event->title,
+                    'start' => $event->polling_start_date->toDateString(),
+                    'end' => $event->polling_deadline->copy()->addDay()->toDateString(),
+                    'color' => $palette['polling'],
+                    'url' => route('admin.polling.show', $event),
+                    'extendedProps' => ['type' => 'polling'],
+                ];
+            }
+
+            return $bars;
+        })->values());
     }
 
     public function create()
@@ -156,6 +236,7 @@ class EventController extends Controller
 
             'status' => ['required', Rule::in(array_keys(Event::STATUSES))],
             'max_participants' => ['required', 'integer', 'min:1'],
+            'colour' => ['nullable', Rule::in(array_keys(CalendarPalette::EVENT_COLOURS))],
             'banner' => ['nullable', 'image', 'mimes:jpeg,png,jpg,webp', 'max:2048'],
         ]);
 

@@ -90,6 +90,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
          * writes are gated.
          */
         Route::get('events', [EventController::class, 'index'])->name('events.index');
+        // Above events/{event}/…, so "calendar" is never read as an event id.
+        Route::get('events/calendar', [EventController::class, 'calendar'])->name('events.calendar');
+        Route::get('events/calendar/data', [EventController::class, 'calendarData'])->name('events.calendar-data');
 
         Route::middleware('can:manage-events')->group(function () {
             Route::get('events/create', [EventController::class, 'create'])->name('events.create');
