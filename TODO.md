@@ -135,11 +135,25 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 
 *Siap apabila:* satu cabutan penuh berjalan hujung ke hujung.
 
-- [ ] Salin `app/Services/LotAllocator.php` dan `PlotAllocationAlgorithm.php`
+- [x] Salin `app/Services/LotAllocator.php` dan `PlotAllocationAlgorithm.php`
       — **ingat ia dalam `Services/`, bukan `Support/`**
-- [ ] Salin `app/Exceptions/LotUnavailable.php` — mod kegagalan kongsi kedua-dua
-- [ ] Salin `app/Support/PollingGuard.php`
-- [ ] Model `Plot`, `PlotSize`, `BidangAllocation`, `PresetAllocation`, `Poll`
+- [x] Salin `app/Exceptions/LotUnavailable.php` — mod kegagalan kongsi kedua-dua
+- [x] Salin `app/Support/PollingGuard.php`
+- [x] Model `Plot`, `PlotSize`, `BidangAllocation`, `PresetAllocation`, `Poll`.
+      Factory untuk `Plot` dan `PlotSize`; yang lain bila ujian memerlukannya
+- [x] Ujian: `OneRuleSeatsEveryoneTest`, `ADrawOpensOnlyIfItCanFinishTest` —
+      setiap peraturan disahkan gagal bila dibuang
+
+**Berbeza daripada `daftar`, dengan sengaja:**
+
+- Pemadanan ialah **string**: `event_registrations.code` = `kraf_bidangs.code`
+  pada plot. `daftar` telah beralih ke `kraf_bidang_id`; skema ini tidak
+- Tiada tapisan `status = 'committee_approved'` — setiap baris ialah peserta
+- `LotUnavailable::noAccount()` dan semakan guard `missingAccounts` — baharu.
+  Syarikat boleh berada dalam cabutan sebelum akaunnya wujud, dan
+  `polls.user_id` NOT NULL akan menggagalkan seluruh larian pukal
+- Pembantu `PlotSize` yang tiada pemanggil (`isFullyAllocated`,
+  `remaining_quantity`, `display_name`) tidak disalin
 - [ ] `Admin/PollingController` — pembina pelan (`savePlan()`, pemadanan
       (lokasi, saiz)), jana plot, buka/tutup polling, keputusan, assign unvoted
   - [ ] Bawa tiga penulisan `AuditTrail` tangan: `plan_rewrite`, `plan_cleared`,
