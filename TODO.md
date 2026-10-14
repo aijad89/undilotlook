@@ -246,12 +246,16 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 
 ## Sebelum pejabat menyentuhnya
 
-- [ ] **Jalankan satu cabutan penuh dengan tangan**: cipta acara → cipta 3
+- [x] **Jalankan satu cabutan penuh dengan tangan**: cipta acara → cipta 3
       syarikat dengan akaun dan kod kraf berbeza → bina pelan dua lokasi dua
       saiz → buka polling → log masuk sebagai tiga pengguna dan tarik → tutup →
-      keputusan dan PDF sepadan
-- [ ] Jalankan baseline migration pada MySQL **dan** SQLite dan bandingkan
-      jenis lajur
+      keputusan dan PDF sepadan. *Dijalankan 2026-10-14 dalam pelayar pada
+      `undilot.test` / MySQL ("Pameran Ujian Kedua"): ketiga-tiga menarik sendiri,
+      setiap satu pada kod sendiri, slip sepadan dengan pangkalan data.* Pejabat
+      masih patut menjalankannya sendiri sekali sebelum data sebenar
+- [x] Jalankan baseline migration pada MySQL **dan** SQLite dan bandingkan
+      jenis lajur — 29 jadual, 242 lajur, tiada percanggahan jenis atau
+      nullable; tiada lajur `enum`
 
 ---
 

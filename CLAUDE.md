@@ -226,6 +226,13 @@ untuk Playwright. **Node tidak diperlukan pada produksi.**
 menggunakan kedua-duanya. View auth membawa rupa tersendiri — jangan kenakan
 kelas `mac`/`ap` padanya.
 
+### Zon waktu ialah `Asia/Kuala_Lumpur`, dalam `config/app.php`
+
+Admin menaip tetingkap cabutan dalam waktu tempatan dan ia disimpan seperti
+ditaip. `now()` mesti pada jam yang sama, atau scheduler membuka cabutan 09:00
+pada 17:00 — rangka Laravel datang dengan UTC, dan undilot berjalan begitu
+sehingga larian pelayar pertama menunjukkan "Confirmed On" lapan jam awal.
+
 ### `SESSION_DRIVER` mesti `database`
 
 `NewPasswordController::logOutOtherDevices()` mengusir dengan memadam baris
@@ -258,8 +265,27 @@ Empat perkara menggigit setiap kali:
 
 ```
 vendor/pestphp/pest/bin/pest              # SQLite dalam-memori
-npx playwright test                        # bila suite pelayar wujud
+npx playwright test                        # MySQL undilot_e2e, melalui tests/e2e/serve.js
 ```
+
+### Suite pelayar memiliki persekitarannya sendiri
+
+`tests/e2e/serve.js` menulis `.env.e2e` (dari `.env` + `tests/e2e/env.js`),
+menetapkan semula `undilot_e2e`, dan menghidupkan pelayan **serta** pekerja queue.
+Jangan jalankan suite terhadap pelayan yang dihidupkan dengan tangan.
+
+`.env.e2e` itu **fail**, bukan pemboleh ubah proses, dengan sebab yang diukur:
+`artisan serve` hanya meneruskan senarai pemboleh ubah tertentu kepada anaknya.
+`APP_ENV` lepas, `DB_DATABASE` tidak — larian pertama menghidang pangkalan data
+**dev**. `fixtures/run.php` menolak sebarang pangkalan data yang bukan `*_e2e`.
+
+Log masuk dalam spec melalui `/auto` (berdaftar dalam `local`, `testing`, `e2e`
+sahaja) — tiada kata laluan ditaip. `@playwright/test` dipin pada versi yang
+sepadan dengan Chromium dalam cache; menaikkannya bermakna memuat turun pelayar.
+
+Hanya MySQL boleh menguji dua transaksi bertindih. `03-concurrent-confirm`
+membuktikan kunci pada `LotAllocator`; ia disahkan gagal bila
+`lockForUpdate()` dibuang.
 
 `RefreshDatabase` dikenakan pada `Feature` tetapi **bukan** `Regression`. Ujian
 yang perlu menanam keadaan yang skema larang — `plot_id` tergantung, dengan
