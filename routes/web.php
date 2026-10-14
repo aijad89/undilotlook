@@ -64,9 +64,10 @@ Route::get('/announcements/{announcement}/{kind}', [NotificationController::clas
 
 /*
  * An authentication bypass by design, so it is registered on a developer's
- * machine and in the suite, and nowhere else. The controller checks again.
+ * machine and in the two suites (`testing`, `e2e`), and nowhere else. The
+ * controller checks again.
  */
-if (app()->environment(['local', 'testing'])) {
+if (app()->environment(['local', 'testing', 'e2e'])) {
     Route::get('/auto', [DevAutoLoginController::class, 'index'])->name('dev.auto');
     Route::post('/auto/admin/{admin}', [DevAutoLoginController::class, 'loginAdmin'])->name('dev.auto.admin');
     Route::post('/auto/user/{user}', [DevAutoLoginController::class, 'loginUser'])->name('dev.auto.user');

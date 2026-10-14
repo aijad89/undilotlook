@@ -184,19 +184,17 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 
 ### Ujian Fasa 3
 
-- [ ] Dua pengguna menarik serentak tidak boleh mendapat lot yang sama —
-      **belum diuji**. `submit()` mengunci baris pendaftaran dan
-      `inRandomOrder()->lockForUpdate()` mengunci plot, tetapi SQLite dalam satu
-      proses tidak boleh menghasilkan dua permintaan bertindih. Perlu ujian pada
-      MySQL dengan dua sambungan
+- [x] Dua pengguna menarik serentak tidak boleh mendapat lot yang sama —
+      `tests/e2e/03-concurrent-confirm.spec.js`, dua proses PHP pada MySQL. Disahkan
+      gagal bila `lockForUpdate()` dibuang (kedua-duanya mendapat lot yang sama)
 - [x] Pengguna tidak boleh menarik dua kali — `AParticipantConfirmsTheirLotTest`
 - [x] ~~Penulisan semula pelan mengosongkan `plot_id`~~ — tidak berlaku: penulisan
       semula ditolak sebaik satu lot dipegang (`planIsFrozen()`), jadi tiada
       `plot_id` untuk dikosongkan
 - [x] Plot preset yang hilang memberi ralat yang boleh dibaca —
       `OneRuleSeatsEveryoneTest` (`preset_missing`)
-- [ ] Penetapan merentas kategori bertanya dahulu — `confirm()` dalam pelayar;
-      menunggu suite Playwright
+- [x] Penetapan merentas kategori bertanya dahulu, dan menyimpan pada OK —
+      `tests/e2e/02-lot-draw.spec.js`
 - [x] Satu cabutan penuh hujung ke hujung melalui skrin —
       `AParticipantConfirmsTheirLotTest`
 
@@ -234,9 +232,15 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       kini terikat pada borangnya sendiri, bukan borang Sign Out
 - [x] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja.
       Pintu ber-flag `daftar` untuk pelayan dev tidak dibawa
-- [ ] Suite Playwright — `tests/e2e/serve.js`, `helpers.js`, `fixtures/run.php`,
-      `fixtures/seed.js`, `playwright.config.js`. Bawa `acceptDialog()` /
-      `strayAlerts()` **dari hari pertama**
+- [x] Suite Playwright — `tests/e2e/serve.js`, `env.js`, `helpers.js`,
+      `fixtures/run.php`, `fixtures/seed.js`, `playwright.config.js`.
+      `acceptDialog()` / `strayAlerts()` dari hari pertama; log masuk melalui
+      `/auto` (dibenarkan dalam `e2e`), tiada kata laluan. `retries: 1`,
+      `trace: 'on-first-retry'`. Tiga larian penuh: 12/12, **flaky 0** setiap kali.
+      `@playwright/test` dipin pada 1.61.1 — versi Chromium 1228 yang ada.
+      **`serve.js` menulis `.env.e2e`**: `artisan serve` hanya meneruskan senarai
+      pemboleh ubah tertentu kepada anaknya, jadi larian pertama menghidang pangkalan
+      data DEV (tiada apa ditulis — setiap spec berhenti pada log masuk)
 
 ---
 

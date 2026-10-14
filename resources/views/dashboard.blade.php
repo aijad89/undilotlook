@@ -51,8 +51,10 @@
                 <span class="ap-badge ap-badge-green">Lot disahkan</span>
             @elseif($open)
                 Cabutan dibuka sehingga {{ $event->polling_deadline->format('d M Y, h:i A') }}.
-            @elseif($event->polling_status === 'draft')
+            @elseif($event->polling_status === 'draft' && $event->polling_start_date)
                 Cabutan dibuka {{ $event->polling_start_date->format('d M Y, h:i A') }}.
+            @elseif($event->polling_status === 'draft')
+                Anda dalam senarai cabutan. Tarikh cabutan lot belum ditetapkan.
             @elseif($entry->plot)
                 Lot anda: <strong>{{ $entry->plot->plot_code }}</strong>
             @else

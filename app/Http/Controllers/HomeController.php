@@ -35,9 +35,10 @@ class HomeController extends Controller
      * The participant's own dashboard: every draw their company is in, and what
      * is left to do in each.
      *
-     * A draw still in draft shows only once it has a voting window — a date is
-     * "not yet", where an empty page reads as "you have nothing". Cancelled draws
-     * do not show. How many lots exist stays withheld, as on the vote page.
+     * Every draw list the company is on shows, even before a voting window is
+     * set: an empty page reads as "you are in nothing", which is false the moment
+     * the office adds them. Cancelled draws do not show. How many lots exist stays
+     * withheld, as on the vote page.
      */
     public function dashboard(Request $request)
     {
@@ -46,9 +47,9 @@ class HomeController extends Controller
         $entries = $user->registrations()
             ->with(['event', 'plot.plotSize'])
             ->get()
-            ->filter(fn ($r) => $r->event->polling_status !== 'cancelled'
-                && ($r->event->polling_status !== 'draft' || $r->event->polling_start_date))
-            ->sortBy(fn ($r) => $r->event->polling_start_date)
+            ->reject(fn ($r) => $r->event->polling_status === 'cancelled')
+            // Dated windows first, soonest first; undated ones after.
+            ->sortBy(fn ($r) => $r->event->polling_start_date?->timestamp ?? PHP_INT_MAX)
             ->values();
 
         return view('dashboard', [

@@ -147,19 +147,21 @@ it('refuses Confirm when the draw is not open, past its deadline, or the code is
 it('lists every draw on the dashboard with what is left to do in each', function () {
     $open = openDraw(['title' => 'Open Fair']);
     $soon = openDraw(['title' => 'Coming Fair', 'polling_status' => 'draft', 'polling_start_date' => now()->addWeek()]);
-    $hidden = openDraw(['title' => 'Planning Fair', 'polling_status' => 'draft', 'polling_start_date' => null]);
+    $planning = openDraw(['title' => 'Planning Fair', 'polling_status' => 'draft', 'polling_start_date' => null]);
+    $cancelled = openDraw(['title' => 'Called Off Fair', 'polling_status' => 'cancelled']);
 
     $company = Company::factory()->create();
-    foreach ([$open, $soon, $hidden] as $event) {
+    foreach ([$open, $soon, $planning, $cancelled] as $event) {
         inDraw($event, 'RKP', ['company_id' => $company->id, 'user_id' => $company->user_id]);
     }
 
+    // On the list but undated is still "you are in this draw", never an empty page.
     $this->actingAs($company->user)->get(route('dashboard'))
         ->assertOk()
-        ->assertSee('Open Fair')
+        ->assertSeeInOrder(['Open Fair', 'Coming Fair', 'Planning Fair'])
         ->assertSee(route('zvote.index', $open))
-        ->assertSee('Coming Fair')
-        ->assertDontSee('Planning Fair');
+        ->assertSee('Tarikh cabutan lot belum ditetapkan')
+        ->assertDontSee('Called Off Fair');
 });
 
 /* ── One whole draw ─────────────────────────────────────────────────────── */

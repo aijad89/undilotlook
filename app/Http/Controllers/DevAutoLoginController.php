@@ -15,13 +15,15 @@ use Illuminate\Support\Facades\Log;
  * On any real host this is a complete authentication bypass, so it exists on a
  * developer's machine and nowhere else — and it is fenced twice:
  *
- *   1. routes/web.php registers these routes only in `local` and `testing`, so
- *      elsewhere the URL does not exist at all.
+ *   1. routes/web.php registers these routes only in `local`, `testing` and
+ *      `e2e`, so elsewhere the URL does not exist at all.
  *   2. Every action re-checks, because route registration is easy to break in
  *      a refactor and a guard beside the dangerous code is not.
  *
- * `testing` sits beside `local` so the suite can reach the guard at all. It
- * aborts 404, not 403: a production host should not confirm the route exists.
+ * `testing` sits beside `local` so the Pest suite can reach the guard at all,
+ * and `e2e` so the browser suite signs in without a password ever being typed.
+ * Both are this machine. It aborts 404, not 403: a production host should not
+ * confirm the route exists.
  *
  * `daftar` also opened this on its dev server behind a flag and an IP list.
  * That door is not carried: undilot's /auto is for this machine only.
@@ -36,7 +38,7 @@ class DevAutoLoginController extends Controller
 
     private function ensureLocal(): void
     {
-        abort_unless(app()->environment(['local', 'testing']), 404);
+        abort_unless(app()->environment(['local', 'testing', 'e2e']), 404);
     }
 
     public function index()
