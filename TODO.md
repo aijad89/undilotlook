@@ -6,276 +6,100 @@ Sumber utama untuk disalin: **`f:\herd\daftar`**. Baca
 `CLAUDE.md` › *"Bila menyalin daripada `daftar`"* dahulu — empat perkara di situ
 menggigit setiap kali.
 
----
-
-## Siap
-
-**Fasa 1 — rangka yang berjalan.** `141d023`
-
-- Laravel 12.69.3, PHP `^8.4`, tiada langkah bina
-- Skema penuh dalam satu migration, 27 jadual, lulus pada MySQL **dan** SQLite
-- Dua guard, kedua-dua log masuk, lupa/reset kata laluan
-- Dua layout dengan nav dipacu data
-- `Admin`, `User`, `Company`, `Setting`, `AuditTrail`, `FooterMenu`, `SocialLink`
-- `AdminSeeder` (kata laluan dari `.env`, tiada default)
-- Pest: **11 lulus**
+**Keadaan pada 2026-10-14:** Fasa 1–4 siap. Kod ada di
+`https://github.com/aijad89/undilot` (peribadi, cawangan `main`). Belum ada di
+pelayan. Pest 113 lulus (SQLite); Playwright 12/12, flaky 0, tiga larian (MySQL).
+Senarai semak penuh setiap fasa ada dalam sejarah git fail ini.
 
 ---
 
-## Fasa 2 — data cabutan
+## Seterusnya — deploy ke devundilot
 
-*Siap apabila:* admin boleh cipta acara, cipta syarikat dengan akaun penggunanya,
-pilih kategori kraf, dan letak syarikat ke dalam senarai cabutan dengan kod dan
-saiz gerai.
+**Belum diputuskan bagaimana kod sampai ke pelayan.** Pemilik akan memilih cara
+sendiri; jangan mula tanpa bertanya. Fakta yang sudah disahkan 2026-10-14:
 
-### 2.1 Support yang disalin dahulu
+| | |
+|---|---|
+| Hos | `devundilot.kraftangan.gov.my` → `192.168.2.101` |
+| Yang dihidang sekarang | **`daftar`**, di akar domain, dari `/var/www/html/undilot/daftar` |
+| SSH | `administrator`, kata laluan sahaja — kunci mesin ini **tidak** dibenarkan; sudo perlukan kata laluan |
+| Nama yang sudah diambil `daftar` | `/etc/cron.d/undilot`, `undilot-queue.service` — undilot perlukan nama lain |
+| PHP pada kotak | `/usr/bin/php8.5` (menurut `daftar/DEPLOY.md` §5.7) |
+| Repo | peribadi — kotak perlukan kelayakan untuk `git pull` (cadangan: deploy key baca-sahaja) |
 
-Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
+**Calon yang dibincang:** undilot di `https://devundilot.kraftangan.gov.my/undilotnew`,
+bersebelahan `daftar` yang kekal di akar tanpa diubah. Jika itu dipilih:
 
-- [x] `EventVisibility.php` — **gerbang skop negeri**. Diperlukan oleh setiap
-      controller admin di bawah. Ujiannya menunggu model `Event` (2.2/2.4)
-- [x] `AdminZones.php` — zon pejabat. `ZonesCarryTheirRowsWhenRenamedTest`
-      menahan `rename()` dan `isInUse()`
-- [x] `PlotSizes.php` — senarai saiz gerai
-- [x] `KrafPicker.php` — pemilih hierarki kraf. Tapisan senarai kategori ditukar
-      kepada `whereNull('code')`; `daftar` guna `pecahan_bidang`, yang betul
-      hanya kerana datanya kebetulan sejajar
-- [x] `partials/zone-options.blade.php` — pasangan view untuk `AdminZones`
+- Apache `Alias /undilotnew` ke `public/` undilot, dengan peraturan rewrite dalam
+  `<Directory>` vhost (`AllowOverride None`). **`.htaccess` Laravel tiada
+  `RewriteBase`**, jadi di bawah Alias ia tidak berfungsi sendiri
+- `.env` undilot: `APP_URL` dengan laluan, `SESSION_COOKIE` sendiri,
+  `SESSION_PATH=/undilotnew` — atau log masuk ke satu aplikasi melog keluar yang lain
+- Kod sudah selamat-subpath: tiada pautan akar keras; ubah hala log masuk/keluar
+  menggunakan nama route (`59e1d0c`)
+- DB `undilot` + pengguna DB yang hanya menyentuhnya; `migrate --seed` (kod kraf +
+  admin pertama dari `ADMIN_SEED_*`, kata laluan ditaip pemilik sendiri)
+- Cron dan unit queue dengan nama baharu; **jangan** guna crontab `www-data`
+  (milik `dsi`)
+- Sandaran DB dan vhost dahulu; `apache2ctl configtest` sebelum reload
+- `/auto` **tiada** di pelayan (hanya `local`/`testing`/`e2e`) — penguji perlukan akaun sebenar
 
-**Tidak disalin — tiada lajur untuk disuap dalam skema ini:**
+Langkah 1 sentiasa baca-sahaja: vhost semasa, modul Apache/PHP, sambungan PHP,
+`composer`, nama cron/servis yang ada, cara `daftar` menarik dari GitHub.
 
-- `RegistrationStates.php` + `partials/state-options.blade.php` — senarai
-  geografi. Penggunanya dalam `daftar` ialah `company_premises.state` (jadual
-  itu tiada di sini) dan `events.state` (di sini ia **zon**, salah satu daripada
-  tiga lajur yang `AdminZones::rename()` tulis). Salin bila ada lajur tempat
-  sebenar
-- `RejectionReasons.php` + `partials/rejection-reason-options.blade.php` — tiada
-  aliran tolak di sini: kewujudan baris pendaftaran ialah kelulusannya, dan
-  tiada lajur `notes`/`reason` dalam skema
-
-### 2.2 Model
-
-- [x] `Event` — `use Auditable`. Const `STATUSES` dan `POLLING_STATUSES`
-      (**bukan** enum lajur). Relasi: `registrations`, `plotSizes`,
-      `bidangAllocations`, `plots`, `polls`, `presetAllocations`.
-      `collectDeletionCounts()` guna query builder, bukan relasi, supaya ia
-      berfungsi sebelum model Fasa 3 wujud
-- [x] `EventRegistration` — `use Auditable`. Tiada `polls()`, tiada `status`,
-      tiada hook: kewujudan baris ialah kelulusannya
-- [x] `KrafBidang`, `KrafSubBidang`, `KrafPengelasan`, `KrafProduk`, `CompanyKraf`.
-      `KrafBidang::categories()` / `::codes()` ialah cara menyatakan separuh mana
-- [x] Tambah pada `Company`: relasi **`eventRegistrations()`** dan
-      **`krafSelections()`**
-- [x] Factory untuk setiap satu, **menamakan setiap lajur** — termasuk
-      `CompanyFactory` yang sebelum ini tiada
-- [x] Ujian: `TheTwoCraftListsStayApartTest`, `AnEventDeleteSaysWhatTheCascadeTookTest`
-
-**Dibetulkan sambil lalu:**
-
-- Komen `company_krafs.bidang_id` dalam migration baseline berkata ia memegang
-  separuh **berkod**. Ia salah: `bidang_id` ialah separuh **kategori** (sama
-  dengan `kraf_sub_bidangs.bidang_id`, yang membuat pasangan itu konsisten).
-  Dalam `daftar` 277/277 baris mengesahkannya. Komen dibetulkan
-- `KrafPicker` dipangkas kepada dua aras. `daftar` menyimpan pengelasan dan
-  produk per pilihan melalui dua jadual pivot (`company_kraf_pengelasan`,
-  `company_kraf_produk`); kedua-duanya tiada dalam skema ini
-
-**Perangkap yang ditemui, dan bagaimana ia ditutup:**
-
-- Memadam acara mencetuskan **dua** cascade (`events` → `event_registrations`,
-  `events` → `plots`) sedangkan `event_registrations.plot_id` ialah `NO ACTION`.
-  Diuji 2026-10-14: **kedua-dua** MySQL dan SQLite memadam dengan bersih tanpa
-  pengawal — tiada perlanggaran hari ini. `EventController::destroy()` tetap
-  mengosongkan `plot_id` dahulu kerana tiada pemacu menjanjikan susunan. Tiada
-  ujian untuknya: ujian yang tidak boleh gagal pada mana-mana pemacu bukan ujian
-- Memadam baris `kraf_bidangs` / `kraf_sub_bidangs` cascade tanpa baris audit.
-  Ditutup dengan **menolak**, bukan dengan `auditDeletionSummary()`:
-  `SettingController` memadam hanya bila tiada apa menunjuk kepadanya (setiap FK
-  hidup diperiksa terhadap `information_schema`). `kraf_pengelasan` tertinggal
-  daripada semakan sub-kategori — ditambah. `CraftRowsInUseRefuseToDeleteTest`
-- Padam baris kraf yang **tidak** digunakan masih tidak diaudit (`KrafBidang`
-  tiada `Auditable`). Tambah bila seseorang bertanya siapa memadam sesuatu kod
-
-### 2.3 Skrin admin
-
-- [x] **Acara** — `Admin/EventController`, tanpa kalendar buat masa ini.
-      Senarai, cipta, sunting, padam
-- [x] **Syarikat** — `Admin/CompanyController`. Senarai, cipta, sunting, padam
-  - [x] **Cipta akaun pengguna dari borang yang sama** — satu syarikat satu
-        pengguna. Borang itu juga memegang toggle aktif/tidak dan reset kata
-        laluan *(keputusan 29b)*
-  - [x] ~~`Rule::unique` pada `user_id`~~ — tiada borang menghantar `user_id`;
-        akaun sentiasa dicipta baharu. Mesej boleh baca datang daripada
-        `Rule::unique('users', 'email')`
-  - [x] Bahagian pemilihan kategori kraf —
-        `admin/companies/partials/kraf-section.blade.php`
-- [x] **Senarai cabutan acara** — dari `Admin/EntRegistrationController`.
-      Tambah/buang syarikat, tetapkan kod kraf, saiz gerai, operasi pukal, undo
-- [x] **Settings › Dropdown Lists** — kod kraf, hierarki kraf, saiz gerai,
-      zon (negeri tidak — lihat 2.1). Setiap query mesti menyatakan separuh mana `kraf_bidangs` yang
-      dimaksudkan
-- [x] Tambah entri ke `$nav` dalam `layouts/admin.blade.php` — Senarai cabutan
-      dicapai dari halaman acara, bukan nav
-- **Skop negeri diubah 2026-10-14:** peraturan own-state `daftar` dibuang daripada
-  `EventVisibility`. Admin negeri melihat setiap acara bukan draf, kerana pejabat
-  yang mengisi senarai cabutan; baris di dalamnya kekal ditapis mengikut zon
-
-### 2.4 Ujian Fasa 2
-
-- [x] Skop negeri: admin negeri melihat syarikat negerinya sahaja, dan **tidak
-      boleh** mencapai yang lain melalui URL yang ditaip
-- [x] Satu syarikat satu pengguna, dikuatkuasakan pada kedua-dua lapisan
-- [x] Saringan dua senarai `kraf_bidangs` — kategori tidak muncul dalam senarai
-      kod dan sebaliknya
-- [x] `Company` yang memegang lot menolak padam
-
----
-
-## Fasa 3 — cabutan itu sendiri
-
-*Siap apabila:* satu cabutan penuh berjalan hujung ke hujung.
-
-- [x] Salin `app/Services/LotAllocator.php` dan `PlotAllocationAlgorithm.php`
-      — **ingat ia dalam `Services/`, bukan `Support/`**
-- [x] Salin `app/Exceptions/LotUnavailable.php` — mod kegagalan kongsi kedua-dua
-- [x] Salin `app/Support/PollingGuard.php`
-- [x] Model `Plot`, `PlotSize`, `BidangAllocation`, `PresetAllocation`, `Poll`.
-      Factory untuk `Plot` dan `PlotSize`; yang lain bila ujian memerlukannya
-- [x] Ujian: `OneRuleSeatsEveryoneTest`, `ADrawOpensOnlyIfItCanFinishTest` —
-      setiap peraturan disahkan gagal bila dibuang
-
-**Berbeza daripada `daftar`, dengan sengaja:**
-
-- Pemadanan ialah **string**: `event_registrations.code` = `kraf_bidangs.code`
-  pada plot. `daftar` telah beralih ke `kraf_bidang_id`; skema ini tidak
-- Tiada tapisan `status = 'committee_approved'` — setiap baris ialah peserta
-- `LotUnavailable::noAccount()` dan semakan guard `missingAccounts` — baharu.
-  Syarikat boleh berada dalam cabutan sebelum akaunnya wujud, dan
-  `polls.user_id` NOT NULL akan menggagalkan seluruh larian pukal
-- Pembantu `PlotSize` yang tiada pemanggil (`isFullyAllocated`,
-  `remaining_quantity`, `display_name`) tidak disalin
-- [x] `Admin/PollingController` — pembina pelan (`savePlan()`, pemadanan
-      (lokasi, saiz)), jana plot, buka/tutup polling, keputusan, assign unvoted.
-      Partial pelan disalin; `show` ditulis semula ringkas (empat tab, bukan
-      1,714 baris). Ujian: `TheLotPlanBuildsWhatItSaysTest`
-  - [x] Bawa tiga penulisan `AuditTrail` tangan: `plan_rewrite`, `plan_cleared`,
-        `plots_generated`
-  - Berbeza daripada `daftar`: `validateBidangIds()` menerima **kod** sahaja
-    (id kategori membina plot yang tiada pendaftaran boleh padan); `update()`
-    tidak lagi menulis tajuk acara; cabang "pulihkan preset" dalam `update()`
-    dibuang — `planIsFrozen()` sudah menolak sebarang lot dipegang, jadi ia
-    tidak pernah berjalan; `completed` ditolak selagi ada yang belum duduk;
-    dropdown status pada borang sunting (yang `update()` abaikan) diganti
-    paparan baca sahaja
-- [x] `Admin/PlotPainterController` — `admin.polling.paint`, dipaut dari tab Plan.
-      Kod sahaja boleh dicat (sama seperti pelan bertaip); petak dan cip kini
-      `<button>` supaya papan kekunci boleh mencapainya. Ujian:
-      `PaintingCodesOntoPlotsTest`
-- [x] Penetapan awal (preset assign) — dalam `PollingController`, dengan
-      pengesahan pelayar bila merentas kod
-- [x] Sisi pengguna — `LotDrawController` (`show`, `submit`), bukan
-      `EventRegistrationController`: tiada pendaftaran kendiri di sini, jadi
-      tiada apa lagi untuk controller itu pegang. Nama route `zvote.*` dikekalkan.
-      `zvote/vote.blade.php` dan `lot-reveal` disalin; butang slip PDF dibuang
-      sehingga PDF wujud (Fasa 4), pautan `profile` diganti ayat
-- [x] ~~Entri `$apNav`~~ — dashboard peserta menyenaraikan setiap cabutan dan
-      memaut ke lotnya; halaman lot menyalakan entri Dashboard. `zvote.dashboard`
-      `daftar` tidak disalin
-
-### Ujian Fasa 3
-
-- [x] Dua pengguna menarik serentak tidak boleh mendapat lot yang sama —
-      `tests/e2e/03-concurrent-confirm.spec.js`, dua proses PHP pada MySQL. Disahkan
-      gagal bila `lockForUpdate()` dibuang (kedua-duanya mendapat lot yang sama)
-- [x] Pengguna tidak boleh menarik dua kali — `AParticipantConfirmsTheirLotTest`
-- [x] ~~Penulisan semula pelan mengosongkan `plot_id`~~ — tidak berlaku: penulisan
-      semula ditolak sebaik satu lot dipegang (`planIsFrozen()`), jadi tiada
-      `plot_id` untuk dikosongkan
-- [x] Plot preset yang hilang memberi ralat yang boleh dibaca —
-      `OneRuleSeatsEveryoneTest` (`preset_missing`)
-- [x] Penetapan merentas kategori bertanya dahulu, dan menyimpan pada OK —
-      `tests/e2e/02-lot-draw.spec.js`
-- [x] Satu cabutan penuh hujung ke hujung melalui skrin —
-      `AParticipantConfirmsTheirLotTest`
-
----
-
-## Fasa 4 — sekeliling
-
-- [x] PDF keputusan lot — `pdf/lot-result.blade.php`, `zvote.slip`. Seksyen imej
-      produk, sijil dan OKU dibuang (tiada data itu di sini). Font subsetting
-      dihidupkan: satu halaman 880 KB → 30 KB
-- [x] Skrin audit trail — `Admin/AuditTrailController`, super/hq. Kiraan
-      `plot_sizes` pada `plan_rewrite` kini dibetulkan selepas simpan: pasangan
-      (lokasi, saiz) yang dikekalkan tidak lagi dilaporkan sebagai dipadam
-- [x] Pengumuman + `VotingCloseReminder` + queue worker. Satu kelas
-      `AnnouncementNotification` menggantikan tiga salinan `daftar`. Peti masuk
-      peserta + loceng; fail sepanduk/lampiran dari cakera peribadi, hanya kepada
-      yang dicapai. Pekerja queue tempatan: butang pada `/auto`. Pada pelayan:
-      `undilot-queue.service` — sebahagian daripada Deploy
-- [x] Scheduler: `events:update-statuses`, `voting:send-reminder`, dijadualkan
-      dalam `routes/console.php`. Buka automatik melalui `PollingGuard`, sama
-      seperti butang. `config/app.php` kini `Asia/Kuala_Lumpur` — pada UTC
-      draw yang ditaip 09:00 akan dibuka 17:00
-- [x] Laporan & Eksport — `Admin/ReportController`, ditulis semula ringkas: senarai
-      cabutan, keputusan lot, syarikat, ringkasan acara. Tiada lajur City, status
-      atau no. pendaftaran (tiada dalam skema). Pengawal formula dan skop zon
-      dikekalkan; BOM UTF-8 supaya Excel membaca nama dengan betul
-- [x] Kalendar acara — admin sahaja (`events.calendar`, `events.calendar-data`),
-      skop dan penapis sama seperti senarai. Palet ialah pemalar, bukan Settings
-      (tiada skrin untuknya). Medan warna acara pada borang. Tiada kalendar
-      peserta: peserta tidak melayari acara di sini
-- [x] Halaman awam — `/` ialah senarai acara diterbitkan (ditulis semula ringkas:
-      tiada pendaftaran sendiri, tiada kiraan lot), `layouts/public.blade.php`,
-      halaman footer dan pautan sosial dengan skrin admin (super/hq). Ikon SVG
-      ditolak — boleh membawa skrip pada origin ini. Penyegerak editor footer
-      kini terikat pada borangnya sendiri, bukan borang Sign Out
-- [x] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja.
-      Pintu ber-flag `daftar` untuk pelayan dev tidak dibawa
-- [x] Suite Playwright — `tests/e2e/serve.js`, `env.js`, `helpers.js`,
-      `fixtures/run.php`, `fixtures/seed.js`, `playwright.config.js`.
-      `acceptDialog()` / `strayAlerts()` dari hari pertama; log masuk melalui
-      `/auto` (dibenarkan dalam `e2e`), tiada kata laluan. `retries: 1`,
-      `trace: 'on-first-retry'`. Tiga larian penuh: 12/12, **flaky 0** setiap kali.
-      `@playwright/test` dipin pada 1.61.1 — versi Chromium 1228 yang ada.
-      **`serve.js` menulis `.env.e2e`**: `artisan serve` hanya meneruskan senarai
-      pemboleh ubah tertentu kepada anaknya, jadi larian pertama menghidang pangkalan
-      data DEV (tiada apa ditulis — setiap spec berhenti pada log masuk)
+Prosedur `daftar` sebagai rujukan: `f:\herd\daftar\DEPLOY.md` §5.7.
 
 ---
 
 ## Sebelum pejabat menyentuhnya
 
-- [x] **Jalankan satu cabutan penuh dengan tangan**: cipta acara → cipta 3
-      syarikat dengan akaun dan kod kraf berbeza → bina pelan dua lokasi dua
-      saiz → buka polling → log masuk sebagai tiga pengguna dan tarik → tutup →
-      keputusan dan PDF sepadan. *Dijalankan 2026-10-14 dalam pelayar pada
-      `undilot.test` / MySQL ("Pameran Ujian Kedua"): ketiga-tiga menarik sendiri,
-      setiap satu pada kod sendiri, slip sepadan dengan pangkalan data.* Pejabat
-      masih patut menjalankannya sendiri sekali sebelum data sebenar
-- [x] Jalankan baseline migration pada MySQL **dan** SQLite dan bandingkan
-      jenis lajur — 29 jadual, 242 lajur, tiada percanggahan jenis atau
-      nullable; tiada lajur `enum`
+- [ ] Pejabat menjalankan satu cabutan penuh **sendiri** — agen sudah melakukannya
+      dalam pelayar (2026-10-14, "Pameran Ujian Kedua"), tetapi bukan pengguna sebenar
+- [ ] Pangkalan data dev `undilot` mengandungi data ujian agen (dua cabutan,
+      syarikat `@ujian.test`, satu pengumuman, satu halaman footer, satu pautan
+      sosial). Tanya pemilik sebelum `migrate:fresh` — ia juga memadam apa yang
+      pemilik tambah sendiri
 
 ---
 
-## Deploy
+## Diketahui, belum dibuat — dengan sengaja
 
-Belum dibuat. Rancangan:
+- Senarai Acara memaparkan kiraan pendaftaran **semua** zon kepada admin negeri.
+  Satu baris untuk menskopkannya, jika ditanya
+- Padam baris kraf yang **tidak** digunakan tidak diaudit (`KrafBidang` tiada
+  `Auditable`). Tambah bila seseorang bertanya siapa memadam sesuatu kod
+- Bahasa bercampur: halaman lot dan slip PDF dalam Inggeris (disalin dari
+  `daftar`), dashboard dan halaman awam dalam Melayu. Satukan bila pejabat memilih
+- Palet kalendar ialah pemalar — tiada skrin untuk mengubahnya
+- Projek `mobile-chrome` Playwright `daftar` tidak dibawa; suite hanya Chromium desktop
 
-- Folder baharu `/var/www/html/undilot/undilot` pada devundilot
-  (`192.168.2.101`). **`daftar` pada `/var/www/html/undilot/daftar` tidak
-  disentuh**
-- DB `undilot`
-- `git pull` terus pada kotak; tiada bina, tiada artifak
-- Artisan berjalan sebagai `www-data`; git dan composer di bawah `sudo` biasa
-  (pokok kerja milik root)
-- `/etc/cron.d/undilot` untuk scheduler, `undilot-queue.service` untuk worker
-  — kedua-duanya hanya selepas Fasa 4
-- **Jangan** tambah entri crontab `www-data`: crontab itu milik `dsi`, aplikasi
-  lain pada kotak yang sama, dan pendua itu tidak kelihatan kepada `crontab -l`
+---
 
-Prosedur penuh `daftar` ada dalam `f:\herd\daftar\DEPLOY.md` §5.7.
+## Siap
+
+| Fasa | Commit | Ringkas |
+|---|---|---|
+| 1 | `141d023` | Dua guard, skema dalam satu migration, layout dipacu data |
+| 2 | `4cb0127`, `9f59709` | Model, acara, syarikat + akaun, senarai cabutan, Settings |
+| 3 | `18d482e`–`7fc57ec` | `LotAllocator`, `PollingGuard`, skrin cabutan, Confirm peserta, plot painter |
+| 4 | `539467f`–`5f72e6a` | PDF slip, scheduler, pengumuman, audit trail, laporan CSV, kalendar, halaman awam, Playwright |
+| Semak | `dfe65b2` | Cabutan penuh dalam pelayar; 242 lajur sama pada MySQL dan SQLite, tiada `enum` |
+
+**Berbeza daripada `daftar`, dengan sengaja** (sebab penuh dalam mesej commit):
+
+- Skop negeri: tiada peraturan *own-state* — admin negeri melihat setiap acara
+  bukan draf, kerana pejabat yang mengisi senarai cabutan
+- Kod dipadankan sebagai **string** (`event_registrations.code` = `kraf_bidangs.code`)
+- Peruntukan dan cat plot menerima **kod** sahaja, bukan kategori
+- Setiap lokasi menamakan saiz untuk plot lebihannya (`daftar` membinanya tanpa
+  saiz — tidak pernah boleh dimenangi)
+- `LotUnavailable::noAccount()` — syarikat tanpa akaun ditolak dengan nama, bukan
+  menggagalkan seluruh larian pukal
+- `completed` ditolak selagi ada yang belum mendapat lot
+- Satu `AnnouncementNotification` menggantikan tiga salinan
+- Ikon sosial SVG ditolak; IC 12 digit disimpan bersengkang
+- Zon waktu `Asia/Kuala_Lumpur`
+- Dashboard peserta menyenaraikan cabutan walaupun tarikhnya belum ditetapkan
 
 ---
 
@@ -291,11 +115,13 @@ Prosedur penuh `daftar` ada dalam `f:\herd\daftar\DEPLOY.md` §5.7.
 | Auto buka/tutup polling | **Dikehendaki.** `daftar` mematikannya 2026-08-13; undilot mahukannya |
 | Hierarki kraf | Dibawa penuh, termasuk pilihan kraf syarikat |
 | Audit trail | Dibawa |
+| `daftar` | Kekal di mesin ini dan di GitHub. Tidak disentuh |
 
 ### Ditinggalkan daripada `daftar`, dengan sengaja
 
 Imej produk + moderasi · Katalog awam · Dokumen pendaftaran · Bayaran dan
 pengecualian · Premis syarikat · Profil syarikat pengguna (sijil, staf, OKU,
-anugerah, media sosial, bank) · Survey · FAQ · PDF pendaftaran
+anugerah, media sosial, bank) · Survey · FAQ · PDF pendaftaran · Kalendar peserta
+· Pintu `/auto` ber-flag untuk pelayan
 
 Semuanya masih ada dalam `daftar` kalau diperlukan kemudian.
