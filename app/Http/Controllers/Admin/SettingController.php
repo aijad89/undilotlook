@@ -282,6 +282,7 @@ class SettingController extends Controller
     public function destroySubBidang(KrafSubBidang $subBidang)
     {
         $counts = collect([
+            'classifications' => DB::table('kraf_pengelasan')->where('sub_bidang_id', $subBidang->id)->count(),
             'company selections' => DB::table('company_krafs')->where('sub_bidang_id', $subBidang->id)->count(),
             'plots' => DB::table('plots')->where('sub_bidang_id', $subBidang->id)->count(),
             'plan allocations' => DB::table('bidang_allocations')->where('sub_bidang_id', $subBidang->id)->count(),

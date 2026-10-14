@@ -80,47 +80,54 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
   produk per pilihan melalui dua jadual pivot (`company_kraf_pengelasan`,
   `company_kraf_produk`); kedua-duanya tiada dalam skema ini
 
-**Perangkap yang ditemui, belum ditangani:**
+**Perangkap yang ditemui, dan bagaimana ia ditutup:**
 
-- Memadam acara mencetuskan **dua** cascade yang berlanggar: `events` →
-  `event_registrations` (CASCADE) dan `events` → `plots` (CASCADE), sedangkan
-  `event_registrations.plot_id` ialah `NO ACTION`. Jika pangkalan data memadam
-  `plots` dahulu, DELETE itu gagal. `EventController::destroy()` (2.3) mesti
-  mengosongkan `plot_id` dahulu — sama seperti penulisan semula pelan
-- Memadam satu baris `kraf_bidangs` cascade ke enam jadual (`company_krafs`,
-  `kraf_sub_bidangs`, `kraf_produks`, `plots`, `preset_allocations`,
-  `bidang_allocations`) dan **tidak meninggalkan satu pun baris audit**. Bila
-  skrin Dropdown Lists dibina (2.3), `KrafBidang` perlu `use Auditable` dengan
-  `auditDeletionSummary()`
+- Memadam acara mencetuskan **dua** cascade (`events` → `event_registrations`,
+  `events` → `plots`) sedangkan `event_registrations.plot_id` ialah `NO ACTION`.
+  Diuji 2026-10-14: **kedua-dua** MySQL dan SQLite memadam dengan bersih tanpa
+  pengawal — tiada perlanggaran hari ini. `EventController::destroy()` tetap
+  mengosongkan `plot_id` dahulu kerana tiada pemacu menjanjikan susunan. Tiada
+  ujian untuknya: ujian yang tidak boleh gagal pada mana-mana pemacu bukan ujian
+- Memadam baris `kraf_bidangs` / `kraf_sub_bidangs` cascade tanpa baris audit.
+  Ditutup dengan **menolak**, bukan dengan `auditDeletionSummary()`:
+  `SettingController` memadam hanya bila tiada apa menunjuk kepadanya (setiap FK
+  hidup diperiksa terhadap `information_schema`). `kraf_pengelasan` tertinggal
+  daripada semakan sub-kategori — ditambah. `CraftRowsInUseRefuseToDeleteTest`
+- Padam baris kraf yang **tidak** digunakan masih tidak diaudit (`KrafBidang`
+  tiada `Auditable`). Tambah bila seseorang bertanya siapa memadam sesuatu kod
 
 ### 2.3 Skrin admin
 
-- [ ] **Acara** — `Admin/EventController`, tanpa kalendar buat masa ini.
+- [x] **Acara** — `Admin/EventController`, tanpa kalendar buat masa ini.
       Senarai, cipta, sunting, padam
-- [ ] **Syarikat** — `Admin/CompanyController`. Senarai, cipta, sunting, padam
-  - [ ] **Cipta akaun pengguna dari borang yang sama** — satu syarikat satu
+- [x] **Syarikat** — `Admin/CompanyController`. Senarai, cipta, sunting, padam
+  - [x] **Cipta akaun pengguna dari borang yang sama** — satu syarikat satu
         pengguna. Borang itu juga memegang toggle aktif/tidak dan reset kata
         laluan *(keputusan 29b)*
-  - [ ] `CompanyController::store()` mesti mengesahkan `user_id` dengan
-        `Rule::unique` **selain** indeks unik — mesej yang boleh dibaca, bukan
-        ralat pangkalan data
-  - [ ] Bahagian pemilihan kategori kraf —
+  - [x] ~~`Rule::unique` pada `user_id`~~ — tiada borang menghantar `user_id`;
+        akaun sentiasa dicipta baharu. Mesej boleh baca datang daripada
+        `Rule::unique('users', 'email')`
+  - [x] Bahagian pemilihan kategori kraf —
         `admin/companies/partials/kraf-section.blade.php`
-- [ ] **Senarai cabutan acara** — dari `Admin/EntRegistrationController`.
+- [x] **Senarai cabutan acara** — dari `Admin/EntRegistrationController`.
       Tambah/buang syarikat, tetapkan kod kraf, saiz gerai, operasi pukal, undo
-- [ ] **Settings › Dropdown Lists** — kod kraf, hierarki kraf, saiz gerai, negeri,
-      zon. Setiap query mesti menyatakan separuh mana `kraf_bidangs` yang
+- [x] **Settings › Dropdown Lists** — kod kraf, hierarki kraf, saiz gerai,
+      zon (negeri tidak — lihat 2.1). Setiap query mesti menyatakan separuh mana `kraf_bidangs` yang
       dimaksudkan
-- [ ] Tambah empat entri ke `$nav` dalam `layouts/admin.blade.php`
+- [x] Tambah entri ke `$nav` dalam `layouts/admin.blade.php` — Senarai cabutan
+      dicapai dari halaman acara, bukan nav
+- **Skop negeri diubah 2026-10-14:** peraturan own-state `daftar` dibuang daripada
+  `EventVisibility`. Admin negeri melihat setiap acara bukan draf, kerana pejabat
+  yang mengisi senarai cabutan; baris di dalamnya kekal ditapis mengikut zon
 
 ### 2.4 Ujian Fasa 2
 
-- [ ] Skop negeri: admin negeri melihat syarikat negerinya sahaja, dan **tidak
+- [x] Skop negeri: admin negeri melihat syarikat negerinya sahaja, dan **tidak
       boleh** mencapai yang lain melalui URL yang ditaip
-- [ ] Satu syarikat satu pengguna, dikuatkuasakan pada kedua-dua lapisan
-- [ ] Saringan dua senarai `kraf_bidangs` — kategori tidak muncul dalam senarai
+- [x] Satu syarikat satu pengguna, dikuatkuasakan pada kedua-dua lapisan
+- [x] Saringan dua senarai `kraf_bidangs` — kategori tidak muncul dalam senarai
       kod dan sebaliknya
-- [ ] `Company` yang memegang lot menolak padam
+- [x] `Company` yang memegang lot menolak padam
 
 ---
 
