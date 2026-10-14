@@ -35,7 +35,7 @@ it('signs a participant in and lands them on their dashboard', function () {
     $this->post('/login', [
         'email' => $user->email,
         'password' => 'kraf1234',
-    ])->assertRedirect('/');
+    ])->assertRedirect(route('dashboard'));   // not '/', which is the public event list
 
     expect(auth('web')->check())->toBeTrue()
         ->and(auth('admin')->check())->toBeFalse();

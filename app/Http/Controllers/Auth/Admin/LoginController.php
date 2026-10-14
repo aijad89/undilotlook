@@ -20,7 +20,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended('/admin/dashboard');
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function logout(Request $request)
@@ -28,6 +28,6 @@ class LoginController extends Controller
         Auth::guard('admin')->logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        return redirect('/admin/login');
+        return redirect()->route('admin.login');
     }
 }

@@ -21,13 +21,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
         $request->session()->regenerate();
 
-        // intended('/'), not '/'. The auth middleware stores the URL a guest was
-        // bounced from; without intended() it is stored and never read, so a
-        // participant who followed a link to an event or to the draw while
-        // logged out lands on the home page with no way back but to find the
-        // link again. '/' stays the fallback for a direct visit to the login
-        // page.
-        return redirect()->intended('/');
+        // intended(), not a plain redirect. The auth middleware stores the URL a
+        // guest was bounced from; without intended() it is stored and never
+        // read, so a participant who followed a link to the draw while logged
+        // out lands somewhere else with no way back but to find the link again.
+        // The dashboard is the fallback for a direct visit to the login page —
+        // named, not '/': '/' is the public event list.
+        return redirect()->intended(route('dashboard'));
     }
 
     public function destroy(Request $request): RedirectResponse
@@ -36,8 +36,8 @@ class AuthenticatedSessionController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // Always '/', never intended(): logging out is not a bounce, and the
+        // Always home, never intended(): logging out is not a bounce, and the
         // session has just been invalidated anyway.
-        return redirect('/');
+        return redirect()->route('home');
     }
 }
