@@ -7,7 +7,7 @@
 
 <div class="mac-page">
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.announcements.index') }}">Announcements</a> / {{ $announcement->title }}
+        <a href="{{ route('admin.announcements.index') }}">Announcements</a> <span class="sep" aria-hidden="true">›</span> {{ $announcement->title }}
     </div>
 
     <div class="mac-header mb-4">

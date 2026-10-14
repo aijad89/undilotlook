@@ -68,7 +68,7 @@
                             </td>
                             <td>
                                 <a href="{{ $link->url }}" target="_blank" rel="noopener"
-                                   style="font-size:0.8rem;color:#3B82F6;text-decoration:none;word-break:break-all;">
+                                   style="font-size:0.8rem;color:var(--ui-blue-text);text-decoration:none;word-break:break-all;">
                                     {{ Str::limit($link->url, 50) }}
                                 </a>
                             </td>
@@ -129,5 +129,5 @@
 @endpush
 
 @push('styles')
-<style>.sortable-ghost { opacity:0.4; background:rgba(217,119,6,0.06); }</style>
+<style>.sortable-ghost { opacity:0.4; background:var(--ui-blue-tint); }</style>
 @endpush

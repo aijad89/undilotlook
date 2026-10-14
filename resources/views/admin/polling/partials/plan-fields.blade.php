@@ -101,8 +101,8 @@
         $sizeAllocated = $allocsForSize->sum(fn ($a) => (int) ($a['plots_count'] ?? 0));
         $sizeRemaining = $sizeQty - $sizeAllocated;
     @endphp
-    <div class="plot-size-row mb-3" data-size-idx="{{ $psIndex }}" style="border:1px solid rgba(60,60,67,0.12);border-radius:12px;overflow:hidden;">
-        <div class="p-3 px-4" style="background:rgba(0,0,0,0.02);">
+    <div class="plot-size-row mb-3" data-size-idx="{{ $psIndex }}" style="border:1px solid var(--ui-border);border-radius:12px;overflow:hidden;">
+        <div class="p-3 px-4" style="background:var(--ui-surface-2);">
             <div class="row g-2 align-items-end">
                 <div class="col-md-5">
                     <label class="mac-label">Location <span class="text-danger">*</span></label>
@@ -125,10 +125,10 @@
                 </div>
             </div>
         </div>
-        <div class="bidang-sub-container p-3" style="border-top:1px solid rgba(60,60,67,0.08);background:rgba(0,113,227,0.015);">
+        <div class="bidang-sub-container p-3" style="border-top:1px solid var(--ui-sep);background:var(--ui-surface-2);">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex align-items-center gap-2">
-                    <small class="fw-semibold" style="color:#374151;">Bidang Allocations</small>
+                    <small class="fw-semibold" style="color:var(--ui-text-2);">Bidang Allocations</small>
                     <span class="size-remaining-badge mac-badge {{ $sizeRemaining === 0 ? 'mac-badge-green' : ($sizeRemaining < 0 ? 'mac-badge-red' : 'mac-badge-gray') }}">
                         {{ $sizeRemaining === 0 ? 'All allocated ✓' : ($sizeRemaining < 0 ? 'Over by '.abs($sizeRemaining) : $sizeRemaining.' remaining') }}
                     </span>
@@ -146,7 +146,7 @@
                             fn ($group) => $group->contains('id', (int) ($alloc['bidang_id'] ?? 0))
                         ) ?: null;
                     @endphp
-                    <div class="bidang-allocation-row mb-2 p-2" style="background:rgba(255,255,255,0.7);border-radius:8px;border:1px solid rgba(60,60,67,0.1);">
+                    <div class="bidang-allocation-row mb-2 p-2" style="background:var(--ui-surface);border-radius:8px;border:1px solid var(--ui-border);">
                         <input type="hidden" name="bidang_allocations[{{ $baIdx }}][plot_size_index]" value="{{ $psIndex }}" class="bidang-size-index">
                         {{-- The allocation id used to be posted here, for savePlan()'s
                              isset($alloc['id']) arm. That arm never ran — no rule names the key,

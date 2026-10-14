@@ -9,7 +9,7 @@
     @include('partials.admin-alerts')
 
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.announcements.index') }}">Announcements</a> / New
+        <a href="{{ route('admin.announcements.index') }}">Announcements</a> <span class="sep" aria-hidden="true">›</span> New
     </div>
 
     <div class="mac-header mb-4">

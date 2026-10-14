@@ -85,10 +85,10 @@
 .ap-btn-primary:hover { background: var(--ui-blue-hover); color: #fff; }
 .ap-btn-primary:active { background: var(--ui-blue-press); }
 .ap-btn-secondary { background: var(--ui-surface); color: var(--ui-text); border-color: var(--ui-border-strong); box-shadow: var(--ui-shadow-1); }
-.ap-btn-secondary:hover { background: var(--ui-surface-2); color: var(--ui-text); border-color: #a9b4c3; }
-.ap-btn-outline { background: var(--ui-surface); color: var(--ui-blue-text); border-color: #9db8ef; }
+.ap-btn-secondary:hover { background: var(--ui-surface-2); color: var(--ui-text); border-color: var(--ui-border-hover); }
+.ap-btn-outline { background: var(--ui-surface); color: var(--ui-blue-text); border-color: var(--ui-blue-border-2); }
 .ap-btn-outline:hover { background: var(--ui-blue-tint); color: var(--ui-blue-press); border-color: var(--ui-blue); }
-.ap-btn-danger { background: var(--ui-surface); color: var(--ui-bad-text); border-color: #f1b8a8; }
+.ap-btn-danger { background: var(--ui-surface); color: var(--ui-bad-text); border-color: var(--ui-bad-border-2); }
 .ap-btn-danger:hover { background: var(--ui-bad); color: #fff; border-color: var(--ui-bad); }
 .ap-btn-success { background: var(--ui-ok); color: #fff; }
 .ap-btn-success:hover { background: var(--ui-ok-text); color: #fff; }
@@ -103,7 +103,7 @@
     color: var(--ui-text); font-size: 1rem; outline: none; appearance: none; -webkit-appearance: none;
     transition: border-color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
 }
-.ap-input:hover, .ap-select:hover, .ap-textarea:hover { border-color: #a9b4c3; }
+.ap-input:hover, .ap-select:hover, .ap-textarea:hover { border-color: var(--ui-border-hover); }
 .ap-input:focus, .ap-select:focus, .ap-textarea:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
 .ap-input::placeholder, .ap-textarea::placeholder { color: var(--ui-muted); }
 .ap-label { display: block; margin-bottom: 6px; font-size: 0.95rem; font-weight: 600; color: var(--ui-text-2); }
@@ -138,13 +138,13 @@
 /* ── Alerts ────────────────────────────────────────── */
 .ap-alert { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding: 14px 16px; border: 1px solid transparent; border-radius: var(--ui-r-lg); font-size: 1rem; line-height: 1.5; }
 .ap-alert-icon { flex-shrink: 0; margin-top: 2px; font-size: 1.15rem; }
-.ap-alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
-.ap-alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
-.ap-alert-warning { background: var(--ui-warn-tint); border-color: #f3d29a; color: var(--ui-warn-text); }
-.ap-alert-info { background: var(--ui-blue-tint); border-color: #c4d5f8; color: var(--ui-blue-text); }
+.ap-alert-success { background: var(--ui-ok-tint); border-color: var(--ui-ok-border); color: var(--ui-ok-text); }
+.ap-alert-danger { background: var(--ui-bad-tint); border-color: var(--ui-bad-border); color: var(--ui-bad-text); }
+.ap-alert-warning { background: var(--ui-warn-tint); border-color: var(--ui-warn-border); color: var(--ui-warn-text); }
+.ap-alert-info { background: var(--ui-blue-tint); border-color: var(--ui-info-border); color: var(--ui-blue-text); }
 .ap-page .alert, .ap-card .alert { display: flex; align-items: flex-start; gap: 10px; border: 1px solid transparent; border-radius: var(--ui-r-lg); font-size: 1rem; line-height: 1.5; padding: 14px 44px 14px 16px; }
-.ap-page .alert-success, .ap-card .alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
-.ap-page .alert-danger, .ap-card .alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
+.ap-page .alert-success, .ap-card .alert-success { background: var(--ui-ok-tint); border-color: var(--ui-ok-border); color: var(--ui-ok-text); }
+.ap-page .alert-danger, .ap-card .alert-danger { background: var(--ui-bad-tint); border-color: var(--ui-bad-border); color: var(--ui-bad-text); }
 
 /* ── Section title, divider, empty ─────────────────── */
 .ap-section-head { margin: 36px 0 12px; }
@@ -216,7 +216,7 @@
 .ap-draw-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: start; }
 .ap-draw-grid > .ap-draw { margin: 0 !important; }
 .ap-draw-lot-link { gap: 8px; border-color: var(--ui-gold) !important; background: var(--ui-gold-tint) !important; color: var(--ui-gold-text) !important; font-size: 1.05rem; }
-.ap-draw-lot-link:hover { background: #fbe7bd !important; }
+.ap-draw-lot-link:hover { background: var(--ui-gold-tint-2) !important; }
 .ap-draw-lot-link i { color: var(--ui-gold); }
 
 @media (max-width: 576px) {

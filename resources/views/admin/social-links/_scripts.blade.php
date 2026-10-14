@@ -48,7 +48,7 @@
 
     function handleDrop(e) {
         e.preventDefault();
-        document.getElementById('uploadZone').style.borderColor = 'rgba(0,0,0,0.15)';
+        document.getElementById('uploadZone').style.borderColor = 'var(--ui-border-strong)';
         const file = e.dataTransfer.files[0];
         if (!file) return;
         const dt   = new DataTransfer();

@@ -5,32 +5,36 @@
 @include('partials.mac-styles')
 
 <style>
-    /* ── FullCalendar overrides for mac-style ── */
-    .fc .fc-toolbar-title { font-size: 1rem; font-weight: 700; color: #1d1d1f; }
+    /* ── FullCalendar on the shared tokens ── */
+    .fc { --fc-border-color: var(--ui-sep); --fc-today-bg-color: var(--ui-blue-tint); --fc-page-bg-color: var(--ui-surface); --fc-neutral-bg-color: var(--ui-surface-2); --fc-list-event-hover-bg-color: var(--ui-neutral-tint); }
+    .fc .fc-toolbar-title { font-size: 1.1rem; font-weight: 700; color: var(--ui-text); }
     .fc .fc-button {
-        background: rgba(0,0,0,0.04) !important;
-        border: 1px solid rgba(0,0,0,0.08) !important;
-        color: #374151 !important;
-        font-size: 0.82rem !important;
+        min-height: 36px;
+        background: var(--ui-surface) !important;
+        border: 1px solid var(--ui-border-strong) !important;
+        color: var(--ui-text-2) !important;
+        font-size: 0.85rem !important;
         font-weight: 600 !important;
-        border-radius: 8px !important;
+        border-radius: var(--ui-r) !important;
         box-shadow: none !important;
         padding: 5px 12px !important;
+        text-transform: capitalize;
     }
-    .fc .fc-button:hover { background: rgba(0,0,0,0.08) !important; }
+    .fc .fc-button:hover { background: var(--ui-neutral-tint) !important; color: var(--ui-text) !important; }
+    .fc .fc-button:focus-visible { box-shadow: var(--ui-focus-ring) !important; }
     .fc .fc-button-active,
     .fc .fc-button-primary:not(:disabled).fc-button-active {
-        background: #D97706 !important;
-        border-color: #D97706 !important;
+        background: var(--ui-navy-900) !important;
+        border-color: var(--ui-navy-900) !important;
         color: #fff !important;
     }
-    .fc .fc-daygrid-day-number { color: #374151; font-size: 0.82rem; }
-    .fc .fc-day-today .fc-daygrid-day-number { color: #D97706; font-weight: 700; }
-    .fc .fc-day-today { background: rgba(217,119,6,0.04) !important; }
+    .fc .fc-daygrid-day-number { color: var(--ui-text-2); font-size: 0.85rem; text-decoration: none; }
+    .fc .fc-day-today .fc-daygrid-day-number { color: var(--ui-blue-text); font-weight: 700; }
+    .fc .fc-day-other .fc-daygrid-day-number { color: var(--ui-muted); opacity: 0.6; }
     /* No `border: none !important` here — registration bars below rely on a border to read
        as an outlined band rather than a solid event chip. */
-    .fc-event { border-radius: 4px !important; font-size: 0.74rem; font-weight: 600; cursor: pointer; }
-    .fc .fc-col-header-cell-cushion { color: #6B7280; font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-decoration: none; }
+    .fc-event { border-radius: var(--ui-r-sm) !important; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
+    .fc .fc-col-header-cell-cushion { padding: 8px 4px; color: var(--ui-muted); font-size: 0.8rem; font-weight: 600; text-decoration: none; }
     .fc-daygrid-dot-event .fc-event-title { font-weight: 600; }
 
     /* Registration windows are normal (non-background) events, so FullCalendar lays
@@ -40,45 +44,59 @@
        line so a stack of them stays scannable. */
     .fc .fc-daygrid-event { padding: 1px 6px; margin-top: 2px; }
     .fc .fc-daygrid-event .fc-event-title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .fc .fc-daygrid-more-link { font-size: 0.72rem; font-weight: 700; color: #D97706; }
+    .fc .fc-daygrid-more-link { font-size: 0.75rem; font-weight: 700; color: var(--ui-blue-text); }
 
-    /* Registration bar reads as a timeline: green cap on the day registration OPENS, red cap
-       on the day it CLOSES, blue body in between. FullCalendar cuts a multi-week bar into one
+    /* Registration bar reads as a timeline: a cap on the day registration OPENS, another
+       on the day it CLOSES, the body in between. FullCalendar cuts a multi-week bar into one
        segment per week but marks only the genuine first and last segments with
        fc-event-start / fc-event-end, so the caps land on the real dates and the intervening
        weeks stay plain body. Side borders are cleared first so a mid-week segment shows no
-       stray cap. */
+       stray cap.
        !important is required, not lazy: FullCalendar writes the event's borderColor as an
        INLINE style on the element, and an inline declaration beats any stylesheet selector
-       no matter how specific — without it the caps silently render blue. */
+       no matter how specific — without it the caps silently render in the body colour. */
     .fc .reg-window { border-left: none !important; border-right: none !important; }
     .fc .reg-window.fc-event-start { border-left: 5px solid {{ $palette['registration_open_cap'] }} !important; }
     .fc .reg-window.fc-event-end   { border-right: 5px solid {{ $palette['registration_close_cap'] }} !important; }
 
     /* Legend */
-    .cal-legend { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid rgba(0,0,0,0.07); font-size: 0.77rem; color: #6B7280; }
+    .cal-legend { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ui-sep); font-size: 0.82rem; color: var(--ui-muted); }
     .cal-legend-item { display: flex; align-items: center; gap: 6px; }
+    .cal-legend-item .cal-legend-aside { color: var(--ui-muted); opacity: 0.8; }
     .cal-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
 
     /* Popup */
     #cal-popup {
         position: fixed;
         z-index: 9999;
-        background: #fff;
-        border: 1px solid rgba(0,0,0,0.09);
-        border-radius: 12px;
-        box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+        background: var(--ui-surface);
+        border: 1px solid var(--ui-border);
+        border-radius: var(--ui-r-lg);
+        box-shadow: var(--ui-shadow-pop);
         padding: 14px 16px;
         min-width: 240px;
         max-width: 300px;
         display: none;
     }
     #cal-popup.show { display: block; }
-    .pop-title { font-size: 0.9rem; font-weight: 700; color: #1d1d1f; margin-bottom: 7px; padding-right: 20px; }
-    .pop-meta  { font-size: 0.78rem; color: #6B7280; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .pop-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.7rem; font-weight: 700; margin-bottom: 8px; }
+    .pop-title { font-size: 0.95rem; font-weight: 700; color: var(--ui-text); margin-bottom: 7px; padding-right: 20px; }
+    .pop-meta  { font-size: 0.82rem; color: var(--ui-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .pop-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; margin-bottom: 8px; }
+    .pop-badge.is-open { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
+    .pop-badge.is-closed { background: var(--ui-bad-tint); color: var(--ui-bad-text); }
+    .pop-badge.is-completed { background: var(--ui-violet-tint); color: var(--ui-violet-text); }
+    .pop-badge.is-draft { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
     .pop-actions { margin-top: 10px; display: flex; gap: 7px; flex-wrap: wrap; }
-    .pop-close { position: absolute; top: 9px; right: 12px; background: none; border: none; font-size: 1.1rem; color: #9CA3AF; cursor: pointer; line-height: 1; }
+    .pop-close { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; background: none; border: none; border-radius: var(--ui-r-sm); font-size: 1.1rem; color: var(--ui-muted); cursor: pointer; line-height: 1; }
+    .pop-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+
+    /* A phone gets the toolbar in rows: title, then the arrows, then the views. */
+    @media (max-width: 767.98px) {
+        .fc .fc-toolbar.fc-header-toolbar { flex-wrap: wrap; gap: 8px; }
+        .fc .fc-toolbar-chunk:nth-child(2) { order: -1; width: 100%; text-align: center; }
+        .fc .fc-toolbar-title { font-size: 1.05rem; }
+        .fc .fc-col-header-cell-cushion { font-size: 0.72rem; }
+    }
 </style>
 
 <div class="mac-page">
@@ -146,7 +164,7 @@
                     <span style="width:16px;background:{{ $palette['registration_fill'] }};"></span>
                     <span style="width:4px;background:{{ $palette['registration_close_cap'] }};"></span>
                 </span>
-                Registration Window <span style="color:#9CA3AF;">(opens · closes)</span>
+                Registration Window <span class="cal-legend-aside">(opens · closes)</span>
             </div>
             <div class="cal-legend-item"><div class="cal-dot" style="background:{{ $palette['polling'] }};"></div> Voting window</div>
         </div>
@@ -184,11 +202,12 @@
         }
     });
 
+    // The colours live in the stylesheet (.pop-badge.is-*); this names the word.
     const statusColors = {
-        open:      { label: 'Published',      bg: 'rgba(34,197,94,0.12)',  color: '#15803D' },
-        closed:    { label: 'Unpublished',    bg: 'rgba(239,68,68,0.12)',  color: '#B91C1C' },
-        completed: { label: 'Ended', bg: 'rgba(139,92,246,0.12)', color: '#6D28D9' },
-        draft:     { label: 'Draft',     bg: 'rgba(156,163,175,0.15)', color: '#6B7280' },
+        open:      { label: 'Published' },
+        closed:    { label: 'Unpublished' },
+        completed: { label: 'Ended' },
+        draft:     { label: 'Draft' },
     };
 
     document.addEventListener('DOMContentLoaded', function () {
@@ -207,7 +226,12 @@
             // A day can carry several registration windows plus the event itself. Cap the
             // rows and let FullCalendar add its own "+N more" link (Google Calendar style)
             // rather than letting one busy day stretch the whole month grid.
-            dayMaxEvents: 3,
+            // On a phone the grid already grows to fit (height: 'auto'), and a "+N more"
+            // link does not fit a 50px day; show every bar there instead.
+            dayMaxEvents: window.matchMedia('(max-width: 767.98px)').matches ? false : 3,
+            // The grid grows to its rows instead of a fixed aspect ratio, which on a
+            // phone hid the last weeks inside the card.
+            height: 'auto',
             eventDidMount: function(info) {
                 // Bars are ellipsised when the name is too long for the cell, so keep the
                 // full label reachable on hover.
@@ -228,7 +252,8 @@
                 const start  = info.event.start;
                 const end    = info.event.end ? new Date(info.event.end.getTime() - 86400000) : start;
                 const status = props.status || 'draft';
-                const sc     = statusColors[status] || statusColors.draft;
+                const known  = statusColors[status] ? status : 'draft';
+                const sc     = statusColors[known];
 
                 const isReg = props.type === 'registration';
                 const fmt = (d) => d.toLocaleDateString('en-GB', {day:'numeric', month:'short', year:'numeric'});
@@ -239,8 +264,7 @@
 
                 const badge = document.getElementById('pop-badge');
                 badge.textContent = sc.label;
-                badge.style.background = sc.bg;
-                badge.style.color      = sc.color;
+                badge.className = 'pop-badge is-' + known;
 
                 document.getElementById('pop-dates').querySelector('span').textContent =
                     (isReg ? 'Registration: ' : '') + fmt(start) + (end > start ? ' – ' + fmt(end) : '');

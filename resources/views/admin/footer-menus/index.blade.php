@@ -100,7 +100,7 @@
     {{-- Pyramid preview --}}
     @if($menus->count() > 0)
         <div class="mac-card mac-card-padded mt-3">
-            <div class="mac-section-title mb-3"><i class="bi bi-eye"></i> Footer Preview</div>
+            <h3 class="mac-card-title"><i class="bi bi-eye" aria-hidden="true"></i> Footer Preview</h3>
             @php
                 $items = $menus->where('is_active', true)->values();
                 $rows = [];
@@ -114,17 +114,12 @@
                     $pIdx++;
                 }
             @endphp
-            <div style="background:rgba(0,0,0,0.03);border-radius:10px;padding:20px 16px;">
+            <div style="background:var(--ui-surface-2);border:1px solid var(--ui-sep);border-radius:var(--ui-r-lg);padding:20px 16px;">
                 @foreach($rows as $row)
-                    <div class="d-flex justify-content-center gap-2 mb-2 flex-wrap">
+                    <div class="d-flex justify-content-center gap-4 mb-2 flex-wrap">
                         @foreach($row as $item)
-                            {{-- var(--mac-primary-hv) (#B45309), not the raw #D97706 named in
-                                 the project's high-level brand description — the design system's
-                                 own CSS variable is already a darker, WCAG-AA-compliant shade
-                                 (used everywhere else, e.g. .mac-btn-primary); the literal
-                                 #D97706 here was a one-off deviation measuring 3.18:1 against
-                                 white and failing the 4.5:1 requirement. --}}
-                            <span style="padding:6px 16px;border-radius:20px;background:var(--mac-primary-hv);color:#fff;font-size:0.8rem;font-weight:500;">
+                            {{-- Drawn as the public footer draws it: an underlined text button. --}}
+                            <span style="color:var(--ui-text-2);font-size:0.95rem;text-decoration:underline;text-underline-offset:3px;">
                                 {{ $item->title }}
                             </span>
                         @endforeach
@@ -165,6 +160,6 @@
 
 @push('styles')
 <style>
-    .sortable-ghost { opacity: 0.4; background: rgba(217,119,6,0.06); }
+    .sortable-ghost { opacity: 0.4; background: var(--ui-blue-tint); }
 </style>
 @endpush

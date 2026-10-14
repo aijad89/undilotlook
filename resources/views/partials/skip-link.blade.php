@@ -18,7 +18,7 @@
         z-index: 2000;
         padding: 10px 18px;
         border-radius: 0 0 10px 10px;
-        background: #1C1C1E;
+        background: var(--ui-text);
         color: #fff;
         font-size: 0.85rem;
         font-weight: 600;

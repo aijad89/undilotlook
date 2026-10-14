@@ -26,7 +26,7 @@
             --adm-yellow: var(--ui-blue);
             --adm-yellow-hov: var(--ui-blue-hover);
             --adm-yellow-lt: var(--ui-blue-tint);
-            --adm-yellow-md: #d7e3fb;
+            --adm-yellow-md: var(--ui-blue-tint-2);
             --adm-bg: var(--ui-ground);
             --adm-text: var(--ui-text);
             --adm-text2: var(--ui-text-2);
@@ -61,15 +61,15 @@
         #sidebar .brand-name { display: block; font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; line-height: 1.2; }
         #sidebar .brand-sub { display: block; font-size: 0.78rem; color: var(--ui-on-navy-2); line-height: 1.3; }
 
-        #sidebar .nav-section { padding: 20px 22px 6px; font-size: 0.75rem; font-weight: 600; color: #8fa1ba; letter-spacing: 0.02em; }
+        #sidebar .nav-section { padding: 20px 22px 6px; font-size: 0.75rem; font-weight: 600; color: var(--ui-on-navy-dim); letter-spacing: 0.02em; }
 
         #sidebar .nav-link, #sidebar .nav-item a {
             position: relative; display: flex; align-items: center; gap: 12px;
             margin: 2px 10px; padding: 9px 12px; min-height: 40px; border-radius: var(--ui-r);
-            color: #d6deea; font-size: 0.9rem; font-weight: 500; text-decoration: none;
+            color: var(--ui-on-navy-3); font-size: 0.9rem; font-weight: 500; text-decoration: none;
             transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
-        #sidebar .nav-link i, #sidebar .nav-item a i { width: 18px; flex-shrink: 0; text-align: center; font-size: 1rem; color: #93a4bb; transition: color var(--ui-fast) var(--ui-ease); }
+        #sidebar .nav-link i, #sidebar .nav-item a i { width: 18px; flex-shrink: 0; text-align: center; font-size: 1rem; color: var(--ui-on-navy-icon); transition: color var(--ui-fast) var(--ui-ease); }
         #sidebar .nav-link:hover, #sidebar .nav-item a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
         #sidebar .nav-link:hover i, #sidebar .nav-item a:hover i { color: #fff; }
         #sidebar .nav-link.active, #sidebar .nav-item > a.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; }
@@ -81,14 +81,14 @@
 
         #sidebar ul.submenu { list-style: none; margin: 2px 0 6px; padding: 0; display: none; }
         #sidebar .nav-item.with-sub.show ul.submenu { display: block; }
-        #sidebar .submenu li a { margin: 1px 10px; padding: 8px 12px 8px 42px !important; min-height: 36px; font-size: 0.85rem; color: #c3cedd; }
+        #sidebar .submenu li a { margin: 1px 10px; padding: 8px 12px 8px 42px !important; min-height: 36px; font-size: 0.85rem; color: var(--ui-on-navy-soft); }
         #sidebar .submenu li a.active { background: rgba(255, 255, 255, 0.08); color: #fff; font-weight: 600; }
         #sidebar .submenu li a.active::before { display: none; }
-        #sidebar .nav-item.with-sub > a .chevron-icon { margin-left: auto; font-size: 0.7rem; color: #8fa1ba; transition: transform 0.2s var(--ui-ease); }
+        #sidebar .nav-item.with-sub > a .chevron-icon { margin-left: auto; font-size: 0.7rem; color: var(--ui-on-navy-dim); transition: transform 0.2s var(--ui-ease); }
         #sidebar .nav-item.with-sub.show > a .chevron-icon { transform: rotate(180deg); }
         #sidebar .nav-item.with-sub > a.active { background: rgba(255, 255, 255, 0.05); }
         #sidebar .sidebar-badge { margin-left: auto; padding: 2px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.7rem; font-weight: 700; line-height: 1.3; }
-        #sidebar button.nav-link { width: calc(100% - 20px) !important; color: #c3cedd; cursor: pointer; }
+        #sidebar button.nav-link { width: calc(100% - 20px) !important; color: var(--ui-on-navy-soft); cursor: pointer; }
         #sidebar button.nav-link:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
 
         /* ── Top bar ─────────────────────────────── */
@@ -345,7 +345,7 @@
                 <a class="topbar-user-btn dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                     <span class="topbar-avatar">{{ $initials }}</span>
                     {{ $adminUser->name ?? 'Admin' }}
-                    <i class="bi bi-chevron-down" style="font-size:0.58rem;color:#9CA3AF;"></i>
+                    <i class="bi bi-chevron-down" style="font-size:0.58rem;color:var(--ui-muted);"></i>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
                     <li>

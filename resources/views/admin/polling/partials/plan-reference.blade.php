@@ -20,32 +20,32 @@
       $drawByBidang — bidang name => ("code size" => ['bidang_id', 'size', 'needed', 'have'])
       $hasPlots         — false while the plan is still being typed
 --}}
-<div class="mac-card mb-4" style="background:rgba(217,119,6,0.05);border-color:rgba(217,119,6,0.2);">
+<div class="mac-card mb-4" style="background:var(--ui-blue-tint);border-color:var(--ui-border);">
     <div class="mac-card-padded">
         <div class="d-flex align-items-center flex-wrap gap-4">
             <div>
                 <div class="mac-label mb-1">In the draw</div>
-                <div style="font-size:1.8rem;font-weight:700;color:#B45309;line-height:1;">
+                <div style="font-size:1.8rem;font-weight:700;color:var(--ui-text);line-height:1;">
                     {{ $drawCount }}
                 </div>
             </div>
 
-            <div style="width:1px;height:44px;background:rgba(60,60,67,0.12);"></div>
+            <div style="width:1px;height:44px;background:var(--ui-border);"></div>
 
             <div>
                 <div class="mac-label mb-1">Plots planned</div>
-                <div id="planRefPlots" style="font-size:1.8rem;font-weight:700;color:#1d1d1f;line-height:1;">0</div>
+                <div id="planRefPlots" style="font-size:1.8rem;font-weight:700;color:var(--ui-text);line-height:1;">0</div>
             </div>
 
-            <div style="width:1px;height:44px;background:rgba(60,60,67,0.12);"></div>
+            <div style="width:1px;height:44px;background:var(--ui-border);"></div>
 
             <div style="flex:1;min-width:220px;">
                 <div class="mac-label mb-1">Per company</div>
-                <div id="planRefRatio" style="font-size:0.92rem;color:#4B5563;line-height:1.5;">—</div>
+                <div id="planRefRatio" style="font-size:0.92rem;color:var(--ui-text-2);line-height:1.5;">—</div>
             </div>
         </div>
 
-        <hr style="border-color:rgba(217,119,6,0.2);">
+        <hr style="border-color:var(--ui-border);">
 
         @if($drawCount === 0)
             <small class="mac-muted">
@@ -61,7 +61,7 @@
             <div class="d-flex flex-column gap-2">
                 @foreach($drawByBidang as $bidangName => $codes)
                     <div class="d-flex align-items-baseline flex-wrap gap-2">
-                        <span style="min-width:150px;font-size:0.8rem;font-weight:600;color:#374151;">
+                        <span style="min-width:150px;font-size:0.8rem;font-weight:600;color:var(--ui-text-2);">
                             {{ $bidangName }}
                             <span class="mac-muted" style="font-weight:400;">({{ collect($codes)->sum('needed') }})</span>
                         </span>

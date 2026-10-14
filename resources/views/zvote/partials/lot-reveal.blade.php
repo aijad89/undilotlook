@@ -75,12 +75,12 @@
     .lr-envelope { position:relative; width:230px; height:132px; margin:0 auto; }
     .lr-env-body {
         position:absolute; inset:0; border-radius:10px;
-        background:#FAFAF8; border:1px solid rgba(60,60,67,0.14);
+        background:var(--ui-surface-2); border:1px solid var(--ui-border);
         box-shadow:0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07);
     }
     .lr-env-flap {
         position:absolute; left:0; right:0; top:0; height:66px; z-index:3;
-        background:#F2F2F7; border:1px solid rgba(60,60,67,0.14);
+        background:var(--ui-neutral-tint); border:1px solid var(--ui-border);
         border-radius:10px 10px 0 0;
         clip-path:polygon(0 0, 100% 0, 50% 100%);
         transform-origin:top center; transition:transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -94,8 +94,8 @@
     }
     .lr-env-card {
         position:absolute; left:14px; right:14px; top:22px; z-index:2;
-        padding:14px 0; border-radius:8px; background:#fff;
-        border:1px solid rgba(60,60,67,0.12);
+        padding:14px 0; border-radius:8px; background:var(--ui-surface);
+        border:1px solid var(--ui-border);
         box-shadow:0 1px 3px rgba(0,0,0,0.05);
         opacity:0; transform:translateY(10px);
         /* Ends 2.0s after .is-open lands — the second half of the 4s. */

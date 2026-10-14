@@ -24,7 +24,7 @@
     @include('partials.admin-alerts')
 
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> / {{ $event->title }}
+        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> <span class="sep" aria-hidden="true">›</span> {{ $event->title }}
     </div>
 
     <div class="mac-header mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">

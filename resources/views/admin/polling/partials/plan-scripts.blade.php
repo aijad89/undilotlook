@@ -176,12 +176,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         if (total < drawCount) {
             const short = drawCount - total;
-            ratio.innerHTML = `<strong style="color:#B3261E;">${short} short</strong> — ${short} companies would have no lot.`;
+            ratio.innerHTML = `<strong style="color:var(--ui-bad-text);">${short} short</strong> — ${short} companies would have no lot.`;
         } else if (total === drawCount) {
-            ratio.innerHTML = '<strong style="color:#166534;">Exactly one each.</strong>';
+            ratio.innerHTML = '<strong style="color:var(--ui-ok-text);">Exactly one each.</strong>';
         } else {
             const spare = total - drawCount;
-            ratio.innerHTML = `<strong style="color:#166534;">One each</strong>, and `
+            ratio.innerHTML = `<strong style="color:var(--ui-ok-text);">One each</strong>, and `
                 + `<strong>${spare} plot${spare === 1 ? '' : 's'} left over</strong> — `
                 + `nobody holds two, so ${spare === 1 ? 'it stays' : 'they stay'} unassigned. `
                 + `Trim the plan, or move the spare capacity to a bigger size.`;
@@ -261,7 +261,7 @@ document.addEventListener('DOMContentLoaded', function() {
             summary.textContent = short === 0
                 ? 'every code has plots'
                 : `${short} companies would draw outside their own category`;
-            summary.style.color = short === 0 ? '#166534' : '#B3261E';
+            summary.style.color = short === 0 ? 'var(--ui-ok-text)' : 'var(--ui-bad-text)';
         }
     }
 
@@ -369,7 +369,7 @@ document.addEventListener('DOMContentLoaded', function() {
         } else if (totalAllocated > totalPlots) {
             statusEl.innerHTML = `<span class="text-danger ms-2"><i class="bi bi-exclamation-triangle"></i> Over by ${totalAllocated - totalPlots}</span>`;
         } else {
-            statusEl.innerHTML = `<span class="ms-2" style="color:#92400E;"><i class="bi bi-exclamation-triangle"></i> ${totalPlots - totalAllocated} not yet assigned</span>`;
+            statusEl.innerHTML = `<span class="ms-2" style="color:var(--ui-warn-text);"><i class="bi bi-exclamation-triangle"></i> ${totalPlots - totalAllocated} not yet assigned</span>`;
         }
     }
 
@@ -393,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sizeIdx = parseInt(plotSizeRow.dataset.sizeIdx) || 0;
         const n = bidangCounter++;
         const html = `
-            <div class="bidang-allocation-row mb-2 p-2" style="background:rgba(255,255,255,0.7);border-radius:8px;border:1px solid rgba(60,60,67,0.1);">
+            <div class="bidang-allocation-row mb-2 p-2" style="background:var(--ui-surface);border-radius:8px;border:1px solid var(--ui-border);">
                 <input type="hidden" name="bidang_allocations[${n}][plot_size_index]" value="${sizeIdx}" class="bidang-size-index">
                 <div class="row g-2 align-items-end">
                     <div class="col-md-3">
@@ -435,8 +435,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('addSizeBtn').addEventListener('click', function() {
         const idx = sizeCounter++;
         const html = `
-            <div class="plot-size-row mb-3" data-size-idx="${idx}" style="border:1px solid rgba(60,60,67,0.12);border-radius:12px;overflow:hidden;">
-                <div class="p-3 px-4" style="background:rgba(0,0,0,0.02);">
+            <div class="plot-size-row mb-3" data-size-idx="${idx}" style="border:1px solid var(--ui-border);border-radius:12px;overflow:hidden;">
+                <div class="p-3 px-4" style="background:var(--ui-surface-2);">
                     <div class="row g-2 align-items-end">
                         <div class="col-md-5">
                             <label class="mac-label">Location <span class="text-danger">*</span></label>
@@ -457,10 +457,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
                     </div>
                 </div>
-                <div class="bidang-sub-container p-3" style="border-top:1px solid rgba(60,60,67,0.08);background:rgba(0,113,227,0.015);">
+                <div class="bidang-sub-container p-3" style="border-top:1px solid var(--ui-sep);background:var(--ui-surface-2);">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <div class="d-flex align-items-center gap-2">
-                            <small class="fw-semibold" style="color:#374151;">Bidang Allocations</small>
+                            <small class="fw-semibold" style="color:var(--ui-text-2);">Bidang Allocations</small>
                             <span class="size-remaining-badge mac-badge mac-badge-gray">1 remaining</span>
                         </div>
                         <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.78rem;padding:4px 10px;">

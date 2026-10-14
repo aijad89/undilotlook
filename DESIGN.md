@@ -8,12 +8,18 @@ colors:
   navy-700: "#1b3f70"
   on-navy: "#ffffff"
   on-navy-2: "#b9c6d8"
+  on-navy-3: "#d6deea"
+  on-navy-soft: "#c3cedd"
+  on-navy-icon: "#93a4bb"
+  on-navy-dim: "#8fa1ba"
   ground: "#f3f5f8"
   surface: "#ffffff"
   surface-2: "#f8fafc"
   border: "#dce1e8"
   border-strong: "#c3ccd8"
   sep: "#e9edf2"
+  border-hover: "#a9b4c3"
+  row-hover: "#f6f9ff"
   text: "#101828"
   text-2: "#344054"
   muted: "#586477"
@@ -22,18 +28,28 @@ colors:
   blue-press: "#103a96"
   blue-tint: "#ebf1fd"
   blue-text: "#1546b3"
+  blue-tint-2: "#d7e3fb"
+  blue-border: "#b6c9f4"
+  blue-border-2: "#9db8ef"
+  info-border: "#c4d5f8"
   gold: "#e3a92b"
   gold-tint: "#fdf5e1"
   gold-text: "#7a5300"
+  gold-tint-2: "#fbe7bd"
   ok: "#12804a"
   ok-tint: "#e6f4ec"
   ok-text: "#0b6239"
+  ok-border: "#b9e1ca"
   warn: "#d98a00"
   warn-tint: "#fdf2df"
   warn-text: "#7f4500"
+  warn-border: "#f3d29a"
+  warn-border-2: "#efc98a"
   bad: "#c4320a"
   bad-tint: "#fdece8"
   bad-text: "#9a2006"
+  bad-border: "#f5c3b6"
+  bad-border-2: "#f1b8a8"
   neutral-tint: "#eef1f5"
   neutral-text: "#475467"
   violet-tint: "#f0edfb"
@@ -175,7 +191,7 @@ undilot reads like a government service and works like a well-made dashboard: a 
 
 Nothing is decorative. Depth is a hairline and a whisper of shadow; colour carries meaning (blue acts, gold marks what is yours, state colours always name themselves in words). The one authored moment is the draw-stage stepper's current stop settling in. The system refuses the grey dashboard with a single accent and the frosted Apple imitation it replaced.
 
-The whole thing ships with **no build step**: every stylesheet is an inline `<style>` in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as `--ui-*` custom properties in `partials/ui-tokens.blade.php`; nothing else should spell a hex value.
+The whole thing ships with **no build step**: every stylesheet is an inline `<style>` in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as `--ui-*` custom properties in `partials/ui-tokens.blade.php`; nothing else spells a hex value except the two places CSS variables cannot reach (see The No Stray Hex Rule).
 
 **Key Characteristics:**
 - Navy shell (rail, app bar, sign-in panel), white surfaces on a cool grey ground.
@@ -191,27 +207,27 @@ The whole thing ships with **no build step**: every stylesheet is an inline `<st
 A cool, official palette: navy for the frame, white for work, one saturated blue for action, and a single warm gold held back for ownership.
 
 ### Primary
-- **Action Blue** (`blue`): every primary button, filter button, checked checkbox, active tab underline, the stepper's done and current stops, link text (`blue-text`). Hover deepens to `blue-hover`, press to `blue-press`; `blue-tint` is the quiet background for info alerts, active text-size toggles and row-action hover.
+- **Action Blue** (`blue`): every primary button, filter button, checked checkbox, active tab underline, the stepper's done and current stops, link text (`blue-text`). Hover deepens to `blue-hover`, press to `blue-press`; `blue-tint` is the quiet background for info alerts, active text-size toggles, row-action hover and an unread notification. `blue-tint-2` is the deeper tint; `blue-border` (row-action hover, unread notification), `blue-border-2` (portal outline button) and `info-border` (info alert) are its hairlines; `row-hover` is the near-white blue wash on an admin table row.
 
 ### Secondary
-- **Kraftangan Gold** (`gold`, `gold-tint`, `gold-text`): the usahawan's own lot (the lot link on a draw card, the lot code on the lot page, the reveal), the active-nav marker (a 3px bar in the admin rail, an inset bar in the portal drawer, an underline in the portal and public app bars, the active nav icon), and the brand-mark tile on every shell and sign-in panel. Text on gold is always `gold-text` on `gold-tint`, never white on gold.
+- **Kraftangan Gold** (`gold`, `gold-tint`, `gold-text`): the usahawan's own lot (the lot link on a draw card, the lot code on the lot page, the reveal), the active-nav marker (a 3px bar in the admin rail, an inset bar in the portal drawer, an underline in the portal and public app bars, the active nav icon), and the brand-mark tile on every shell and sign-in panel. Text on gold is always `gold-text` on `gold-tint`, never white on gold. `gold-tint-2` is the lot link's hover.
 
 ### Tertiary
-- **Service Navy** (`navy-950` to `navy-700`): the shell. `navy-900` is the admin rail, portal and public app bar, the sign-in panel and the active pagination page; `navy-700` is the active nav item fill; `navy-950` is ink on gold. Text on navy is `on-navy`, secondary `on-navy-2`.
+- **Service Navy** (`navy-950` to `navy-700`): the shell. `navy-900` is the admin rail, portal and public app bar, the sign-in panel and the active pagination page; `navy-700` is the active nav item fill; `navy-950` is ink on gold. Text on navy is `on-navy`, secondary `on-navy-2`; the nav uses four more greys on navy: `on-navy-3` for item text, `on-navy-soft` for submenu items, `on-navy-icon` for resting icons, `on-navy-dim` for section labels and chevrons. Pure white on navy stays the literal `#fff`.
 
 ### Neutral
 - **Cool Ground** (`ground`): page background under every shell.
 - **White Surface** (`surface`) and **Wash** (`surface-2`): cards, inputs, bars; `surface-2` for table headers, card footers and input-group addons.
-- **Hairlines** (`border`, `border-strong`, `sep`): `border` outlines cards and bars, `border-strong` outlines controls, `sep` divides rows inside a card.
+- **Hairlines** (`border`, `border-strong`, `sep`, `border-hover`): `border` outlines cards and bars, `border-strong` outlines controls, `sep` divides rows inside a card, `border-hover` is a control's border under the pointer.
 - **Ink** (`text`, `text-2`, `muted`): headings and values, labels and secondary copy, metadata and placeholders.
-- **State pairs** (`ok`, `warn`, `bad`, `neutral`, `violet`, each with `-tint` and `-text`): text on tint, every pair at least 4.5:1. The solid `ok`/`warn`/`bad` are for fills (success button, progress bar, danger hover, badge counts); words use the `-text` shade.
+- **State pairs** (`ok`, `warn`, `bad`, `neutral`, `violet`, each with `-tint` and `-text`): text on tint, every pair at least 4.5:1. The solid `ok`/`warn`/`bad` are for fills (success button, progress bar, danger hover, badge counts); words use the `-text` shade. Tinted surfaces take a matching hairline: `ok-border`, `warn-border` and `bad-border` for alerts, the stronger `warn-border-2` and `bad-border-2` for warning and danger buttons and the danger row action.
 
 ### Named Rules
 **The One Blue Rule.** Only `blue` acts. A secondary action is white with a strong hairline; a destructive action is white with `bad-text` until hover turns it solid `bad`.
 
 **The Gold Means Yours Rule.** Gold marks the usahawan's lot, where you are in the nav, and the mark. It is never a button fill, a status, or a highlight for anything else.
 
-**The No Stray Hex Rule.** Colour comes from `--ui-*` tokens. The legacy `--mac-*`, `--ap-*`, `--adm-*`, `--apple-*` and `--pub-*` names survive only as aliases onto `--ui-*` so old inline styles resolve; new code uses `--ui-*` directly.
+**The No Stray Hex Rule.** Colour comes from `--ui-*` tokens, and no view, partial or script outside `ui-tokens` spells a hex value. There are exactly two exceptions, both because CSS variables cannot reach them, and both name the token each value mirrors: `App\Support\CalendarPalette::PALETTE` (PHP data written into inline styles and event data, one comment per value) and `pdf/lot-result.blade.php` (the PDF renderer reads no CSS variables; a header comment lists the tokens). Change a token, change it there too. The local-only `dev/auto-login` view is out of scope. The legacy `--mac-*`, `--ap-*`, `--adm-*`, `--apple-*` and `--pub-*` names survive only as aliases onto `--ui-*` so old inline styles resolve; new code uses `--ui-*` directly.
 
 ## Typography
 
@@ -237,14 +253,14 @@ A cool, official palette: navy for the frame, white for work, one saturated blue
 
 Two spatial models over one token set.
 
-- **Office (admin layout):** a fixed 264px navy rail on the left, a sticky 60px white top bar, content on the grey ground capped at 1360px. Pages run header (breadcrumb, title, primary action at right), then a filter bar, then a table card. Below 768px the rail becomes a drawer over a navy scrim (`navy-950` at 45%) and the bar drops to 56px.
+- **Office (admin layout):** a fixed 264px navy rail on the left, a sticky 60px white top bar, content on the grey ground capped at 1360px. Pages run header (breadcrumb above the title, primary action at right), then a filter bar, then a table card. Below 768px the rail becomes a drawer over a navy scrim (`navy-950` at 45%) and the bar drops to 56px.
 - **Portal (frontend layout):** a sticky 64px navy app bar and one reading column of 760px, padded 32px 24px (20px 16px on a phone). At 992px and up the nav sits in the app bar; below, it moves to a 280px drawer and the bar keeps only menu, title, text size, notifications and the user.
 - **Public layout:** the same navy bar as the portal, a 1120px column, a white footer pinned to the window bottom.
 
 Rhythm is 8px: control gaps 8px, card padding 20 to 24px, page sections 16 to 24px apart, portal section heads 36px above. Breakpoints: 576px (portal compact), 768px (admin stacks), 992px (portal nav moves into the bar).
 
 ### Named Rules
-**The Tables Become Cards Rule.** Below 768px every `.mac-table` stacks: each row a bordered 12px card, each cell a label/value line whose label is copied from the column header by script (cells with a form control, `colspan`, or a blank header are skipped). The outer card gives up its chrome so cards never nest in cards.
+**The Tables Become Cards Rule.** Below 768px every `.mac-table` stacks: each row a bordered 12px card, each cell a label/value line (the value wrapped in `.mac-cell`) whose label is copied from the column header by script. A cell holding one field is labelled like any value; a cell with a button or more than one control, a blank header or a `colspan` is skipped. A wide one-form row (`td[colspan]`) instead shows each field's `aria-label` above it, label and field sharing a `.mac-field` box (the label `aria-hidden`; the box is `display: contents` above 768px), with the row's button on the fields' baseline. Detail rows stack label over value, full width. The outer card gives up its chrome so cards never nest in cards.
 
 ## Elevation & Depth
 
@@ -261,7 +277,7 @@ Flat by default, separated by hairlines; shadow is a whisper at rest and only re
 
 ## Shapes
 
-Gently rounded and consistent: 12px (`lg`) for every card, filter bar, alert, dropdown and stacked-table row; 8px (`md`) for every button, input, nav item and icon tile; 6px (`sm`) for row actions, badges, dropdown items and pagination. Status pills, avatars, nav badges and the progress bar are fully round. The brand mark is a gold square with 9 to 14px corners holding a grid icon. Borders are always 1px, except the 2px stepper ring and the portal's 2px confirm checkbox.
+Gently rounded and consistent: 12px (`lg`) for every card, filter bar, alert, dropdown and stacked-table row; 8px (`md`) for every button, input, nav item and icon tile; 6px (`sm`) for row actions, badges, dropdown items, pagination and calendar events; inline `code` chips 4px. Status pills, avatars, nav badges and the progress bar are fully round. The brand mark is a gold square with 9 to 14px corners holding a grid icon. Borders are always 1px, except the 2px stepper ring and the portal's 2px confirm checkbox.
 
 ## Components
 
@@ -298,6 +314,30 @@ Four stops (draft, open, closed, done) on every draw. Passed stops are solid blu
 ### Draw Band and Draw Card
 The admin draw page opens with a band: the stepper at left and the counts (Figure type) at right behind a `sep` rule. The portal dashboard shows each draw as a card: title, meta line with icons, status, stepper, then one row with the next step, which is the gold "your lot" link once a lot is held.
 
+### Page Header (admin)
+Breadcrumb, title, then any lede, with the primary action at right. The breadcrumb always reads above the title: where a view writes it after the `h2`, the stylesheet reorders it. Crumbs are underlined `blue-text` links in 0.82rem `muted`, separated by one chevron (`<span class="sep" aria-hidden="true">›</span>`) in `border-strong`, never a slash.
+
+### Alerts (admin)
+Block layout, not flex, so a `<strong>` and the plain text after it run as one sentence: 12px corners, 0.9rem/1.5, the state tint with its `-border` hairline and `-text` words. A leading icon hangs in a 40px left padding; an alert without one pads 14px.
+
+### Inline Code
+A neutral chip: `neutral-tint` ground, `text-2` ink, mono at 0.85em, 1px 5px padding, 4px corners.
+
+### Empty State (admin)
+Centred in its card at 48px 24px: a 52px `neutral-tint` icon tile with 12px corners and a `muted` icon, a title (1.05rem/650, `text`), then the reason in at most 56ch.
+
+### Pagination (admin)
+The page nav is the card's padded footer (12px 16px) under a `sep` hairline, with the "Showing x to y of z" line in 0.85rem `muted`. Page links are 34px with 6px corners; the active page is solid `navy-900`. On a phone, Previous and Next are 44px white buttons with `border-strong`, pushed to either end.
+
+### Calendar (admin)
+FullCalendar themed through its own CSS variables onto the tokens: `sep` grid lines, `blue-tint` today with a `blue-text` day number. Toolbar buttons are 36px white with `border-strong`; the active view is solid `navy-900`. Event colours come from `CalendarPalette`: draw state in its state colours, registration windows neutral with ok/bad caps, voting windows in action blue (voting is the thing to act on). The grid grows to its rows (auto height); on a phone every bar shows, with no "+N more", and the toolbar wraps title over arrows over views.
+
+### Plot Painter (admin)
+Each kraf code gets a categorical hue, spread evenly round the wheel from blue at 55% saturation and 30% lightness, so the white code on every tile clears 4.5:1 (measured 5.36 to 10:1). An unpainted tile is plain surface. A locked tile is hatched with a 135-degree stripe, never faded, so its code stays legible.
+
+### Notifications (portal)
+An unread notification is its card on `blue-tint` with a `blue-border` hairline; read ones are plain white. Title 1.05rem/650, message 1rem `text-2`.
+
 ### Sign-in
 The auth layouts carry their own look and never use `.mac-` or `.ap-` classes: a navy panel (optionally a photo under a 72% navy overlay) with the gold mark and title, beside a 480px white form panel that restyles Bootstrap's own form classes to 48px inputs and a 52px blue button. Below 860px the panel stacks above the form.
 
@@ -316,6 +356,8 @@ The auth layouts carry their own look and never use `.mac-` or `.ap-` classes: a
 - **Don't** use gold for anything except the usahawan's lot, the active-nav marker and the mark.
 - **Don't** introduce a second action colour; blue is the only one that acts.
 - **Don't** put `.mac-` or `.ap-` classes on the sign-in views; they carry their own look.
-- **Don't** spell a hex value in a view; the leftover Apple-era greys in older views are drift, not precedent.
+- **Don't** spell a hex value outside `ui-tokens`; the only exceptions are `CalendarPalette::PALETTE` and the PDF slip, each naming the token it mirrors.
 - **Don't** add a shadow heavier than Rest to anything that does not float.
+- **Don't** mark an unread or active row with a coloured side stripe; use the blue tint and its hairline.
+- **Don't** fade a locked tile whose label must stay readable; hatch it.
 - **Don't** suppress the focus ring or replace it with a blue glow for keyboard users.

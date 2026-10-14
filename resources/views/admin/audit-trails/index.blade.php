@@ -98,7 +98,7 @@
                             </td>
                             <td><span class="mac-status {{ $macStatus }}"><span class="mac-status-dot"></span>{{ $badgeLabel }}</span></td>
                             <td>{{ $audit->model_label }}</td>
-                            <td><code style="color:#A8175E;">{{ $audit->auditable_id ?? '—' }}</code></td>
+                            <td><code>{{ $audit->auditable_id ?? '—' }}</code></td>
                             <td class="mac-muted">{{ $audit->ip_address ?? '—' }}</td>
                             <td class="mac-muted">{{ $audit->created_at->format('d M Y, H:i') }}</td>
                             <td class="text-end">

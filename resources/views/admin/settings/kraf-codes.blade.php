@@ -10,6 +10,7 @@
 
     <div class="mac-header mb-4">
         <h2>Craft Category Code</h2>
+        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Dropdown Lists <span class="sep" aria-hidden="true">›</span> Craft Category Code</div>
         <p class="mac-muted mb-0">
             The printed coding sheet. A draw entry carries one of these codes as a
             STRING, and a plot is categorised by the row itself — that is what the
@@ -56,10 +57,16 @@
             <table class="mac-table">
                 <thead>
                     <tr>
-                        <th style="width:70px;">No.</th>
-                        <th style="width:110px;">Code</th>
-                        <th>Craft</th>
-                        <th>Breakdown</th>
+                        {{-- One header over the row's own grid, so each name sits over its
+                             field: the fields live in one wide cell, not in the columns. --}}
+                        <th colspan="4">
+                            <div class="row g-1">
+                                <div class="col-md-1">No.</div>
+                                <div class="col-md-2">Code</div>
+                                <div class="col-md-3">Craft</div>
+                                <div class="col-md-5">Breakdown</div>
+                            </div>
+                        </th>
                         <th style="width:110px;">Offered</th>
                         <th class="text-end" style="width:140px;">Actions</th>
                     </tr>
@@ -80,11 +87,11 @@
                                         <input type="text" name="code" class="mac-form-control"
                                                value="{{ $code->code }}" aria-label="Code" required>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-3">
                                         <input type="text" name="name" class="mac-form-control"
                                                value="{{ $code->name }}" aria-label="Craft" required>
                                     </div>
-                                    <div class="col-md-4">
+                                    <div class="col-md-5">
                                         <input type="text" name="pecahan_bidang" class="mac-form-control"
                                                value="{{ $code->pecahan_bidang }}" aria-label="Breakdown">
                                     </div>
@@ -95,7 +102,7 @@
                                     </div>
                                 </form>
                             </td>
-                            <td>
+                            <td data-label="Status">
                                 <span class="mac-badge {{ $code->is_active ? 'mac-badge-green' : 'mac-badge-gray' }}">
                                     {{ $code->is_active ? 'Offered' : 'Withdrawn' }}
                                 </span>

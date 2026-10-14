@@ -27,7 +27,7 @@
         {{-- Info Card --}}
         <div class="col-md-6">
             <div class="mac-card">
-                <div class="mac-section-title" style="border-top: none;">GENERAL INFO</div>
+                <div class="mac-card-header"><h3 class="mac-card-title">General info</h3></div>
                 <div class="mac-detail-row">
                     <span class="mac-detail-label">Action</span>
                     <span class="mac-detail-value">
@@ -87,7 +87,7 @@
         {{-- Changes Card --}}
         <div class="col-md-6">
             <div class="mac-card">
-                <div class="mac-section-title" style="border-top: none;">CHANGES</div>
+                <div class="mac-card-header"><h3 class="mac-card-title">Changes</h3></div>
                 @php $fields = $auditTrail->changed_fields; @endphp
 
                 @if(!empty($fields))
@@ -106,14 +106,14 @@
                                         <td style="font-weight: 600;">{{ $field }}</td>
                                         <td>
                                             @if($change['old'] !== null)
-                                                <span style="color: #ff3b30;">{{ is_array($change['old']) ? json_encode($change['old']) : $change['old'] }}</span>
+                                                <span style="color: var(--ui-bad-text);">{{ is_array($change['old']) ? json_encode($change['old']) : $change['old'] }}</span>
                                             @else
                                                 <span class="mac-muted">—</span>
                                             @endif
                                         </td>
                                         <td>
                                             @if($change['new'] !== null)
-                                                <span style="color: #248a3d;">{{ is_array($change['new']) ? json_encode($change['new']) : $change['new'] }}</span>
+                                                <span style="color: var(--ui-ok-text);">{{ is_array($change['new']) ? json_encode($change['new']) : $change['new'] }}</span>
                                             @else
                                                 <span class="mac-muted">—</span>
                                             @endif
@@ -125,8 +125,8 @@
                     </div>
                 @elseif($auditTrail->old_values)
                     <div style="padding: 12px 20px 20px;">
-                        <div style="font-size: 0.78rem; font-weight: 600; color: #86868b; margin-bottom: 8px;">Deleted Values</div>
-                        <pre style="background: #f5f5f7; padding: 16px; border-radius: 10px; font-size: 0.82rem; color: #1d1d1f; margin: 0;">{{ json_encode($auditTrail->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Deleted Values</div>
+                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 10px; font-size: 0.82rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
 
         {{-- The screen
                              shows ONE row and a delete usually takes more than one: related
@@ -145,7 +145,7 @@
                         @php $summary = $auditTrail->new_values; @endphp
 
                         @if(is_array($summary) && isset($summary['cascade_deleted']))
-                            <div style="font-size: 0.78rem; font-weight: 600; color: #86868b; margin: 20px 0 8px;">
+                            <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin: 20px 0 8px;">
                                 What Went With It
                             </div>
 
@@ -160,7 +160,7 @@
                                                 <td style="font-weight: 600;">{{ $table }}</td>
                                                 <td>
                                                     @if($count > 0)
-                                                        <span style="color: #ff3b30; font-weight: 600;">{{ number_format($count) }}</span>
+                                                        <span style="color: var(--ui-bad-text); font-weight: 600;">{{ number_format($count) }}</span>
                                                     @else
                                                         <span class="mac-muted">0</span>
                                                     @endif
@@ -173,7 +173,7 @@
                                                 <td style="font-weight: 600;">{{ $column }}</td>
                                                 <td>
                                                     @if($count > 0)
-                                                        <span style="color: #b25000; font-weight: 600;">{{ number_format($count) }}</span>
+                                                        <span style="color: var(--ui-warn-text); font-weight: 600;">{{ number_format($count) }}</span>
                                                     @else
                                                         <span class="mac-muted">0</span>
                                                     @endif
@@ -214,8 +214,8 @@
                     </div>
                 @elseif($auditTrail->new_values)
                     <div style="padding: 12px 20px 20px;">
-                        <div style="font-size: 0.78rem; font-weight: 600; color: #86868b; margin-bottom: 8px;">Created Values</div>
-                        <pre style="background: #f5f5f7; padding: 16px; border-radius: 10px; font-size: 0.82rem; color: #1d1d1f; margin: 0;">{{ json_encode($auditTrail->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Created Values</div>
+                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 10px; font-size: 0.82rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                     </div>
                 @else
                     <div class="mac-empty">

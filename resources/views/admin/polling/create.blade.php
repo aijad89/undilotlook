@@ -9,7 +9,7 @@
     @include('partials.admin-alerts')
 
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> / Create
+        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> <span class="sep" aria-hidden="true">›</span> Create
     </div>
 
     <div class="mac-header mb-4">

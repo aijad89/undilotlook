@@ -5,12 +5,17 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <title>Lot Draw Result Slip – {{ $event->title }}</title>
 <style>
+    /* The PDF renderer reads no CSS variables, so the colours are the token values
+       from partials/ui-tokens.blade.php written out: navy #0b2240 (--ui-navy-900),
+       blue #1a56db / #1546b3 (--ui-blue / --ui-blue-text), text #101828 / #344054 /
+       #586477 (--ui-text / -2 / --ui-muted), borders #dce1e8 / #c3ccd8, tints
+       #f8fafc / #ebf1fd / #e6f4ec, ok text #0b6239. Change a token, change it here. */
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #222; background: #fff; }
+    body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #101828; background: #fff; }
 
     /* ── Header ── */
     .header {
-        background: #1a1a2e;
+        background: #0b2240;
         color: #fff;
         padding: 20px 24px;
         margin-bottom: 0;
@@ -21,7 +26,7 @@
 
     /* ── Green banner ── */
     .success-banner {
-        background: #065f46;
+        background: #0b6239;
         color: #fff;
         text-align: center;
         padding: 8px 24px;
@@ -35,9 +40,9 @@
     /* ── Lot box ── */
     .lot-box {
         margin: 0 24px 24px;
-        border: 2.5px solid #1d4ed8;
+        border: 2.5px solid #1a56db;
         border-radius: 10px;
-        background: #eff6ff;
+        background: #ebf1fd;
         text-align: center;
         padding: 22px 20px;
     }
@@ -46,25 +51,25 @@
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: .1em;
-        color: #1e40af;
+        color: #1546b3;
         margin-bottom: 6px;
     }
     .lot-box .lot-code {
         font-size: 44px;
         font-weight: bold;
-        color: #1d4ed8;
+        color: #1a56db;
         letter-spacing: .06em;
         line-height: 1;
         margin-bottom: 6px;
     }
     .lot-box .lot-size {
         font-size: 11.5px;
-        color: #374151;
+        color: #344054;
         margin-bottom: 4px;
     }
     .lot-box .lot-location {
         font-size: 10px;
-        color: #6b7280;
+        color: #586477;
     }
 
     /* ── Section ── */
@@ -74,8 +79,8 @@
         font-weight: bold;
         text-transform: uppercase;
         letter-spacing: .07em;
-        color: #1d4ed8;
-        border-bottom: 1.5px solid #dbeafe;
+        color: #1a56db;
+        border-bottom: 1.5px solid #ebf1fd;
         padding-bottom: 4px;
         margin-bottom: 10px;
     }
@@ -83,8 +88,8 @@
     /* ── Info table ── */
     table.info { width: 100%; border-collapse: collapse; }
     table.info td { padding: 5px 8px; vertical-align: top; }
-    table.info td:first-child { width: 42%; font-weight: bold; color: #555; }
-    table.info tr:nth-child(even) td { background: #f7f8fc; }
+    table.info td:first-child { width: 42%; font-weight: bold; color: #344054; }
+    table.info tr:nth-child(even) td { background: #f8fafc; }
 
     /* ── Badge ── */
     .badge {
@@ -96,12 +101,12 @@
         text-transform: uppercase;
         letter-spacing: .04em;
     }
-    .badge-success { background: #d1fae5; color: #065f46; }
+    .badge-success { background: #e6f4ec; color: #0b6239; }
 
     /* ── Stamp ── */
     .stamp-area {
         margin: 0 24px 20px;
-        border: 1.5px dashed #d1d5db;
+        border: 1.5px dashed #c3ccd8;
         border-radius: 8px;
         padding: 14px 18px;
         display: table;
@@ -109,31 +114,31 @@
     }
     .stamp-cell { display: table-cell; width: 50%; vertical-align: middle; }
     .stamp-cell.right { text-align: right; }
-    .stamp-label { font-size: 9px; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 32px; }
-    .stamp-line  { border-bottom: 1px solid #9ca3af; width: 140px; margin-left: auto; }
-    .stamp-name  { font-size: 9px; color: #6b7280; text-align: center; margin-top: 4px; }
+    .stamp-label { font-size: 9px; color: #586477; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 32px; }
+    .stamp-line  { border-bottom: 1px solid #586477; width: 140px; margin-left: auto; }
+    .stamp-name  { font-size: 9px; color: #586477; text-align: center; margin-top: 4px; }
 
     /* ── Footer ── */
     .footer {
         margin-top: 24px;
         padding: 12px 24px;
-        border-top: 1px solid #e5e7eb;
+        border-top: 1px solid #dce1e8;
         font-size: 9px;
-        color: #9ca3af;
+        color: #586477;
     }
     .footer .right { float: right; }
 
     .no-break { page-break-inside: avoid; }
 
     .qr-box { text-align: center; margin: 0 0 14px; }
-    .qr-note { font-size: 8px; color: #666; letter-spacing: 0.4px; text-transform: uppercase; margin-top: 3px; }
-    .qr-code-text { font-family: monospace; font-size: 10px; color: #333; letter-spacing: 1.5px; }
+    .qr-note { font-size: 8px; color: #586477; letter-spacing: 0.4px; text-transform: uppercase; margin-top: 3px; }
+    .qr-code-text { font-family: monospace; font-size: 10px; color: #101828; letter-spacing: 1.5px; }
     /* Same footprint as the code it stands in for, so the slip does not reflow. */
     /* dompdf ignores line-height centring on a block, so the text is padded
        down to the middle instead: 42 + 12 + 42 = 96. */
     .qr-empty {
         width: 96px; height: 12px; padding: 42px 0; margin: 0 auto;
-        border: 1px dashed #bbb; color: #999;
+        border: 1px dashed #c3ccd8; color: #586477;
         font-size: 9px; text-align: center;
     }
 </style>

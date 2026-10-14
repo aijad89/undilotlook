@@ -9,7 +9,7 @@
     @include('partials.admin-alerts')
 
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.events.index') }}">Events</a> / {{ $event->title }}
+        <a href="{{ route('admin.events.index') }}">Events</a> <span class="sep" aria-hidden="true">›</span> {{ $event->title }}
     </div>
 
     <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
@@ -146,7 +146,7 @@
                                           class="d-flex gap-1">
                                         @csrf
                                         @method('PUT')
-                                        <select name="code" class="mac-select mac-action-btn-field">
+                                        <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
                                             <option value="">— None —</option>
                                             @foreach($codes as $code)
                                                 <option value="{{ $code->code }}" @selected($registration->code === $code->code)>
@@ -163,7 +163,7 @@
                                             @endif
                                         </select>
 
-                                        <select name="plot_size" class="mac-select mac-action-btn-field">
+                                        <select name="plot_size" class="mac-select mac-action-btn-field" aria-label="Booth">
                                             @foreach($plotSizes as $size)
                                                 <option value="{{ $size }}" @selected($registration->plot_size === $size)>
                                                     {{ $size }}

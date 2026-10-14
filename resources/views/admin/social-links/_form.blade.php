@@ -82,27 +82,27 @@
                 <div class="mac-muted" style="font-size:0.78rem;margin-bottom:4px;">Current logo:</div>
                 <img src="{{ $link->icon_image_url }}" width="16" height="24" loading="lazy"
                      alt="Current icon for {{ $link->label }}"
-                     style="object-fit:contain;border:1px solid rgba(0,0,0,0.1);border-radius:3px;padding:2px;">
+                     style="object-fit:contain;border:1px solid var(--ui-border-strong);border-radius:3px;padding:2px;">
             </div>
         @endif
 
         {{-- Upload zone --}}
         <div id="uploadZone"
-             style="border:2px dashed rgba(0,0,0,0.15);border-radius:10px;padding:24px;
-                    text-align:center;cursor:pointer;transition:border-color 0.15s;background:rgba(0,0,0,0.01);"
+             style="border:2px dashed var(--ui-border-strong);border-radius:10px;padding:24px;
+                    text-align:center;cursor:pointer;transition:border-color 0.15s;background:var(--ui-surface-2);"
              onclick="document.getElementById('iconFile').click()"
-             ondragover="event.preventDefault();this.style.borderColor='#D97706'"
-             ondragleave="this.style.borderColor='rgba(0,0,0,0.15)'"
+             ondragover="event.preventDefault();this.style.borderColor='var(--ui-blue)'"
+             ondragleave="this.style.borderColor='var(--ui-border-strong)'"
              ondrop="handleDrop(event)">
             <div id="uploadPrompt">
-                <i class="bi bi-cloud-upload" style="font-size:1.6rem;color:#9CA3AF;"></i>
+                <i class="bi bi-cloud-upload" style="font-size:1.6rem;color:var(--ui-muted);"></i>
                 <div class="mac-muted" style="font-size:0.82rem;margin-top:6px;">Click or drag an image here</div>
                 <div class="mac-muted" style="font-size:0.72rem;">JPG · PNG · WebP · GIF · Max 2MB</div>
             </div>
             <div id="uploadPreviewWrap" style="display:none;align-items:center;gap:16px;justify-content:center;">
                 <img id="uploadPreview" width="32" height="48" loading="lazy"
                      alt="Preview of the icon you selected"
-                     style="object-fit:contain;border-radius:4px;border:1px solid rgba(0,0,0,0.1);">
+                     style="object-fit:contain;border-radius:4px;border:1px solid var(--ui-border-strong);">
                 <div>
                     <div class="mac-muted" id="uploadNote" style="font-size:0.75rem;">Will be saved as 16×24 WebP</div>
                     <button type="button" class="mac-action-btn mt-1" id="editAgainBtn"
@@ -126,16 +126,16 @@
              style="display:none;position:fixed;inset:0;z-index:9999;
                     background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);
                     align-items:center;justify-content:center;">
-            <div style="background:#fff;border-radius:16px;padding:24px;width:340px;max-width:95vw;">
+            <div style="background:var(--ui-surface);border-radius:var(--ui-r-lg);padding:24px;width:340px;max-width:95vw;">
                 <div style="font-weight:600;font-size:0.95rem;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
                     <span><i class="bi bi-crop"></i> Edit Icon</span>
-                    <button type="button" onclick="closeEditor()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:#9CA3AF;" aria-label="Close" title="Close">
+                    <button type="button" onclick="closeEditor()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ui-muted);" aria-label="Close" title="Close">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
 
                 {{-- Cropper container --}}
-                <div style="width:100%;height:260px;background:#f3f3f3;border-radius:10px;overflow:hidden;margin-bottom:14px;">
+                <div style="width:100%;height:260px;background:var(--ui-neutral-tint);border-radius:10px;overflow:hidden;margin-bottom:14px;">
                     <img id="cropperImg" alt="Icon being cropped" loading="lazy" style="max-width:100%;display:block;">
                 </div>
 

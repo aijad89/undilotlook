@@ -29,7 +29,7 @@
         min-height: 48px; padding: 10px 14px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-r);
         font-size: 1rem; color: var(--ui-text); background: var(--ui-surface);
     }
-    .login-form-panel .form-control:hover { border-color: #a9b4c3; }
+    .login-form-panel .form-control:hover { border-color: var(--ui-border-hover); }
     .login-form-panel .form-control:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
     .login-form-panel .form-control.is-invalid { border-color: var(--ui-bad); }
     .login-form-panel .invalid-feedback { color: var(--ui-bad-text); font-size: 0.92rem; }
@@ -43,8 +43,8 @@
     .login-form-panel .btn-primary:active { background: var(--ui-blue-press) !important; }
     .login-form-panel a { color: var(--ui-blue-text); font-weight: 600; }
     .login-form-panel .alert { border: 1px solid transparent; border-radius: var(--ui-r-lg); font-size: 0.95rem; }
-    .login-form-panel .alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
-    .login-form-panel .alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
+    .login-form-panel .alert-success { background: var(--ui-ok-tint); border-color: var(--ui-ok-border); color: var(--ui-ok-text); }
+    .login-form-panel .alert-danger { background: var(--ui-bad-tint); border-color: var(--ui-bad-border); color: var(--ui-bad-text); }
     /* The two reset screens were built as a Bootstrap card; on this layout they
        are the panel's own content, so the card's chrome falls away. */
     .login-form-panel .container { max-width: none; margin: 0 !important; padding: 0; }

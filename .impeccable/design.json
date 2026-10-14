@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T16:00:00+08:00",
+  "generatedAt": "2026-10-14T18:00:00+08:00",
   "title": "Design System: undilot",
   "extensions": {
     "colorMeta": {
@@ -573,6 +573,246 @@
           "#c6c7c7",
           "#eeeeee"
         ]
+      },
+      "on-navy-3": {
+        "role": "neutral",
+        "displayName": "On Navy Item",
+        "canonical": "#d6deea",
+        "tonalRamp": [
+          "#0e131b",
+          "#1f2b3d",
+          "#344865",
+          "#49648e",
+          "#6785b1",
+          "#93a8c8",
+          "#c2cee0",
+          "#ebeff5"
+        ]
+      },
+      "on-navy-soft": {
+        "role": "neutral",
+        "displayName": "On Navy Soft",
+        "canonical": "#c3cedd",
+        "tonalRamp": [
+          "#0f141a",
+          "#212c3b",
+          "#374962",
+          "#4d6789",
+          "#6d87ac",
+          "#97aac4",
+          "#c4cfde",
+          "#ebeff4"
+        ]
+      },
+      "on-navy-icon": {
+        "role": "neutral",
+        "displayName": "On Navy Icon",
+        "canonical": "#93a4bb",
+        "tonalRamp": [
+          "#101419",
+          "#232c38",
+          "#3b4a5e",
+          "#536783",
+          "#7288a6",
+          "#9babc0",
+          "#c7d0dc",
+          "#eceff3"
+        ]
+      },
+      "on-navy-dim": {
+        "role": "neutral",
+        "displayName": "On Navy Dim",
+        "canonical": "#8fa1ba",
+        "tonalRamp": [
+          "#101419",
+          "#232c39",
+          "#3a4a5f",
+          "#526785",
+          "#7188a8",
+          "#9aaac1",
+          "#c6cfdc",
+          "#eceff3"
+        ]
+      },
+      "border-hover": {
+        "role": "neutral",
+        "displayName": "Hairline Hover",
+        "canonical": "#a9b4c3",
+        "tonalRamp": [
+          "#111418",
+          "#262d36",
+          "#3f4a5a",
+          "#58687e",
+          "#7889a1",
+          "#9fabbc",
+          "#c9d0d9",
+          "#edeff2"
+        ]
+      },
+      "row-hover": {
+        "role": "neutral",
+        "displayName": "Row Hover",
+        "canonical": "#f6f9ff",
+        "tonalRamp": [
+          "#000e29",
+          "#001f5c",
+          "#003399",
+          "#0047d6",
+          "#1a66ff",
+          "#5c92ff",
+          "#a3c2ff",
+          "#e0ebff"
+        ]
+      },
+      "blue-tint-2": {
+        "role": "primary",
+        "displayName": "Blue Tint Deep",
+        "canonical": "#d7e3fb",
+        "tonalRamp": [
+          "#040f25",
+          "#082153",
+          "#0e388b",
+          "#134ec3",
+          "#2e6dea",
+          "#6b97f0",
+          "#acc5f7",
+          "#e3ecfc"
+        ]
+      },
+      "blue-border": {
+        "role": "primary",
+        "displayName": "Blue Border",
+        "canonical": "#b6c9f4",
+        "tonalRamp": [
+          "#050f23",
+          "#0c2150",
+          "#143785",
+          "#1c4cba",
+          "#386be1",
+          "#7196ea",
+          "#afc4f3",
+          "#e4ebfb"
+        ]
+      },
+      "blue-border-2": {
+        "role": "primary",
+        "displayName": "Blue Border Strong",
+        "canonical": "#9db8ef",
+        "tonalRamp": [
+          "#060f23",
+          "#0d234f",
+          "#153a84",
+          "#1e51b8",
+          "#3a70df",
+          "#7399e8",
+          "#b0c6f2",
+          "#e5ecfb"
+        ]
+      },
+      "info-border": {
+        "role": "primary",
+        "displayName": "Info Border",
+        "canonical": "#c4d5f8",
+        "tonalRamp": [
+          "#040f24",
+          "#0a2152",
+          "#103889",
+          "#174ebf",
+          "#326de7",
+          "#6d97ee",
+          "#adc5f5",
+          "#e4ecfc"
+        ]
+      },
+      "gold-tint-2": {
+        "role": "secondary",
+        "displayName": "Gold Tint Deep",
+        "canonical": "#fbe7bd",
+        "tonalRamp": [
+          "#261b02",
+          "#573c05",
+          "#906509",
+          "#ca8d0c",
+          "#f2b027",
+          "#f6c765",
+          "#fae0a8",
+          "#fdf5e2"
+        ]
+      },
+      "ok-border": {
+        "role": "neutral",
+        "displayName": "Success Border",
+        "canonical": "#b9e1ca",
+        "tonalRamp": [
+          "#0c1d13",
+          "#1c402b",
+          "#2e6b48",
+          "#409665",
+          "#5eba85",
+          "#8dcea9",
+          "#bfe3ce",
+          "#eaf6ef"
+        ]
+      },
+      "warn-border": {
+        "role": "neutral",
+        "displayName": "Warning Border",
+        "canonical": "#f3d29a",
+        "tonalRamp": [
+          "#241904",
+          "#52370a",
+          "#895c10",
+          "#bf8117",
+          "#e7a432",
+          "#eebe6d",
+          "#f5daad",
+          "#fcf3e4"
+        ]
+      },
+      "warn-border-2": {
+        "role": "neutral",
+        "displayName": "Warning Border Strong",
+        "canonical": "#efc98a",
+        "tonalRamp": [
+          "#241805",
+          "#51370b",
+          "#875b12",
+          "#bc7f1a",
+          "#e3a235",
+          "#ebbd6f",
+          "#f4daae",
+          "#fbf3e4"
+        ]
+      },
+      "bad-border": {
+        "role": "neutral",
+        "displayName": "Danger Border",
+        "canonical": "#f5c3b6",
+        "tonalRamp": [
+          "#240b05",
+          "#51190b",
+          "#872a12",
+          "#bc3b1a",
+          "#e35935",
+          "#eb896f",
+          "#f4bdae",
+          "#fbe9e4"
+        ]
+      },
+      "bad-border-2": {
+        "role": "neutral",
+        "displayName": "Danger Border Strong",
+        "canonical": "#f1b8a8",
+        "tonalRamp": [
+          "#230c06",
+          "#4f1b0d",
+          "#842d15",
+          "#b9401e",
+          "#df5e39",
+          "#e88c72",
+          "#f2beb0",
+          "#fbe9e5"
+        ]
       }
     },
     "typographyMeta": {
@@ -744,11 +984,19 @@
       "description": "The signature: four stops on every draw, passed ones filled, the current one ringed.",
       "html": "<ol class=\"ds-stepper\"><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Draft</span></li><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Open</span></li><li class=\"current\" aria-current=\"step\"><span class=\"dot\"></span><span class=\"label\">Closed</span></li><li><span class=\"dot\"></span><span class=\"label\">End</span></li></ol>",
       "css": ".ds-stepper { list-style: none; margin: 0; padding: 0; display: flex; width: 420px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-stepper li { position: relative; flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; } .ds-stepper li::before { content: ''; position: absolute; top: 9px; left: calc(-50% + 12px); right: calc(50% + 12px); height: 2px; border-radius: 2px; background: #dce1e8; } .ds-stepper li:first-child::before { display: none; } .ds-stepper .dot { position: relative; z-index: 1; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px solid #c3ccd8; color: transparent; } .ds-stepper .label { font-size: 0.75rem; font-weight: 600; color: #586477; } .ds-stepper li.done::before, .ds-stepper li.current::before { background: #1a56db; } .ds-stepper li.done .dot { background: #1a56db; border-color: #1a56db; color: #fff; } .ds-stepper li.done .label { color: #344054; } .ds-stepper li.current .dot { border-color: #1a56db; box-shadow: 0 0 0 4px #ebf1fd; } .ds-stepper li.current .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #1a56db; } .ds-stepper li.current .label { color: #101828; } @media (prefers-reduced-motion: no-preference) { .ds-stepper li.current .dot { animation: ds-stop-in 420ms cubic-bezier(0.16,1,0.3,1) both; } @keyframes ds-stop-in { from { box-shadow: 0 0 0 12px rgba(26,86,219,0); } to { box-shadow: 0 0 0 4px #ebf1fd; } } }"
+    },
+    {
+      "name": "Admin Empty State",
+      "kind": "custom",
+      "refersTo": "mac-empty",
+      "description": "An empty list: a quiet icon tile, a title, the reason.",
+      "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm-1.17-.437A1.5 1.5 0 0 1 4.98 3h6.04a1.5 1.5 0 0 1 1.17.563l3.7 4.625a.5.5 0 0 1 .106.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z\"/></svg></div><p class=\"ds-empty-title\">No registrations yet</p><p class=\"ds-empty-reason\">Add companies to this draw from the registrations screen.</p></div>",
+      "css": ".ds-empty { padding: 48px 24px; text-align: center; background: #fff; border: 1px solid #dce1e8; border-radius: 12px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-empty-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 12px; background: #eef1f5; color: #586477; } .ds-empty-title { margin: 0 0 6px; font-size: 1.05rem; font-weight: 650; color: #101828; } .ds-empty-reason { max-width: 56ch; margin: 0 auto; font-size: 0.875rem; color: #586477; }"
     }
   ],
   "narrative": {
     "northStar": "The Service Counter",
-    "overview": "undilot reads like a government service and works like a well-made dashboard: a navy shell that holds still, white work surfaces on a cool grey ground, one blue that acts. The office sits at a desk for hours scanning draw lists, so its screens are dense, Stripe-calm tables and forms at 40px controls. Usahawan, many older and on a phone, get the same world at a larger size: one reading column (760px), 1rem body, 48px targets, one large button per draw.\n\nNothing is decorative. Depth is a hairline and a whisper of shadow; colour carries meaning (blue acts, gold marks what is yours, state colours always name themselves in words). The one authored moment is the draw-stage stepper's current stop settling in. The system refuses the grey dashboard with a single accent and the frosted Apple imitation it replaced.\n\nThe whole thing ships with no build step: every stylesheet is an inline <style> in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as --ui-* custom properties in partials/ui-tokens.blade.php; nothing else should spell a hex value.",
+    "overview": "undilot reads like a government service and works like a well-made dashboard: a navy shell that holds still, white work surfaces on a cool grey ground, one blue that acts. The office sits at a desk for hours scanning draw lists, so its screens are dense, Stripe-calm tables and forms at 40px controls. Usahawan, many older and on a phone, get the same world at a larger size: one reading column (760px), 1rem body, 48px targets, one large button per draw.\n\nNothing is decorative. Depth is a hairline and a whisper of shadow; colour carries meaning (blue acts, gold marks what is yours, state colours always name themselves in words). The one authored moment is the draw-stage stepper's current stop settling in. The system refuses the grey dashboard with a single accent and the frosted Apple imitation it replaced.\n\nThe whole thing ships with no build step: every stylesheet is an inline <style> in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as --ui-* custom properties in partials/ui-tokens.blade.php; nothing else spells a hex value except the two places CSS variables cannot reach (see The No Stray Hex Rule).",
     "keyCharacteristics": [
       "Navy shell (rail, app bar, sign-in panel), white surfaces on a cool grey ground.",
       "One action blue; Kraftangan gold only for \"yours\", \"you are here\" and the mark.",
@@ -771,7 +1019,7 @@
       },
       {
         "name": "The No Stray Hex Rule",
-        "body": "Colour comes from --ui-* tokens. The legacy --mac-*, --ap-*, --adm-*, --apple-* and --pub-* names survive only as aliases onto --ui-* so old inline styles resolve; new code uses --ui-* directly.",
+        "body": "Colour comes from --ui-* tokens, and no view, partial or script outside ui-tokens spells a hex value. There are exactly two exceptions, both because CSS variables cannot reach them, and both name the token each value mirrors: App\\Support\\CalendarPalette::PALETTE (PHP data written into inline styles and event data, one comment per value) and pdf/lot-result.blade.php (the PDF renderer reads no CSS variables; a header comment lists the tokens). Change a token, change it there too. The local-only dev/auto-login view is out of scope. The legacy --mac-*, --ap-*, --adm-*, --apple-* and --pub-* names survive only as aliases onto --ui-* so old inline styles resolve; new code uses --ui-* directly.",
         "section": "colors"
       },
       {
@@ -786,7 +1034,7 @@
       },
       {
         "name": "The Tables Become Cards Rule",
-        "body": "Below 768px every .mac-table stacks: each row a bordered 12px card, each cell a label/value line whose label is copied from the column header by script (cells with a form control, colspan, or a blank header are skipped). The outer card gives up its chrome so cards never nest in cards.",
+        "body": "Below 768px every .mac-table stacks: each row a bordered 12px card, each cell a label/value line (the value wrapped in .mac-cell) whose label is copied from the column header by script. A cell holding one field is labelled like any value; a cell with a button or more than one control, a blank header or a colspan is skipped. A wide one-form row (td[colspan]) instead shows each field's aria-label above it, label and field sharing a .mac-field box (the label aria-hidden; the box is display: contents above 768px), with the row's button on the fields' baseline. Detail rows stack label over value, full width. The outer card gives up its chrome so cards never nest in cards.",
         "section": "layout"
       },
       {
@@ -808,8 +1056,10 @@
       "Don't use gold for anything except the usahawan's lot, the active-nav marker and the mark.",
       "Don't introduce a second action colour; blue is the only one that acts.",
       "Don't put .mac- or .ap- classes on the sign-in views; they carry their own look.",
-      "Don't spell a hex value in a view; the leftover Apple-era greys in older views are drift, not precedent.",
+      "Don't spell a hex value outside ui-tokens; the only exceptions are CalendarPalette::PALETTE and the PDF slip, each naming the token it mirrors.",
       "Don't add a shadow heavier than Rest to anything that does not float.",
+      "Don't mark an unread or active row with a coloured side stripe; use the blue tint and its hairline.",
+      "Don't fade a locked tile whose label must stay readable; hatch it.",
       "Don't suppress the focus ring or replace it with a blue glow for keyboard users."
     ]
   }

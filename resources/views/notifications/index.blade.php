@@ -6,8 +6,9 @@
 @section('content')
 @include('partials.apple-styles')
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2 style="font-size:1.1rem;font-weight:600;margin:0;">Notifikasi</h2>
+<div class="ap-page">
+<div class="ap-page-header">
+    <h2 class="ap-page-title">Notifikasi</h2>
     @if($unreadNotificationCount > 0)
         <form method="POST" action="{{ route('notifications.read-all') }}">
             @csrf
@@ -22,9 +23,9 @@
         $announcement = $announcements[$data['announcement_id'] ?? null] ?? null;
         $lotLink = isset($data['event_id']) ? route('zvote.index', $data['event_id']) : null;
     @endphp
-    <div class="ap-card ap-card-padded mb-3" @if(! $notification->read_at) style="border-left:3px solid var(--apple-blue);" @endif>
+    <div class="ap-card ap-card-padded mb-3" @if(! $notification->read_at) style="background:var(--ui-blue-tint);border-color:var(--ui-blue-border);" @endif>
         <div class="d-flex justify-content-between align-items-start gap-2">
-            <div style="font-weight:600;">{{ $data['title'] ?? 'Notifikasi' }}</div>
+            <div style="font-size:1.05rem;font-weight:650;color:var(--ui-text);">{{ $data['title'] ?? 'Notifikasi' }}</div>
             <small class="text-muted text-nowrap">{{ $notification->created_at->format('d M Y, h:i A') }}</small>
         </div>
 
@@ -33,7 +34,7 @@
                  style="max-width:100%;border-radius:8px;margin:10px 0;" loading="lazy">
         @endif
 
-        <div class="mt-1" style="white-space:pre-line;font-size:0.9rem;">{{ $data['message'] ?? '' }}</div>
+        <div class="mt-1" style="white-space:pre-line;font-size:1rem;color:var(--ui-text-2);">{{ $data['message'] ?? '' }}</div>
 
         <div class="d-flex gap-2 mt-2 flex-wrap">
             @if($announcement?->attachment)
@@ -57,4 +58,5 @@
 @endforelse
 
 {{ $notifications->links() }}
+</div>
 @endsection

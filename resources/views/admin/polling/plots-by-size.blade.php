@@ -7,9 +7,7 @@
 
 <div class="mac-page">
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> /
-        <a href="{{ route('admin.polling.show', $event) }}">{{ $event->title }}</a> /
-        {{ $plotSize->location }} {{ $plotSize->size }}
+        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> <span class="sep" aria-hidden="true">›</span> <a href="{{ route('admin.polling.show', $event) }}">{{ $event->title }}</a> <span class="sep" aria-hidden="true">›</span> {{ $plotSize->location }} {{ $plotSize->size }}
     </div>
 
     <div class="mac-header mb-4">

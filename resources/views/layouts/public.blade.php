@@ -39,7 +39,7 @@
         .pub-brand-icon, .pub-footer-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: var(--ui-gold); color: var(--ui-navy-950); }
         .pub-brand-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
         .pub-nav-links { display: flex; align-items: center; gap: 4px; flex: 1; margin-left: 24px; }
-        .pub-nav-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: var(--ui-r); color: #d6deea; font-size: 0.95rem; font-weight: 600; text-decoration: none; }
+        .pub-nav-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: var(--ui-r); color: var(--ui-on-navy-3); font-size: 0.95rem; font-weight: 600; text-decoration: none; }
         .pub-nav-links a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
         .pub-nav-links a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--ui-gold); border-radius: var(--ui-r) var(--ui-r) 0 0; }
         .pub-nav-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
@@ -130,7 +130,7 @@
                         <span class="d-none d-sm-inline" style="max-width:110px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ Auth::user()->name }}</span>
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end pub-dropdown">
-                        <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-house-door" style="color:#5856D6"></i> Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{{ route('dashboard') }}"><i class="bi bi-house-door" style="color:var(--ui-blue)"></i> Dashboard</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">

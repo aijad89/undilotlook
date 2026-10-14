@@ -11,27 +11,33 @@
 .plot-grid { display: flex; flex-wrap: wrap; gap: 4px; }
 .plot-cell {
     width: 60px; height: 40px; padding: 0;
-    border: 1px solid rgba(60,60,67,0.18); border-radius: 6px;
-    background: #fff; color: #6B7280;
-    font-size: 0.62rem; font-weight: 600;
+    border: 1px solid var(--ui-border); border-radius: 6px;
+    background: var(--ui-surface); color: var(--ui-muted);
+    font-size: 0.72rem; font-weight: 700;
     cursor: pointer; user-select: none;
     transition: transform 0.06s;
 }
-.plot-cell:hover, .plot-cell:focus-visible { transform: scale(1.08); border-color: #D97706; }
+.plot-cell:hover, .plot-cell:focus-visible { transform: scale(1.08); border-color: var(--ui-blue); }
 .plot-cell.painted { color: #fff; border-color: rgba(0,0,0,0.12); }
-.plot-cell:disabled { cursor: not-allowed; opacity: 0.45; transform: none; }
+/* Locked, not faded: fading the fill drops the white code below a readable
+   contrast. A hatch says "cannot touch" and keeps the code legible. */
+.plot-cell:disabled {
+    cursor: not-allowed; transform: none;
+    background-image: repeating-linear-gradient(135deg, transparent 0 6px, rgba(255, 255, 255, 0.22) 6px 8px);
+}
+.plot-cell:not(.painted):disabled { background-image: repeating-linear-gradient(135deg, transparent 0 6px, var(--ui-sep) 6px 8px); }
 
 .code-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 10px; border-radius: 8px; cursor: pointer;
     border: 2px solid transparent; font-size: 0.78rem; font-weight: 600;
-    background: rgba(0,0,0,0.04); color: #1d1d1f;
+    background: var(--ui-surface-2); color: var(--ui-text);
 }
-.code-chip[aria-pressed="true"] { border-color: #1d1d1f; }
+.code-chip[aria-pressed="true"] { border-color: var(--ui-text); }
 .code-chip .tally { font-weight: 400; font-size: 0.72rem; }
-.code-chip.met   .tally { color: #166534; }
-.code-chip.short .tally { color: #B3261E; }
-.code-chip.over  .tally { color: #92400E; }
+.code-chip.met   .tally { color: var(--ui-ok-text); }
+.code-chip.short .tally { color: var(--ui-bad-text); }
+.code-chip.over  .tally { color: var(--ui-warn-text); }
 .swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
 </style>
 
@@ -39,8 +45,7 @@
     @include('partials.admin-alerts')
 
     <div class="mac-breadcrumb mb-2">
-        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> /
-        <a href="{{ route('admin.polling.show', $event) }}">{{ $event->title }}</a> / Plot Codes
+        <a href="{{ route('admin.polling.index') }}">Lot Draw</a> <span class="sep" aria-hidden="true">›</span> <a href="{{ route('admin.polling.show', $event) }}">{{ $event->title }}</a> <span class="sep" aria-hidden="true">›</span> Plot Codes
     </div>
 
     <div class="mac-header mb-4">
@@ -78,7 +83,7 @@
                     @endforeach
                     <button type="button" class="code-chip" aria-pressed="true" data-bidang="" data-code=""
                             title="Leave the plot uncoded — anyone still unplaced can draw it">
-                        <span class="swatch" style="background:#fff;border:1px solid rgba(60,60,67,0.3);"></span>
+                        <span class="swatch" style="background:var(--ui-surface);border:1px solid var(--ui-border);"></span>
                         Uncoded
                         <span class="tally">0</span>
                     </button>
@@ -150,7 +155,8 @@ document.addEventListener('DOMContentLoaded', function () {
     const coded = chips.filter(c => c.dataset.bidang);
     const colours = {};
     coded.forEach((chip, i) => {
-        colours[chip.dataset.bidang] = `hsl(${Math.round(i * 360 / Math.max(1, coded.length))} 62% 45%)`;
+        // 30% lightness: white code text clears 4.5:1 on every hue, yellow included.
+        colours[chip.dataset.bidang] = `hsl(${Math.round(215 + i * 360 / Math.max(1, coded.length)) % 360} 55% 30%)`;
         chip.querySelector('.swatch').style.background = colours[chip.dataset.bidang];
     });
 
@@ -164,7 +170,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function show(cell) {
         const id = cell.dataset.bidang;
-        cell.style.background = id && colours[id] ? colours[id] : '#fff';
+        cell.style.background = id && colours[id] ? colours[id] : '';
         cell.classList.toggle('painted', !!(id && colours[id]));
     }
 

@@ -54,15 +54,15 @@
         }
         .ap-sidebar.open { transform: translateX(0); box-shadow: var(--ui-shadow-pop); }
         .ap-sidebar-header { padding: 18px 18px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-        .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8rem; font-weight: 600; color: #8fa1ba; }
+        .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8rem; font-weight: 600; color: var(--ui-on-navy-dim); }
         .ap-nav-item {
             display: flex; align-items: center; gap: 12px; min-height: 52px;
             margin: 2px 10px; padding: 10px 12px; border-radius: var(--ui-r);
-            color: #d6deea; font-size: 1.02rem; font-weight: 500; text-decoration: none;
+            color: var(--ui-on-navy-3); font-size: 1.02rem; font-weight: 500; text-decoration: none;
         }
         .ap-nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
         .ap-nav-item.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--ui-gold); }
-        .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.1rem; color: #93a4bb; }
+        .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.1rem; color: var(--ui-on-navy-icon); }
         .ap-nav-item.active .ap-nav-icon { color: var(--ui-gold); }
         .ap-nav-badge { margin-left: auto; padding: 1px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.72rem; font-weight: 700; }
         .ap-sidebar-spacer { flex: 1; }
@@ -89,14 +89,14 @@
         .ap-topnav { display: flex; align-items: center; gap: 4px; }
         .ap-topnav a {
             display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
-            border-radius: var(--ui-r); color: #d6deea; font-weight: 600; font-size: 0.95rem; text-decoration: none;
+            border-radius: var(--ui-r); color: var(--ui-on-navy-3); font-weight: 600; font-size: 0.95rem; text-decoration: none;
         }
         .ap-topnav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
         .ap-topnav a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--ui-gold); border-radius: var(--ui-r) var(--ui-r) 0 0; }
         .ap-icon-btn {
             position: relative; width: 44px; height: 44px; flex-shrink: 0;
             display: grid; place-items: center; border: none; border-radius: var(--ui-r);
-            background: transparent; color: #d6deea; font-size: 1.15rem; text-decoration: none; cursor: pointer;
+            background: transparent; color: var(--ui-on-navy-3); font-size: 1.15rem; text-decoration: none; cursor: pointer;
             transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
         .ap-icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }

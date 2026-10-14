@@ -13,17 +13,19 @@ use App\Models\Event;
  */
 class CalendarPalette
 {
+    // Each value mirrors a token in partials/ui-tokens.blade.php (named alongside):
+    // these reach the page as data and inline styles, where CSS variables do not.
     public const PALETTE = [
-        'event_open' => '#34C759',
-        'event_closed' => '#FF3B30',
-        'event_completed' => '#AF52DE',
-        'event_draft' => '#9CA3AF',
-        'registration_fill' => '#DBEAFE',
-        'registration_border' => '#007AFF',
-        'registration_text' => '#00458F',
-        'registration_open_cap' => '#34C759',
-        'registration_close_cap' => '#FF3B30',
-        'polling' => '#FF9500',
+        'event_open' => '#12804A',              // --ui-ok
+        'event_closed' => '#C4320A',            // --ui-bad
+        'event_completed' => '#5B3FB3',         // --ui-violet-text
+        'event_draft' => '#586477',             // --ui-muted
+        'registration_fill' => '#EEF1F5',       // --ui-neutral-tint
+        'registration_border' => '#C3CCD8',     // --ui-border-strong
+        'registration_text' => '#344054',       // --ui-text-2
+        'registration_open_cap' => '#12804A',   // --ui-ok
+        'registration_close_cap' => '#C4320A',  // --ui-bad
+        'polling' => '#1A56DB',                 // --ui-blue: voting is the thing to act on
     ];
 
     /** What an admin may pick for one event, so concurrent windows can be told apart. */
