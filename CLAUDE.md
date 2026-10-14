@@ -34,9 +34,19 @@ disalin.
 | PHP CLI | `/c/Users/ALOY/.config/herd/bin/php84.bat` |
 | MySQL CLI | `/c/Program Files/MySQL/MySQL Server 9.5/bin/mysql.exe` |
 | Admin pertama | dari `.env` — `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` |
+| Log masuk pantas | `http://undilot.test/auto` — sebarang akaun, tanpa kata laluan, plus butang *Work the queue* |
+| DB suite pelayar | `undilot_e2e`, dicipta dan ditetapkan semula oleh `tests/e2e/serve.js` |
+| Git | `https://github.com/aijad89/undilot` (peribadi), cawangan `main` |
 
 `artisan tinker <fail>` **tergantung** pada mesin ini. Guna klien MySQL untuk
-menanya pangkalan data.
+menanya pangkalan data, atau skrip PHP yang memuat `bootstrap/app.php`.
+
+Setiap notifikasi berbaris (queue). Pada mesin ini tiada pekerja berjalan, jadi
+pengumuman dan peringatan kekal dalam `jobs` sehingga butang pada `/auto` ditekan.
+
+**Jerangkap shell pada mesin ini:** `php` tiada dalam PATH bash — guna
+`php84.bat` di atas (Node dengan `shell: true` menemuinya). Heredoc bash yang
+mengandungi apostrof gagal dalam alat Bash; tulis skrip ke fail dahulu.
 
 ---
 
@@ -102,6 +112,33 @@ ialah kata laluan dalam sejarah git pada hari ia ditulis.
 Tiada peraturan `.gitignore` mengecualikannya. Keputusan ialah bahagian yang
 paling sukar dipulihkan.
 
+### Data rujukan disemai, data demo tidak
+
+`DatabaseSeeder` memanggil `AdminSeeder` dan `KrafCodeSeeder` (helaian pengekodan
+HKK 2025 + lima kategori) — tanpanya pemasangan baharu tidak boleh memberi kod
+kepada sesiapa. Kedua-duanya boleh dijalankan semula. Data demo, jika ada, pergi
+**di bawah** pengawal `isProduction()`. `E2eSeeder` hanya berjalan dalam `e2e`.
+
+### `/auto` tidak pernah wujud di pelayan
+
+Ia log masuk sebagai sesiapa tanpa kata laluan. Didaftar hanya dalam `local`,
+`testing` dan `e2e`, dan pengawal yang sama dalam controller. **Jangan** bawa
+pintu ber-flag `daftar` (`DEV_AUTO_LOGIN` + senarai IP) — itu keputusan.
+
+### Aplikasi mesti kekal selamat-subpath
+
+Ia mungkin dihidang di `/undilotnew`, bukan akar domain. Setiap pautan dan ubah
+hala melalui `route()` / `url()` — **tiada** `redirect('/')` atau `href="/…"`.
+`/` ialah senarai acara awam, jadi destinasi selepas log masuk mesti dinamakan
+(`dashboard`, `admin.dashboard`).
+
+### Setiap peraturan baharu dibuktikan menggigit
+
+Selepas ujian lulus, buang peraturan itu sementara dan pastikan ujian **gagal**,
+kemudian pulihkan. Beberapa ujian dalam repo ini lulus atas sebab yang salah
+sehingga diperiksa begini (pengawal yang dilangkau oleh ralat lain, mutasi yang
+dilindungi laluan lain).
+
 ---
 
 ## Seni bina dan jerangkap
@@ -135,6 +172,21 @@ setiap route admin **membaca** seperti penguatkuasaan dan tidak menguatkuasakan
 apa-apa. `TrackAdminLastSeen` ialah penjejakan kehadiran, dan namanya berkata
 begitu.
 
+`EventVisibility` memegang **satu** peraturan: acara draf hanya untuk super/hq.
+**Tiada peraturan *own-state*** — `daftar` menyembunyikan acara daripada admin
+negeri sehingga syarikat negerinya berada dalam cabutan, yang betul bila peserta
+mendaftar sendiri. Di sini pejabat yang mengisi senarai cabutan; peraturan itu
+akan menyembunyikan setiap acara kosong daripada orang yang perlu mengisinya.
+Baris **di dalam** acara tetap ditapis mengikut zon.
+
+### Tulis digate di route, baca menskop sendiri
+
+Tindakan tulis berada di bawah `can:` dalam `routes/web.php` (`manage-events`,
+`manage-settings`, `manage-site-content`, `send-announcements`,
+`read-audit-trail`), ditakrif dalam `AppServiceProvider`. Skrin baca terbuka
+kepada semua peranan dan menapis sendiri. Pautan nav untuk skrin bergate disorok
+dengan `when` yang bertanya soalan yang sama.
+
 ### `kraf_bidangs` memegang **dua** senarai
 
 | `code` | Apa ia | Diurus di |
@@ -144,9 +196,16 @@ begitu.
 
 Keduanya bertemu pada `kraf_sub_bidangs.kraf_bidang_code_id`, yang **pilihan**.
 
-**Setiap query mesti menyatakan yang mana.** Senarai yang terlupa memaparkan
-kedua-duanya; padam yang terlupa membuang baris daripada senarai yang tiada siapa
-sedang lihat. Ini punca tiga entri backlog dalam `daftar`.
+**Setiap query mesti menyatakan yang mana** — `KrafBidang::categories()` atau
+`::codes()`. Senarai yang terlupa memaparkan kedua-duanya; padam yang terlupa
+membuang baris daripada senarai yang tiada siapa sedang lihat. Ini punca tiga
+entri backlog dalam `daftar`.
+
+Peruntukan pelan dan cat plot menerima **kod sahaja**. Plot yang ditanda dengan
+kategori tidak boleh dipadankan oleh mana-mana pendaftaran; `daftar` menerimanya.
+
+Padam baris kraf **ditolak** selagi ada apa-apa menunjuk kepadanya (setiap FK
+hidup diperiksa), supaya cascade tidak mengambil apa-apa tanpa jejak audit.
 
 ### Pemilikan ialah `company_id`, bukan `user_id`
 
@@ -176,6 +235,16 @@ Saiz gerai sebuah pendaftaran ialah `event_registrations.plot_size` — satu
 **string**, lalai `3x3`. Bukan rujukan `plot_sizes`: pejabat menyatakannya
 sebelum sebarang pelan wujud, kerana pelan dibina daripada nombor itu.
 
+**Setiap lokasi menamakan saiz plot lebihannya** (`plot_sizes.*.size`, wajib).
+Lot hanya ditarik pada saiz gerai pendaftaran itu sendiri, jadi plot tanpa saiz
+tidak pernah boleh dimenangi. Borang `daftar` tidak pernah menghantar medan itu,
+dan setiap plot lebihan yang dibinanya mati.
+
+`LotAllocator` ialah satu-satunya tempat peraturan lot. Confirm peserta dan larian
+pukal admin kedua-duanya memanggilnya; jangan beri mana-mana pintu salinan
+peraturannya sendiri. `PollingGuard` begitu juga untuk "boleh dibuka?" — butang
+dan scheduler bertanya soalan yang sama.
+
 ### `event_registrations.code` ialah string, bukan foreign key
 
 Ia memegang kod kraf (TBPS, RKP) dan dipadankan terhadap `code` pada baris
@@ -188,8 +257,12 @@ membawanya masuk utuh.
 
 Jadi pangkalan data menyekat. Plot tidak boleh dipadam selagi satu entri cabutan
 masih menunjuk kepadanya — keputusan cabutan **tidak boleh** hilang kerana
-seseorang menyunting pelan. Penulisan semula pelan mesti mengosongkan pautan itu
-dan dilihat berbuat demikian.
+seseorang menyunting pelan.
+
+Pelan **dibekukan** sebaik satu lot dipegang, preset termasuk
+(`PollingController::planIsFrozen()`): sunting, kosongkan dan cat semuanya
+ditolak. Jadi tiada penulisan semula yang perlu mengosongkan `plot_id` — cabang
+"pulihkan preset" `daftar` tidak pernah boleh berjalan, dan tidak dibawa.
 
 ### Audit cabutan sebahagiannya ditulis dengan tangan
 
@@ -239,6 +312,18 @@ sehingga larian pelayar pertama menunjukkan "Confirmed On" lapan jam awal.
 daripada jadual `sessions`. Pada pemacu lain ia memadan **tiada apa**: reset
 melaporkan berjaya dan peranti lain kekal log masuk. Tiada ralat, tiada ujian
 gagal — hanya satu `Log::warning`.
+
+### Fail muat naik yang dikawal tinggal di cakera `local`
+
+Sepanduk dan lampiran pengumuman disimpan di cakera `local` dan dihidang melalui
+controller yang bertanya siapa yang dicapai (`announcements.file`). Hanya imej
+yang tidak rahsia (sepanduk acara, ikon sosial) ke cakera `public`. **Tiada SVG
+ke cakera `public`** — pada origin ini ia boleh membawa skrip.
+
+### `$unreadNotificationCount` disediakan oleh senarai view, bukan `*`
+
+View composer dalam `AppServiceProvider` menamakan setiap view yang membacanya.
+View baharu yang membacanya **mesti** ditambah pada senarai itu, atau ia 500.
 
 ---
 
@@ -293,10 +378,17 @@ menogol `PRAGMA foreign_keys` — tidak boleh berbuat demikian di dalam transaks
 
 **Satu larian hijau bukan bukti pada suite pelayar.** Ini dipelajari dengan mahal
 dalam `daftar`: empat larian penuh pada kod yang sama memberi empat set kegagalan
-berbeza. Bila suite Playwright didirikan di sini, bawa `retries: 1` dan
-`trace: 'on-first-retry'`, dan **baca kiraan `flaky`**, bukan kiraan `passed`.
+berbeza. `playwright.config.js` membawa `retries: 1` dan
+`trace: 'on-first-retry'` — **baca kiraan `flaky`**, bukan kiraan `passed`, dan
+jalankan lebih daripada sekali sebelum mempercayai keputusan.
 
-Jangan tulis `page.once('dialog', d => d.accept())`. Guna helper yang merekod
-jenis dan teks dialog — `alert` yang diterima secara buta ialah tindakan yang
-tidak berlaku, dan ujian gagal empat baris kemudian atas sesuatu yang tidak
+Jangan tulis `page.once('dialog', d => d.accept())`. Guna `acceptDialog()` dalam
+`tests/e2e/helpers.js`, yang merekod jenis dan teks dialog; `strayAlerts()`
+digagalkan dalam `afterEach`. `alert` yang diterima secara buta ialah tindakan
+yang tidak berlaku, dan ujian gagal empat baris kemudian atas sesuatu yang tidak
 berkaitan.
+
+Dalam ujian Pest, `actingAs()` tanpa guard menggunakan guard **lalai**, yang
+permintaan admin terdahulu dalam ujian yang sama mungkin telah tukar kepada
+`admin`. Namakan guard (`actingAs($user, 'web')`) dalam ujian yang mencampur
+kedua-duanya, dan `auth()->forgetGuards()` sebelum menguji akses orang lain.
