@@ -204,8 +204,9 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 
 ## Fasa 4 — sekeliling
 
-- [ ] PDF keputusan lot — `pdf/lot-result.blade.php`.
-      **Buang seksyen imej produk (`:319-330` dalam `daftar`)** semasa menyalin
+- [x] PDF keputusan lot — `pdf/lot-result.blade.php`, `zvote.slip`. Seksyen imej
+      produk, sijil dan OKU dibuang (tiada data itu di sini). Font subsetting
+      dihidupkan: satu halaman 880 KB → 30 KB
 - [ ] Skrin audit trail — `Admin/AuditTrailController`
 - [ ] Pengumuman + `VotingCloseReminder` + queue worker
 - [ ] Scheduler: `events:update-statuses`, `voting:send-reminder`
@@ -216,7 +217,8 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       Route kalendar mesti berada **di atas** `Route::resource('events')`
 - [ ] Halaman awam — senarai acara, menu footer, pautan sosial,
       `layouts/public.blade.php`
-- [ ] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja
+- [x] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja.
+      Pintu ber-flag `daftar` untuk pelayan dev tidak dibawa
 - [ ] Suite Playwright — `tests/e2e/serve.js`, `helpers.js`, `fixtures/run.php`,
       `fixtures/seed.js`, `playwright.config.js`. Bawa `acceptDialog()` /
       `strayAlerts()` **dari hari pertama**

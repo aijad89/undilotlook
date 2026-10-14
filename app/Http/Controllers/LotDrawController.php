@@ -7,6 +7,7 @@ use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\Poll;
 use App\Services\LotAllocator;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -97,6 +98,37 @@ class LotDrawController extends Controller
         // Back to the page that performs the reveal. A flash carrying the lot
         // code would spoil it; the code is on that page either way.
         return redirect()->route('zvote.index', $event)->with('just_drawn', true);
+    }
+
+    /**
+     * The printed slip: one page with the lot, the check-in code, and room for a
+     * stamp. Only once a lot is held — before that there is nothing to print.
+     */
+    public function slip(Request $request, Event $event)
+    {
+        $registration = $this->entryFor($request, $event);
+        $user = $request->user();
+
+        $poll = Poll::where('user_id', $user->id)->where('event_id', $event->id)->first();
+        $assignedPlot = $registration->plot()->with(['plotSize', 'bidang'])->first();
+
+        abort_unless($poll && $assignedPlot, 404);
+
+        return Pdf::loadView('pdf.lot-result', [
+            'event' => $event,
+            'registration' => $registration->load('company'),
+            'assignedPlot' => $assignedPlot,
+            'user' => $user,
+            'poll' => $poll,
+            // The same identity code the participant sees on screen.
+            'icHash' => $user->icHash(),
+            'qrDataUri' => $user->icQrDataUri(),
+        ])
+            ->setPaper('a4', 'portrait')
+            // Embed only the glyphs used. Without it the whole of DejaVu Sans
+            // rides along and one page weighs ~880 KB — a lot to share from a phone.
+            ->setOption('isFontSubsettingEnabled', true)
+            ->stream("lot-{$assignedPlot->plot_code}.pdf");
     }
 
     /**

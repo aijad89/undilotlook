@@ -97,6 +97,24 @@ it('keeps a preset a surprise until Confirm, then hands over that lot', function
         ->and(Plot::where('plot_code', 'OPEN-1')->value('is_allocated'))->toBeFalse();
 });
 
+it('prints the slip for a lot that is held, and for nothing else', function () {
+    $event = openDraw();
+    Plot::factory()->create(['event_id' => $event->id, 'plot_code' => 'A-RKP1']);
+    $user = inDraw($event)->company->user;
+
+    $this->actingAs($user)->get(route('zvote.slip', $event))->assertNotFound();
+
+    $this->actingAs($user)->post(route('zvote.submit', $event), ['agreement' => '1']);
+
+    $this->actingAs($user)->get(route('zvote.index', $event))->assertSee(route('zvote.slip', $event));
+
+    $slip = $this->actingAs($user)->get(route('zvote.slip', $event))->assertOk();
+    expect($slip->headers->get('content-type'))->toBe('application/pdf')
+        ->and(substr($slip->getContent(), 0, 5))->toBe('%PDF-');
+
+    $this->actingAs(Company::factory()->create()->user)->get(route('zvote.slip', $event))->assertNotFound();
+});
+
 it('shows nothing of an event the company is not in the draw for', function () {
     $event = openDraw();
     $outsider = Company::factory()->create()->user;

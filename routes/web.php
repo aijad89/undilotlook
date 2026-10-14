@@ -38,6 +38,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
 
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
+    Route::get('/events/{event}/lot/slip', [LotDrawController::class, 'slip'])->name('zvote.slip');
 });
 
 /* ── Dev: click-to-login ─────────────────────────────────────────────────── */

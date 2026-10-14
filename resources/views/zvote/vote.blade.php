@@ -168,6 +168,20 @@
                                     </div>
                                 </div>
 
+                                {{-- Print opens the slip in the browser's own viewer, which
+                                     has a print button; share hands the file itself to the
+                                     OS share sheet. --}}
+                                <div class="d-flex justify-content-center gap-2 mb-3">
+                                    <a href="{{ route('zvote.slip', $event) }}" target="_blank" rel="noopener"
+                                       class="ap-btn ap-btn-secondary ap-btn-sm">
+                                        <i class="bi bi-printer me-1"></i>Print Slip
+                                    </a>
+                                    <button type="button" class="ap-btn ap-btn-secondary ap-btn-sm"
+                                            data-share-slip="{{ route('zvote.slip', $event) }}"
+                                            data-slip-name="lot-{{ $assignedPlot->plot_code }}.pdf">
+                                        <i class="bi bi-share me-1"></i>Share Slip
+                                    </button>
+                                </div>
                             @endif
 
                             <a href="{{ route('dashboard') }}" class="ap-btn ap-btn-outline ap-btn-sm">
@@ -263,3 +277,37 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+// Share the slip itself, not a link to it: the PDF route sits behind auth, so a
+// URL is useless to whoever receives it. Web Share with a file is the only way
+// the participant's own copy actually travels.
+document.querySelector('[data-share-slip]')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget;
+    const original = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Preparing…';
+
+    try {
+        const res = await fetch(btn.dataset.shareSlip);
+        if (!res.ok) throw new Error(res.status);
+        const file = new File([await res.blob()], btn.dataset.slipName, { type: 'application/pdf' });
+
+        // Desktop browsers mostly cannot share files. Opening the slip is the
+        // honest fallback — from there it can be saved and sent by hand.
+        if (navigator.canShare?.({ files: [file] })) {
+            await navigator.share({ files: [file], title: 'Lot Draw Slip' });
+        } else {
+            window.open(btn.dataset.shareSlip, '_blank', 'noopener');
+        }
+    } catch (err) {
+        // AbortError is the participant closing the share sheet, not a failure.
+        if (err.name !== 'AbortError') window.open(btn.dataset.shareSlip, '_blank', 'noopener');
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+});
+</script>
+@endpush
