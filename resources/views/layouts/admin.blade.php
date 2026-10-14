@@ -520,6 +520,13 @@
                         ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy'],
                     ],
                 ],
+                [
+                    'label' => 'Audit Trail',
+                    'icon'  => 'journal-text',
+                    'route' => 'admin.audit-trails.index',
+                    'match' => ['admin.audit-trails.*'],
+                    'when'  => fn ($admin) => $admin->hasGlobalAccess(),
+                ],
             ];
 
             $visible = array_values(array_filter(

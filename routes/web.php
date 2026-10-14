@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AnnouncementController;
+use App\Http\Controllers\Admin\AuditTrailController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntRegistrationController;
@@ -168,6 +169,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
         });
         Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+
+        /* The audit trail: read-only, super and hq. */
+        Route::middleware('can:read-audit-trail')->group(function () {
+            Route::get('audit-trails', [AuditTrailController::class, 'index'])->name('audit-trails.index');
+            Route::get('audit-trails/{auditTrail}', [AuditTrailController::class, 'show'])->name('audit-trails.show');
+        });
 
         Route::middleware('can:manage-settings')->prefix('settings')->name('settings.')->group(function () {
             Route::get('lists', [SettingController::class, 'lists'])->name('lists');

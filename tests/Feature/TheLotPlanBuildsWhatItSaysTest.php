@@ -111,8 +111,27 @@ it('rewrites the plan and records what the rewrite destroyed', function () {
     $rewrite = AuditTrail::where('action', 'plan_rewrite')->sole();
 
     expect($rewrite->new_values['cascade_deleted']['plots'])->toBe(5)
+        ->and($rewrite->new_values['cascade_deleted']['plot_sizes'])->toBe(1)   // Hall A went
         ->and(Plot::where('event_id', $event->id)->count())->toBe(2)
         ->and(Plot::first()->plot_code)->toStartWith('HALL B-');
+});
+
+it('counts only the plan rows a rewrite really removed, not the pairs it kept', function () {
+    $event = Event::factory()->create();
+    $admin = superAdmin();
+    $keep = ['location' => 'Hall A', 'quantity' => 5, 'size' => '3x3'];
+
+    $this->actingAs($admin, 'admin')->post(route('admin.polling.store'), planPost($event, [], [$keep]));
+    $kept = PlotSize::sole()->id;
+
+    // Same location and size, a different count: the pair survives, by id.
+    $this->actingAs($admin, 'admin')->put(route('admin.polling.update', $event), planPost($event, [], [['quantity' => 3] + $keep]));
+
+    $rewrite = AuditTrail::where('action', 'plan_rewrite')->sole();
+
+    expect(PlotSize::sole()->id)->toBe($kept)
+        ->and($rewrite->new_values['cascade_deleted']['plot_sizes'])->toBe(0)
+        ->and($rewrite->old_values['plot_sizes'])->toBe([]);
 });
 
 it('locks the plan once a lot is held, preset included', function () {

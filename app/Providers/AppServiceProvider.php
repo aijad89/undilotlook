@@ -236,6 +236,11 @@ class AppServiceProvider extends ServiceProvider
             return $admin->hasGlobalAccess();
         });
 
+        /* The audit trail. hq included, Admin rows and all — see AuditTrailController. */
+        Gate::define('read-audit-trail', function (Admin $admin) {
+            return $admin->hasGlobalAccess();
+        });
+
         /*
          * ┌─ THE VIEWS THAT READ $unreadNotificationCount. ADD A FOURTH HERE. ─┐
          *

@@ -287,9 +287,10 @@ class PollingController extends Controller
 
             // Before the first statement that removes anything — see
             // recordPlanCascade().
-            $this->recordPlanCascade($event, 'plan_rewrite');
+            $audit = $this->recordPlanCascade($event, 'plan_rewrite');
 
             $this->savePlan($event, $validated);
+            $this->settleSizes($audit, $event);
             $this->doGeneratePlots($event);
         });
 
@@ -629,18 +630,22 @@ class PollingController extends Controller
      * The action is not `deleted` — the event survives. AuditTrail recognises a
      * summary by its `cascade_deleted` key. A rewrite pairs with the
      * `plots_generated` row doGeneratePlots() writes at the end of the same act.
+     *
+     * Returned, because a REWRITE keeps every (location, size) pair the new plan
+     * still names: at the top of the act all sizes look doomed, and only after
+     * savePlan() is it known which went. settleSizes() corrects the one count.
      */
-    private function recordPlanCascade(Event $event, string $action): void
+    private function recordPlanCascade(Event $event, string $action): ?AuditTrail
     {
         $sizeIds = $event->plotSizes()->pluck('id');
 
         if ($sizeIds->isEmpty()) {
-            return;
+            return null;
         }
 
         $under = fn (string $table) => DB::table($table)->whereIn('plot_size_id', $sizeIds)->count();
 
-        AuditTrail::record($action, $event, ['plot_sizes' => $sizeIds->values()->all()], [
+        return AuditTrail::record($action, $event, ['plot_sizes' => $sizeIds->values()->all()], [
             'cascade_deleted' => [
                 'plot_sizes' => $sizeIds->count(),
                 'plots' => $under('plots'),
@@ -649,6 +654,20 @@ class PollingController extends Controller
             ],
             'links_cleared' => [],
         ]);
+    }
+
+    /** After a rewrite: the sizes that are really gone, out of those recorded. */
+    private function settleSizes(?AuditTrail $row, Event $event): void
+    {
+        if (! $row) {
+            return;
+        }
+
+        $gone = collect($row->old_values['plot_sizes'])->diff($event->plotSizes()->pluck('id'));
+
+        $summary = $row->new_values;
+        $summary['cascade_deleted']['plot_sizes'] = $gone->count();
+        $row->forceFill(['old_values' => ['plot_sizes' => $gone->values()->all()], 'new_values' => $summary])->save();
     }
 
     /**

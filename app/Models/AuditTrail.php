@@ -61,7 +61,11 @@ class AuditTrail extends Model
             'deleted'  => ['bg-danger', 'Deleted'],
             'login'    => ['bg-info', 'Login'],
             'logout'   => ['bg-secondary', 'Logout'],
-            default    => ['bg-dark', ucfirst($this->action)],
+            // The lot plan's own rows, written by PollingController.
+            'plan_rewrite'    => ['bg-warning text-dark', 'Plan rewritten'],
+            'plan_cleared'    => ['bg-danger', 'Plan cleared'],
+            'plots_generated' => ['bg-info', 'Plots generated'],
+            default    => ['bg-dark', ucfirst(str_replace('_', ' ', $this->action))],
         };
     }
 

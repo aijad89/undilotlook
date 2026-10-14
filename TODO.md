@@ -207,7 +207,9 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
 - [x] PDF keputusan lot — `pdf/lot-result.blade.php`, `zvote.slip`. Seksyen imej
       produk, sijil dan OKU dibuang (tiada data itu di sini). Font subsetting
       dihidupkan: satu halaman 880 KB → 30 KB
-- [ ] Skrin audit trail — `Admin/AuditTrailController`
+- [x] Skrin audit trail — `Admin/AuditTrailController`, super/hq. Kiraan
+      `plot_sizes` pada `plan_rewrite` kini dibetulkan selepas simpan: pasangan
+      (lokasi, saiz) yang dikekalkan tidak lagi dilaporkan sebagai dipadam
 - [x] Pengumuman + `VotingCloseReminder` + queue worker. Satu kelas
       `AnnouncementNotification` menggantikan tiga salinan `daftar`. Peti masuk
       peserta + loceng; fail sepanduk/lampiran dari cakera peribadi, hanya kepada
