@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntRegistrationController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\PlotPainterController;
 use App\Http\Controllers\Admin\PollingController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
@@ -105,6 +106,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('{event}/draw-animation', [PollingController::class, 'updateDrawAnimation'])->name('draw-animation');
                 Route::post('{event}/preset', [PollingController::class, 'presetAssign'])->name('preset-assign');
                 Route::post('{event}/plots/{plot}/unassign', [PollingController::class, 'unassignPlot'])->name('unassign-plot');
+                Route::get('{event}/paint', [PlotPainterController::class, 'edit'])->name('paint');
+                Route::put('{event}/paint', [PlotPainterController::class, 'update'])->name('paint.update');
             });
 
             Route::get('{event}', [PollingController::class, 'show'])->name('show');

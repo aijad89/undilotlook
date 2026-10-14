@@ -114,7 +114,14 @@
                 <div class="mac-card-header d-flex justify-content-between align-items-center">
                     <div class="mac-card-title">Locations</div>
                     @if($canManage && ! $planLocked && in_array($stage, ['draft', 'cancelled'], true))
-                        <a href="{{ route('admin.polling.edit', $event) }}" class="mac-btn-secondary">Edit plan</a>
+                        <div class="d-flex gap-2">
+                            @if($event->plots->isNotEmpty())
+                                <a href="{{ route('admin.polling.paint', $event) }}" class="mac-btn-secondary">
+                                    <i class="bi bi-palette"></i> Paint codes
+                                </a>
+                            @endif
+                            <a href="{{ route('admin.polling.edit', $event) }}" class="mac-btn-secondary">Edit plan</a>
+                        </div>
                     @endif
                 </div>
                 <div class="table-responsive">

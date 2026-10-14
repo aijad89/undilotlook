@@ -167,7 +167,10 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
     tidak pernah berjalan; `completed` ditolak selagi ada yang belum duduk;
     dropdown status pada borang sunting (yang `update()` abaikan) diganti
     paparan baca sahaja
-- [ ] `Admin/PlotPainterController` (`polling2`) — susun atur plot visual
+- [x] `Admin/PlotPainterController` — `admin.polling.paint`, dipaut dari tab Plan.
+      Kod sahaja boleh dicat (sama seperti pelan bertaip); petak dan cip kini
+      `<button>` supaya papan kekunci boleh mencapainya. Ujian:
+      `PaintingCodesOntoPlotsTest`
 - [x] Penetapan awal (preset assign) — dalam `PollingController`, dengan
       pengesahan pelayar bila merentas kod
 - [x] Sisi pengguna — `LotDrawController` (`show`, `submit`), bukan
