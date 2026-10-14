@@ -208,7 +208,11 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       produk, sijil dan OKU dibuang (tiada data itu di sini). Font subsetting
       dihidupkan: satu halaman 880 KB → 30 KB
 - [ ] Skrin audit trail — `Admin/AuditTrailController`
-- [ ] Pengumuman + `VotingCloseReminder` + queue worker
+- [x] Pengumuman + `VotingCloseReminder` + queue worker. Satu kelas
+      `AnnouncementNotification` menggantikan tiga salinan `daftar`. Peti masuk
+      peserta + loceng; fail sepanduk/lampiran dari cakera peribadi, hanya kepada
+      yang dicapai. Pekerja queue tempatan: butang pada `/auto`. Pada pelayan:
+      `undilot-queue.service` — sebahagian daripada Deploy
 - [x] Scheduler: `events:update-statuses`, `voting:send-reminder`, dijadualkan
       dalam `routes/console.php`. Buka automatik melalui `PollingGuard`, sama
       seperti butang. `config/app.php` kini `Asia/Kuala_Lumpur` — pada UTC

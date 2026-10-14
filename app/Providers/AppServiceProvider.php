@@ -228,6 +228,15 @@ class AppServiceProvider extends ServiceProvider
         });
 
         /*
+         * Sending an announcement. Reading is not gated — Announcement::
+         * visibleToAdmin() narrows what each admin sees — but sending is not a
+         * state admin's job, whoever would receive it.
+         */
+        Gate::define('send-announcements', function (Admin $admin) {
+            return $admin->hasGlobalAccess();
+        });
+
+        /*
          * ┌─ THE VIEWS THAT READ $unreadNotificationCount. ADD A FOURTH HERE. ─┐
          *
          * Any view that starts reading `$unreadNotificationCount` MUST be named in
@@ -241,7 +250,7 @@ class AppServiceProvider extends ServiceProvider
          * admin view displays at all. Scoping the list is what takes an admin page
          * to zero; memoising alone only takes it to one.
          */
-        View::composer(['dashboard', 'layouts.frontend'], function ($view) {
+        View::composer(['dashboard', 'layouts.frontend', 'notifications.index'], function ($view) {
             $view->with('unreadNotificationCount', app('notifications.unread-count'));
         });
     }

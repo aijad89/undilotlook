@@ -500,6 +500,12 @@
                     'match' => ['admin.companies.*'],
                 ],
                 [
+                    'label' => 'Announcements',
+                    'icon'  => 'megaphone',
+                    'route' => 'admin.announcements.index',
+                    'match' => ['admin.announcements.*'],
+                ],
+                [
                     'section'  => 'Settings',
                     'label'    => 'Dropdown Lists',
                     'icon'     => 'sliders',

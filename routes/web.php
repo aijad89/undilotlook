@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntRegistrationController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\DevAutoLoginController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\LotDrawController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -39,7 +41,20 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
     Route::get('/events/{event}/lot/slip', [LotDrawController::class, 'slip'])->name('zvote.slip');
+
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
+    Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
 });
+
+/*
+ * An announcement's banner or file: reached from either portal, so either guard
+ * may ask. The controller decides whether this caller may have it.
+ */
+Route::get('/announcements/{announcement}/{kind}', [NotificationController::class, 'file'])
+    ->middleware('auth:web,admin')
+    ->whereIn('kind', ['banner', 'attachment'])
+    ->name('announcements.file');
 
 /* ── Dev: click-to-login ─────────────────────────────────────────────────── */
 
@@ -52,6 +67,7 @@ if (app()->environment(['local', 'testing'])) {
     Route::post('/auto/admin/{admin}', [DevAutoLoginController::class, 'loginAdmin'])->name('dev.auto.admin');
     Route::post('/auto/user/{user}', [DevAutoLoginController::class, 'loginUser'])->name('dev.auto.user');
     Route::post('/auto/logout', [DevAutoLoginController::class, 'logout'])->name('dev.auto.logout');
+    Route::post('/auto/queue', [DevAutoLoginController::class, 'workQueue'])->name('dev.auto.queue');
 }
 
 /* ── Admin ───────────────────────────────────────────────────────────────── */
@@ -145,6 +161,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             ->name('companies.kraf.destroy');
 
         /* Settings — national lists, so super and HQ only. */
+        /* Announcements: every admin reads what reached them; super/hq send. */
+        Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
+        Route::middleware('can:send-announcements')->group(function () {
+            Route::get('announcements/create', [AnnouncementController::class, 'create'])->name('announcements.create');
+            Route::post('announcements', [AnnouncementController::class, 'store'])->name('announcements.store');
+        });
+        Route::get('announcements/{announcement}', [AnnouncementController::class, 'show'])->name('announcements.show');
+
         Route::middleware('can:manage-settings')->prefix('settings')->name('settings.')->group(function () {
             Route::get('lists', [SettingController::class, 'lists'])->name('lists');
             Route::put('lists/{list}', [SettingController::class, 'updateList'])->name('lists.update');

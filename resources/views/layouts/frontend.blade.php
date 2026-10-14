@@ -621,9 +621,17 @@
                 <i class="bi bi-fonts"></i>
             </button>
 
-            {{-- NO NOTIFICATIONS BELL YET. $unreadNotificationCount is already
-                 supplied here by AppServiceProvider's view composer, so when the
-                 screen lands this is the markup and nothing else has to change. --}}
+            {{-- $unreadNotificationCount comes from AppServiceProvider's view
+                 composer, which names this layout. --}}
+            <a href="{{ route('notifications.index') }}" class="ap-icon-btn position-relative"
+               aria-label="Notifications{{ $unreadNotificationCount ? ", {$unreadNotificationCount} unread" : '' }}">
+                <i class="bi bi-bell"></i>
+                @if($unreadNotificationCount)
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">
+                        {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
+                    </span>
+                @endif
+            </a>
 
             {{-- User menu --}}
             <div class="dropdown">

@@ -33,8 +33,16 @@
         <code>local</code> and <code>testing</code>.
     </div>
 
+    @if(session('status'))
+        <div class="banner" style="background:#DCFCE7;border-color:#BBF7D0;color:#166534;">{{ session('status') }}</div>
+    @endif
+
     <div class="bar">
         <h1 style="margin:0;flex:1;">Quick Login</h1>
+        <form method="POST" action="{{ route('dev.auto.queue') }}">
+            @csrf
+            <button type="submit" class="plain">Work the queue ({{ $queued }} waiting)</button>
+        </form>
         <form method="POST" action="{{ route('dev.auto.logout') }}">
             @csrf
             <button type="submit" class="plain">Sign everyone out</button>

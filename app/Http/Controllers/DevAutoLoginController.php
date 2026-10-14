@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Admin;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -44,6 +46,7 @@ class DevAutoLoginController extends Controller
         return response()->view('dev.auto-login', [
             'admins' => Admin::orderBy('role')->orderBy('state')->orderBy('email')->get(),
             'users' => User::with('company')->orderBy('id')->get(),
+            'queued' => DB::table('jobs')->count(),
         ], 200, self::NO_STORE);
     }
 
@@ -83,6 +86,24 @@ class DevAutoLoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('dev.auto');
+    }
+
+    /**
+     * Deliver what is queued, then stop. Every notification here is queued, so
+     * on this machine an announcement or reminder is a row in `jobs` until this
+     * runs. The server has undilot-queue.service instead.
+     */
+    public function workQueue()
+    {
+        $this->ensureLocal();
+
+        $before = DB::table('jobs')->count();
+        Artisan::call('queue:work', ['--stop-when-empty' => true, '--max-time' => 55]);
+        $done = $before - DB::table('jobs')->count();
+        $failed = DB::table('failed_jobs')->count();
+
+        return redirect()->route('dev.auto')->with('status',
+            "Worked off {$done} of {$before} job(s).".($failed ? " {$failed} in failed_jobs." : ''));
     }
 
     /** Who became whom. Nothing here changes a row, so it is a log line, not an audit row. */
