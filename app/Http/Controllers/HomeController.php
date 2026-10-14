@@ -2,35 +2,33 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Event;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
     /**
-     * The public landing page.
+     * The public landing page: every published event, upcoming first.
      *
-     * PHASE 1: there is no public content yet, so this forwards rather than
-     * rendering an empty shell — a signed-in visitor to their own dashboard, and
-     * everyone else to the login form. When the public event listing lands this
-     * becomes that page, and the forward applies only to the signed-in case.
-     *
-     * It redirects to the ADMIN dashboard for an admin session. Without that
-     * branch an admin who clicks the logo lands on the participant login form,
-     * because `/` is a guest route and an admin-guard session is a guest on the
-     * `web` guard.
+     * Read-only for everyone. There is no self-registration — the office puts a
+     * company into a draw — so the page invites a participant to sign in to
+     * confirm a lot, never to register. How many lots an event holds stays off
+     * it, as it does everywhere a participant looks.
      */
     public function index(Request $request)
     {
-        if (Auth::guard('admin')->check()) {
-            return redirect()->route('admin.dashboard');
-        }
+        $events = Event::where('status', '!=', 'draft')
+            ->when($request->input('search'), fn ($q, $search) => $q->where(
+                fn ($w) => $w->where('title', 'like', "%{$search}%")->orWhere('location', 'like', "%{$search}%")
+            ))
+            ->get();
 
-        if (Auth::guard('web')->check()) {
-            return redirect()->route('dashboard');
-        }
+        [$past, $upcoming] = $events->partition(fn (Event $e) => $e->end_date->isPast());
 
-        return redirect()->route('login');
+        return view('home', [
+            'upcoming' => $upcoming->sortBy('start_date')->values(),
+            'past' => $past->sortByDesc('start_date')->take(12)->values(),
+        ]);
     }
 
     /**

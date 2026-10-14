@@ -6,10 +6,12 @@ use App\Http\Controllers\Admin\CompanyController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\EntRegistrationController;
 use App\Http\Controllers\Admin\EventController;
+use App\Http\Controllers\Admin\FooterMenuController;
 use App\Http\Controllers\Admin\PlotPainterController;
 use App\Http\Controllers\Admin\PollingController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SettingController;
+use App\Http\Controllers\Admin\SocialLinkController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\DevAutoLoginController;
 use App\Http\Controllers\HomeController;
@@ -181,6 +183,14 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('companies', [ReportController::class, 'companies'])->name('companies');
             Route::get('event-summary', [ReportController::class, 'eventSummary'])->name('event-summary');
             Route::get('lot-draw', [ReportController::class, 'lotDraw'])->name('lot-draw');
+        });
+
+        /* The public site's footer pages and social links: national, super and hq. */
+        Route::middleware('can:manage-site-content')->group(function () {
+            Route::post('footer-menus/reorder', [FooterMenuController::class, 'reorder'])->name('footer-menus.reorder');
+            Route::resource('footer-menus', FooterMenuController::class)->except(['show']);
+            Route::post('social-links/reorder', [SocialLinkController::class, 'reorder'])->name('social-links.reorder');
+            Route::resource('social-links', SocialLinkController::class)->except(['show']);
         });
 
         /* The audit trail: read-only, super and hq. */

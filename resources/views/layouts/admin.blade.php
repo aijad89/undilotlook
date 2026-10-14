@@ -527,6 +527,17 @@
                     ],
                 ],
                 [
+                    'label'    => 'Public Site',
+                    'icon'     => 'globe',
+                    'route'    => 'admin.footer-menus.index',
+                    'match'    => ['admin.footer-menus.*', 'admin.social-links.*'],
+                    'when'     => fn ($admin) => $admin->canManageSiteContent(),
+                    'children' => [
+                        ['label' => 'Footer pages', 'route' => 'admin.footer-menus.index', 'match' => 'admin.footer-menus.*'],
+                        ['label' => 'Social links', 'route' => 'admin.social-links.index', 'match' => 'admin.social-links.*'],
+                    ],
+                ],
+                [
                     'label' => 'Audit Trail',
                     'icon'  => 'journal-text',
                     'route' => 'admin.audit-trails.index',

@@ -227,8 +227,11 @@ Salin dari `daftar/app/Support/` — semuanya hampir kendiri:
       skop dan penapis sama seperti senarai. Palet ialah pemalar, bukan Settings
       (tiada skrin untuknya). Medan warna acara pada borang. Tiada kalendar
       peserta: peserta tidak melayari acara di sini
-- [ ] Halaman awam — senarai acara, menu footer, pautan sosial,
-      `layouts/public.blade.php`
+- [x] Halaman awam — `/` ialah senarai acara diterbitkan (ditulis semula ringkas:
+      tiada pendaftaran sendiri, tiada kiraan lot), `layouts/public.blade.php`,
+      halaman footer dan pautan sosial dengan skrin admin (super/hq). Ikon SVG
+      ditolak — boleh membawa skrip pada origin ini. Penyegerak editor footer
+      kini terikat pada borangnya sendiri, bukan borang Sign Out
 - [x] `/auto` — `DevAutoLoginController`, environment `local`/`testing` sahaja.
       Pintu ber-flag `daftar` untuk pelayan dev tidak dibawa
 - [ ] Suite Playwright — `tests/e2e/serve.js`, `helpers.js`, `fixtures/run.php`,
