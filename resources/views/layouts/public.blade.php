@@ -9,415 +9,91 @@
           integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"
           integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
+    @include('partials.ui-tokens')
+
     <style>
+        /* The public face: the same navy bar as the portal, so a usahawan who
+           signs in steps into the same place; a calm white footer. */
         :root {
-            --pub-blue:     #007AFF;
-            --pub-blue-hov: #0066DD;
-            --pub-green:    #34C759;
-            --pub-red:      #FF3B30;
-            --pub-orange:   #FF9500;
-            --pub-purple:   #AF52DE;
-            --pub-bg:       #F2F2F7;
-            --pub-text:     #1C1C1E;
-            --pub-text2:    #3A3A3C;
-            --pub-muted:    #6E6E73;
-            --pub-border:   rgba(60,60,67,0.12);
-            --pub-nav-bg:   rgba(255,255,255,0.88);
-            --pub-shadow:   0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.05);
-            --pub-font:     -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-            --pub-radius:   14px;
+            --pub-col: 1120px;
+            --pub-blue: var(--ui-blue);
+            --pub-blue-hov: var(--ui-blue-hover);
+            --pub-bg: var(--ui-ground);
+            --pub-text: var(--ui-text);
+            --pub-text2: var(--ui-text-2);
+            --pub-muted: var(--ui-muted);
+            --pub-border: var(--ui-border);
+            --pub-font: var(--ui-font);
+            --pub-radius: var(--ui-r-lg);
         }
+        html, body { background: var(--ui-ground); color: var(--ui-text); overflow-x: hidden; }
+        /* A short page still ends at the bottom of the window. */
+        body { min-height: 100vh; display: flex; flex-direction: column; }
+        #main-content { flex: 1 0 auto; }
 
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        html, body {
-            font-family: var(--pub-font);
-            background: var(--pub-bg);
-            color: var(--pub-text);
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden;
+        /* ── Bar ─────────────────────────────────── */
+        .pub-nav { position: sticky; top: 0; z-index: 1000; height: 64px; background: var(--ui-navy-900); }
+        .pub-nav-inner { display: flex; align-items: center; gap: 8px; max-width: var(--pub-col); height: 100%; margin: 0 auto; padding: 0 24px; }
+        .pub-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; color: #fff; text-decoration: none; }
+        .pub-brand:hover { color: #fff; }
+        .pub-brand-icon, .pub-footer-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: var(--ui-gold); color: var(--ui-navy-950); }
+        .pub-brand-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+        .pub-nav-links { display: flex; align-items: center; gap: 4px; flex: 1; margin-left: 24px; }
+        .pub-nav-links a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: var(--ui-r); color: #d6deea; font-size: 0.95rem; font-weight: 600; text-decoration: none; }
+        .pub-nav-links a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .pub-nav-links a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--ui-gold); border-radius: var(--ui-r) var(--ui-r) 0 0; }
+        .pub-nav-actions { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+        .pub-btn-ghost, .pub-btn-primary {
+            display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+            min-height: 42px; padding: 0 18px; border-radius: var(--ui-r);
+            font-size: 0.95rem; font-weight: 600; text-decoration: none; cursor: pointer;
+            transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
+        .pub-btn-ghost { background: transparent; color: #fff; border: 1px solid rgba(255, 255, 255, 0.35); }
+        .pub-btn-ghost:hover { background: rgba(255, 255, 255, 0.1); color: #fff; }
+        .pub-btn-primary { background: #fff; color: var(--ui-navy-900); border: 1px solid #fff; }
+        .pub-btn-primary:hover { background: var(--ui-blue-tint); color: var(--ui-navy-900); }
+        .pub-user-btn { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 12px 4px 4px; border: none; border-radius: 999px; background: transparent; color: #fff; font-size: 0.95rem; font-weight: 600; cursor: pointer; }
+        .pub-user-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .pub-avatar { width: 32px; height: 32px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--ui-navy-900); font-size: 0.75rem; font-weight: 700; }
+        .pub-dropdown { min-width: 200px; padding: 6px; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-pop); }
+        .pub-dropdown .dropdown-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: var(--ui-r-sm); color: var(--ui-text); font-size: 0.95rem; }
+        .pub-dropdown .dropdown-item:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .pub-dropdown .dropdown-item.text-danger { color: var(--ui-bad-text) !important; }
+        .pub-dropdown hr { margin: 4px 0; border-color: var(--ui-sep); }
 
-        /* ── Navbar ─────────────────────────────── */
-        .pub-nav {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            height: 52px;
-            background: var(--pub-nav-bg);
-            backdrop-filter: blur(24px) saturate(180%);
-            -webkit-backdrop-filter: blur(24px) saturate(180%);
-            border-bottom: 1px solid var(--pub-border);
-        }
-
-        .pub-nav-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-            height: 100%;
-            display: flex;
-            align-items: center;
-            padding: 0 2rem;
-            gap: 0.5rem;
-        }
-
-        .pub-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            flex-shrink: 0;
-        }
-
-        .pub-brand-icon {
-            width: 28px;
-            height: 28px;
-            background: var(--pub-blue);
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,122,255,0.35);
-        }
-
-        .pub-brand-icon svg { width: 14px; height: 14px; }
-
-        .pub-brand-name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--pub-text);
-            letter-spacing: -0.02em;
-        }
-
-        .pub-nav-links {
-            display: flex;
-            align-items: center;
-            margin-left: 1.5rem;
-            flex: 1;
-        }
-
-        .pub-nav-links a {
-            font-size: 0.845rem;
-            font-weight: 500;
-            color: var(--pub-text2);
-            text-decoration: none;
-            padding: 0 0.75rem;
-            height: 52px;
-            display: flex;
-            align-items: center;
-            border-bottom: 2px solid transparent;
-            transition: color 0.12s, border-color 0.12s;
-        }
-
-        .pub-nav-links a:hover { color: var(--pub-blue-hov); }
-        .pub-nav-links a.active {
-            color: var(--pub-blue-hov);
-            border-bottom-color: var(--pub-blue);
-        }
-
-        .pub-nav-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-left: auto;
-        }
-
-        .pub-btn-ghost {
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--pub-text2);
-            text-decoration: none;
-            padding: 6px 14px;
-            border-radius: 980px;
-            border: 1px solid var(--pub-border);
-            transition: all 0.12s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: transparent;
-        }
-
-        .pub-btn-ghost:hover {
-            background: rgba(60,60,67,0.07);
-            color: var(--pub-text);
-        }
-
-        .pub-btn-primary {
-            font-size: 0.82rem;
-            font-weight: 600;
-            color: #fff;
-            text-decoration: none;
-            padding: 6px 16px;
-            border-radius: 980px;
-            background: var(--pub-blue-hov);
-            transition: background 0.12s, transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            border: none;
-            cursor: pointer;
-        }
-
-        .pub-btn-primary:hover { background: #0052B4; color: #fff; transform: scale(1.02); }
-
-        .pub-user-btn {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 4px 12px 4px 4px;
-            border-radius: 980px;
-            text-decoration: none;
-            background: transparent;
-            border: 1px solid var(--pub-border);
-            transition: background 0.12s;
-            color: var(--pub-text);
-            font-size: 0.82rem;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        .pub-user-btn:hover { background: rgba(60,60,67,0.06); color: var(--pub-text); }
-
-        .pub-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--pub-blue), #5856D6);
-            color: #fff;
-            font-size: 0.67rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
-        .pub-dropdown {
-            border: 1px solid var(--pub-border);
-            border-radius: 12px;
-            box-shadow: 0 4px 24px rgba(0,0,0,0.1);
-            padding: 6px;
-            min-width: 180px;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255,255,255,0.96);
-        }
-
-        .pub-dropdown .dropdown-item {
-            border-radius: 8px;
-            font-size: 0.84rem;
-            padding: 7px 12px;
-            color: var(--pub-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .pub-dropdown .dropdown-item:hover { background: rgba(0,122,255,0.08); color: var(--pub-blue-hov); }
-        .pub-dropdown .dropdown-item.text-danger:hover { background: rgba(255,59,48,0.08); color: #B91C1C; }
-        .pub-dropdown hr { border-color: rgba(60,60,67,0.08); margin: 4px 0; }
-
-        /* ── Footer ─────────────────────────────── */
-        .pub-footer-wrap { width: 100%; }
-
-        /* Content panel */
-        .pub-footer-panel {
-            display: none;
-            background: rgba(255,255,255,0.97);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--pub-border);
-            border-bottom: 1px solid var(--pub-border);
-            padding: 28px 2rem;
-            animation: pubPanelIn 0.22s ease;
-        }
-
+        /* ── Footer ──────────────────────────────── */
+        .pub-footer-wrap { width: 100%; margin-top: 48px; flex-shrink: 0; }
+        .pub-footer-panel { display: none; padding: 28px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
         .pub-footer-panel.show { display: block; }
-
-        @keyframes pubPanelIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .pub-footer-panel-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .pub-footer-panel-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--pub-text);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .pub-footer-panel-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--pub-muted);
-            font-size: 1.1rem;
-            line-height: 1;
-            padding: 2px 6px;
-            border-radius: 6px;
-            transition: background 0.12s, color 0.12s;
-        }
-
-        .pub-footer-panel-close:hover {
-            background: rgba(0,0,0,0.06);
-            color: var(--pub-text);
-        }
-
-        .pub-footer-panel-body {
-            font-size: 0.85rem;
-            line-height: 1.7;
-            color: #3A3A3C;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        .pub-footer-panel-body a { color: var(--pub-blue-hov); text-decoration: underline; }
-
-        /* Footer bar */
-        .pub-footer {
-            background: rgba(255,255,255,0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--pub-border);
-            padding: 20px 2rem 16px;
-        }
-
-        .pub-footer-inner {
-            max-width: 1100px;
-            margin: 0 auto;
-        }
-
-        .pub-footer-top {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 14px;
-        }
-
-        .pub-footer-brand {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            text-decoration: none;
-            color: var(--pub-text);
-            font-size: 0.87rem;
-            font-weight: 700;
-        }
-
-        .pub-footer-icon {
-            width: 24px;
-            height: 24px;
-            background: var(--pub-blue);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .pub-footer-icon svg { width: 13px; height: 13px; }
-
-        .pub-footer-copy {
-            font-size: 0.78rem;
-            color: var(--pub-muted);
-        }
-
-        /* Footer bottom row */
-        .pub-footer-bottom {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        /* Pyramid menu — plain text, left-aligned */
+        .pub-footer-panel-inner { max-width: var(--pub-col); margin: 0 auto; }
+        .pub-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.1rem; font-weight: 700; }
+        .pub-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); }
+        .pub-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .pub-footer-panel-body { max-width: 72ch; max-height: 260px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
+        .pub-footer { padding: 28px 24px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
+        .pub-footer-inner { max-width: var(--pub-col); margin: 0 auto; }
+        .pub-footer-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+        .pub-footer-brand { display: flex; align-items: center; gap: 10px; color: var(--ui-text); font-weight: 700; text-decoration: none; }
+        .pub-footer-copy { font-size: 0.9rem; color: var(--ui-muted); }
+        .pub-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; }
         .pub-footer-menu-rows { flex: 1; }
+        .pub-footer-menu-row { display: flex; flex-wrap: wrap; gap: 4px 22px; margin-bottom: 4px; }
+        .pub-footer-menu-btn { padding: 6px 0; border: none; background: none; color: var(--ui-text-2); font-size: 0.95rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+        .pub-footer-menu-btn:hover, .pub-footer-menu-btn.active { color: var(--ui-blue-text); }
+        .pub-footer-follow { flex-shrink: 0; text-align: right; }
+        .pub-footer-follow-label { margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--ui-muted); }
+        .pub-footer-follow-icons { display: flex; justify-content: flex-end; gap: 8px; }
+        .pub-footer-follow-icons a { width: 44px; height: 44px; display: grid; place-items: center; border-radius: var(--ui-r); background: var(--ui-neutral-tint); color: var(--ui-text-2); font-size: 1.1rem; text-decoration: none; }
+        .pub-footer-follow-icons a:hover { background: var(--ui-navy-900); color: #fff; }
 
-        .pub-footer-menu-row {
-            display: flex;
-            justify-content: flex-start;
-            gap: 20px;
-            margin-bottom: 4px;
-            flex-wrap: wrap;
-        }
-
-        .pub-footer-menu-row:last-child { margin-bottom: 0; }
-
-        .pub-footer-menu-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 0.8rem;
-            color: var(--pub-muted);
-            cursor: pointer;
-            transition: color 0.15s;
-            white-space: nowrap;
-        }
-
-        .pub-footer-menu-btn:hover,
-        .pub-footer-menu-btn.active {
-            background: none;
-            border: none;
-            color: var(--pub-blue-hov);
-        }
-
-        /* Follow Us */
-        .pub-footer-follow { text-align: right; flex-shrink: 0; }
-
-        .pub-footer-follow-label {
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--pub-muted);
-            margin-bottom: 8px;
-        }
-
-        .pub-footer-follow-icons {
-            display: flex;
-            gap: 10px;
-            justify-content: flex-end;
-        }
-
-        .pub-footer-follow-icons a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            background: rgba(0,0,0,0.05);
-            color: var(--pub-muted);
-            font-size: 1rem;
-            text-decoration: none;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .pub-footer-follow-icons a:hover {
-            background: var(--pub-blue);
-            color: #fff;
-        }
-
-        @media (max-width: 576px) {
+        @media (max-width: 640px) {
+            .pub-nav-inner { padding: 0 14px; }
+            .pub-nav-links { margin-left: 8px; }
+            .pub-brand-name { display: none; }
             .pub-footer-bottom { flex-direction: column; }
             .pub-footer-follow { text-align: left; }
             .pub-footer-follow-icons { justify-content: flex-start; }
-        }
-
-        @media (max-width: 768px) {
-            .pub-nav-inner { padding: 0 1rem; }
-            .pub-nav-links { display: none; }
-            .pub-footer-top { flex-direction: column; text-align: center; }
         }
     </style>
     @stack('styles')
@@ -431,15 +107,7 @@
 <nav class="pub-nav">
     <div class="pub-nav-inner">
         <a href="{{ route('home') }}" class="pub-brand">
-            <div class="pub-brand-icon">
-                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1.5" y="3" width="9" height="11" rx="1.8" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.7)" stroke-width="1.1"/>
-                    <rect x="4.5" y="1.5" width="9" height="11" rx="1.8" fill="white"/>
-                    <rect x="6.5" y="4.5" width="5" height="1.1" rx="0.55" fill="#007AFF"/>
-                    <rect x="6.5" y="6.5" width="3.5" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                    <rect x="6.5" y="8.5" width="4" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                </svg>
-            </div>
+            <div class="pub-brand-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></div>
             <span class="pub-brand-name">{{ $siteName }}</span>
         </a>
 
@@ -523,15 +191,7 @@
         <div class="pub-footer-inner">
             <div class="pub-footer-top">
                 <a href="{{ route('home') }}" class="pub-footer-brand">
-                    <div class="pub-footer-icon">
-                        <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect x="1.5" y="3" width="9" height="11" rx="1.8" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.7)" stroke-width="1.1"/>
-                            <rect x="4.5" y="1.5" width="9" height="11" rx="1.8" fill="white"/>
-                            <rect x="6.5" y="4.5" width="5" height="1.1" rx="0.55" fill="#007AFF"/>
-                            <rect x="6.5" y="6.5" width="3.5" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                            <rect x="6.5" y="8.5" width="4" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                        </svg>
-                    </div>
+                    <div class="pub-footer-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></div>
                     {{ $siteName }}
                 </a>
                 <div class="pub-footer-copy">&copy; {{ date('Y') }} {{ $siteName }}. All Rights Reserved.</div>

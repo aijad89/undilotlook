@@ -5,7 +5,7 @@
 @section('content')
 <div style="width: 100%;">
     <div class="mb-4">
-        <h1 class="h3 fw-bold mb-1" style="color: #0d47a1;">Welcome back</h1>
+        <h1 class="h3 fw-bold mb-1">Welcome back</h1>
         <p class="text-muted mb-0" style="font-size: 0.9rem;">Sign in to your admin account</p>
     </div>
 

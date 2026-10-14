@@ -13,530 +13,152 @@
     {{-- Apply enlarged-text class before paint to avoid flash --}}
     <script>(function(){var s=localStorage.getItem('textSizeLevel');if(s==='1')document.documentElement.classList.add('text-large');else if(s==='2')document.documentElement.classList.add('text-xlarge');})();</script>
 
+    @include('partials.ui-tokens')
+
     <style>
-        /* ──────────────────────────────────────────
-           Apple UI Design System — User Portal
-        ────────────────────────────────────────── */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
+        /* The usahawan's portal: a navy app bar, one reading column, large type and
+           large targets. On a desk the nav sits in the bar; on a phone it is a
+           drawer, and the bar keeps only what a thumb needs. */
         :root {
-            --apple-blue:     #007AFF;
-            --apple-blue-hov: #0066DD;
-            --apple-green:    #34C759;
-            --apple-red:      #FF3B30;
-            --apple-orange:   #FF9500;
-            --apple-purple:   #AF52DE;
-            --apple-teal:     #5AC8FA;
-            --apple-bg:       #F2F2F7;
-            --apple-bg2:      #FFFFFF;
-            --apple-card:     #FFFFFF;
-            --apple-sidebar:  rgba(246, 246, 248, 0.92);
-            --apple-topbar:   rgba(255, 255, 255, 0.85);
-            --apple-text:     #1C1C1E;
-            --apple-text2:    #3A3A3C;
-            --apple-muted:    #6E6E73;
-            --apple-border:   rgba(60, 60, 67, 0.12);
-            --apple-sep:      rgba(60, 60, 67, 0.08);
-            --apple-shadow:   0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
-            --apple-shadow-lg:0 2px 8px rgba(0,0,0,0.06), 0 12px 40px rgba(0,0,0,0.08);
-            --apple-radius:   12px;
-            --apple-radius-sm:8px;
-            --apple-font:     -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
-            --sidebar-w:      242px;
-            --topbar-h:       52px;
+            --ap-col: 760px;
+            --topbar-h: 64px;
+            /* Old names some views still read inline. */
+            --apple-blue: var(--ui-blue);
+            --apple-blue-hov: var(--ui-blue-hover);
+            --apple-green: var(--ui-ok);
+            --apple-red: var(--ui-bad);
+            --apple-orange: var(--ui-warn);
+            --apple-purple: var(--ui-violet-text);
+            --apple-bg: var(--ui-ground);
+            --apple-card: var(--ui-surface);
+            --apple-text: var(--ui-text);
+            --apple-text2: var(--ui-text-2);
+            --apple-muted: var(--ui-muted);
+            --apple-border: var(--ui-border);
+            --apple-sep: var(--ui-sep);
+            --apple-radius: var(--ui-r-lg);
+            --apple-radius-sm: var(--ui-r);
+            --apple-font: var(--ui-font);
+            --apple-shadow: var(--ui-shadow-1);
+            --apple-shadow-lg: var(--ui-shadow-pop);
         }
 
-        html, body {
-            height: 100%;
-            background: var(--apple-bg);
-            font-family: var(--apple-font);
-            color: var(--apple-text);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            overflow-x: hidden;
-        }
+        html, body { min-height: 100%; background: var(--ui-ground); color: var(--ui-text); font-size: 1rem; line-height: 1.55; overflow-x: hidden; }
 
-        /* ── Sidebar ─────────────────────────────── */
+        /* ── Drawer (phone) ──────────────────────── */
         .ap-sidebar {
-            position: fixed;
-            inset: 0 auto 0 0;
-            width: var(--sidebar-w);
-            background: var(--apple-sidebar);
-            backdrop-filter: blur(28px) saturate(180%);
-            -webkit-backdrop-filter: blur(28px) saturate(180%);
-            border-right: 1px solid var(--apple-border);
-            z-index: 1000;
-            display: flex;
-            flex-direction: column;
-            overflow-y: auto;
-            overflow-x: hidden;
+            position: fixed; inset: 0 auto 0 0; z-index: 1000; width: 280px;
+            display: flex; flex-direction: column; overflow-y: auto;
+            background: var(--ui-navy-900); color: #fff;
+            transform: translateX(-100%); transition: transform 0.28s var(--ui-ease);
         }
-
-        .ap-sidebar-header {
-            padding: 18px 16px 14px;
-            border-bottom: 1px solid var(--apple-sep);
-            flex-shrink: 0;
-        }
-
-        .ap-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-        }
-
-        .ap-brand-icon {
-            width: 30px;
-            height: 30px;
-            background: var(--apple-blue);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0,122,255,0.35);
-        }
-
-        .ap-brand-icon svg { width: 16px; height: 16px; }
-
-        .ap-brand-name {
-            font-size: 0.95rem;
-            font-weight: 700;
-            color: var(--apple-text);
-            letter-spacing: -0.02em;
-        }
-
-        /* Sidebar section labels */
-        .ap-sidebar-label {
-            font-size: 0.67rem;
-            font-weight: 600;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            color: var(--apple-muted);
-            padding: 16px 16px 4px;
-        }
-
-        /* Sidebar nav items */
+        .ap-sidebar.open { transform: translateX(0); box-shadow: var(--ui-shadow-pop); }
+        .ap-sidebar-header { padding: 18px 18px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8rem; font-weight: 600; color: #8fa1ba; }
         .ap-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-            padding: 7px 12px 7px 14px;
-            margin: 1px 8px;
-            border-radius: var(--apple-radius-sm);
-            text-decoration: none;
-            color: var(--apple-text2);
-            font-size: 0.855rem;
-            font-weight: 500;
-            transition: background 0.12s, color 0.12s;
-            position: relative;
+            display: flex; align-items: center; gap: 12px; min-height: 52px;
+            margin: 2px 10px; padding: 10px 12px; border-radius: var(--ui-r);
+            color: #d6deea; font-size: 1.02rem; font-weight: 500; text-decoration: none;
         }
-
-        .ap-nav-item:hover {
-            background: rgba(60, 60, 67, 0.08);
-            color: var(--apple-text);
-        }
-
-        .ap-nav-item.active {
-            background: rgba(0, 122, 255, 0.1);
-            /* #007AFF (the brand accent, used elsewhere against white/dark backgrounds) only
-               reaches ~3.6:1 against this light blue-tint background — a dedicated darker
-               shade is used here specifically to clear WCAG AA's 4.5:1 for normal text. */
-            color: #0051A8;
-        }
-
-        .ap-nav-item .ap-nav-icon {
-            width: 28px;
-            height: 28px;
-            border-radius: 7px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            font-size: 0.85rem;
-            background: rgba(60, 60, 67, 0.08);
-            color: var(--apple-text2);
-            transition: background 0.12s, color 0.12s;
-        }
-
-        .ap-nav-item.active .ap-nav-icon,
-        .ap-nav-item:hover .ap-nav-icon {
-            background: var(--apple-blue);
-            color: #fff;
-        }
-
-        /* Icon colors per section */
-        .ap-nav-item[data-icon="dashboard"] .ap-nav-icon  { background: rgba(0,122,255,0.12); color: var(--apple-blue); }
-        .ap-nav-item[data-icon="profile"] .ap-nav-icon    { background: rgba(88,86,214,0.12); color: #5856D6; }
-        .ap-nav-item[data-icon="company"] .ap-nav-icon    { background: rgba(90,200,250,0.15); color: #0099FF; }
-        .ap-nav-item[data-icon="browse"] .ap-nav-icon     { background: rgba(255,149,0,0.12); color: var(--apple-orange); }
-        .ap-nav-item[data-icon="myreg"] .ap-nav-icon      { background: rgba(52,199,89,0.12); color: var(--apple-green); }
-        .ap-nav-item[data-icon="lot"] .ap-nav-icon        { background: rgba(175,82,222,0.12); color: var(--apple-purple); }
-        .ap-nav-item[data-icon="notif"] .ap-nav-icon      { background: rgba(255,59,48,0.1); color: var(--apple-red); }
-        .ap-nav-item[data-icon="survey"] .ap-nav-icon    { background: rgba(52,199,89,0.12); color: var(--apple-green); }
-
-        .ap-nav-item.active .ap-nav-icon {
-            background: var(--apple-blue) !important;
-            color: #fff !important;
-        }
-
-        .ap-nav-badge {
-            margin-left: auto;
-            background: #B91C1C;
-            color: #fff;
-            font-size: 0.62rem;
-            font-weight: 700;
-            padding: 1px 6px;
-            border-radius: 999px;
-            line-height: 1.6;
-            flex-shrink: 0;
-        }
-
+        .ap-nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+        .ap-nav-item.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--ui-gold); }
+        .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.1rem; color: #93a4bb; }
+        .ap-nav-item.active .ap-nav-icon { color: var(--ui-gold); }
+        .ap-nav-badge { margin-left: auto; padding: 1px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.72rem; font-weight: 700; }
         .ap-sidebar-spacer { flex: 1; }
+        .ap-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(7, 26, 51, 0.5); }
+        .ap-overlay.show { display: block; }
 
-        .ap-sidebar-footer {
-            padding: 12px 16px;
-            font-size: 0.7rem;
-            color: var(--apple-muted);
-            border-top: 1px solid var(--apple-sep);
-            text-align: center;
-        }
+        /* ── Brand ───────────────────────────────── */
+        .ap-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
+        .ap-brand:hover { color: #fff; }
+        .ap-brand-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: var(--ui-gold); color: var(--ui-navy-950); }
+        .ap-brand-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
 
-        /* ── Main Area ───────────────────────────── */
-        .ap-main {
-            margin-left: var(--sidebar-w);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            background: var(--apple-bg);
-        }
-
-        /* ── Top Bar ─────────────────────────────── */
+        /* ── App bar ─────────────────────────────── */
+        .ap-main { min-height: 100vh; display: flex; flex-direction: column; background: var(--ui-ground); }
         .ap-topbar {
-            height: var(--topbar-h);
-            background: var(--apple-topbar);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--apple-border);
-            padding: 0 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-shrink: 0;
-            position: sticky;
-            top: 0;
-            z-index: 900;
+            position: sticky; top: 0; z-index: 900; flex-shrink: 0;
+            height: var(--topbar-h); padding: 0 max(16px, calc((100vw - var(--ap-col)) / 2 - 120px));
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+            background: var(--ui-navy-900); color: #fff;
         }
-
-        .ap-topbar-left { display: flex; align-items: center; gap: 10px; }
-
-        .ap-topbar-title {
-            font-size: 0.88rem;
-            font-weight: 600;
-            color: var(--apple-text);
-            letter-spacing: -0.01em;
+        .ap-topbar-left, .ap-topbar-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
+        .ap-topbar-title { font-size: 1.02rem; font-weight: 650; color: #fff; }
+        .ap-topbar .ap-brand { margin-right: 18px; }
+        .ap-topnav { display: flex; align-items: center; gap: 4px; }
+        .ap-topnav a {
+            display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
+            border-radius: var(--ui-r); color: #d6deea; font-weight: 600; font-size: 0.95rem; text-decoration: none;
         }
-
-        .ap-topbar-right { display: flex; align-items: center; gap: 8px; }
-
+        .ap-topnav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .ap-topnav a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--ui-gold); border-radius: var(--ui-r) var(--ui-r) 0 0; }
         .ap-icon-btn {
-            width: 32px;
-            height: 32px;
-            border-radius: var(--apple-radius-sm);
-            border: none;
-            background: transparent;
-            color: var(--apple-muted);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: background 0.12s, color 0.12s;
-            font-size: 1rem;
-            text-decoration: none;
+            position: relative; width: 44px; height: 44px; flex-shrink: 0;
+            display: grid; place-items: center; border: none; border-radius: var(--ui-r);
+            background: transparent; color: #d6deea; font-size: 1.15rem; text-decoration: none; cursor: pointer;
+            transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
-
-        .ap-icon-btn:hover {
-            background: rgba(60, 60, 67, 0.08);
-            color: var(--apple-text);
-        }
-
-        .ap-avatar {
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--apple-blue), #5856D6);
-            color: #fff;
-            font-size: 0.72rem;
-            font-weight: 700;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-        }
-
+        .ap-icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .ap-icon-btn .badge { border: 2px solid var(--ui-navy-900); }
+        .ap-text-size-btn.active { background: rgba(255, 255, 255, 0.14); color: #fff; }
         .ap-user-menu {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-            padding: 4px 10px 4px 4px;
-            border-radius: 999px;
-            text-decoration: none;
-            background: transparent;
-            border: none;
-            transition: background 0.12s;
-            color: var(--apple-text);
-            font-size: 0.83rem;
-            font-weight: 500;
+            display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 10px 4px 4px;
+            border: none; border-radius: 999px; background: transparent; color: #fff; font-size: 0.95rem; font-weight: 600;
         }
+        .ap-user-menu:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+        .ap-avatar { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--ui-navy-900); font-size: 0.78rem; font-weight: 700; }
+        .ap-dropdown-menu { min-width: 200px; padding: 6px; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-pop); }
+        .ap-dropdown-menu .dropdown-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: var(--ui-r-sm); color: var(--ui-text); font-size: 0.95rem; }
+        .ap-dropdown-menu .dropdown-item:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .ap-dropdown-menu .dropdown-item.text-danger { color: var(--ui-bad-text) !important; }
+        .ap-dropdown-menu .dropdown-item.text-danger:hover { background: var(--ui-bad-tint); }
+        .ap-dropdown-menu hr { margin: 4px 0; border-color: var(--ui-sep); }
 
-        .ap-user-menu:hover {
-            background: rgba(60, 60, 67, 0.08);
-            color: var(--apple-text);
-        }
-
-        /* ── Dropdown (Bootstrap overrides) ─────── */
-        .ap-dropdown-menu {
-            border: 1px solid var(--apple-border);
-            border-radius: var(--apple-radius);
-            box-shadow: var(--apple-shadow-lg);
-            padding: 6px;
-            min-width: 180px;
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            background: rgba(255,255,255,0.96);
-        }
-
-        .ap-dropdown-menu .dropdown-item {
-            border-radius: var(--apple-radius-sm);
-            font-size: 0.845rem;
-            padding: 7px 12px;
-            color: var(--apple-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .ap-dropdown-menu .dropdown-item:hover {
-            background: rgba(0, 122, 255, 0.08);
-            color: var(--apple-blue-hov);
-        }
-
-        .ap-dropdown-menu .dropdown-item.text-danger:hover {
-            background: rgba(255, 59, 48, 0.08);
-            color: var(--apple-red);
-        }
-
-        .ap-dropdown-menu hr { border-color: var(--apple-sep); margin: 4px 0; }
-
-        /* ── Content ─────────────────────────────── */
-        .ap-content {
-            flex: 1;
-            padding: 24px 24px 20px;
-        }
+        /* ── Reading column ──────────────────────── */
+        .ap-content { flex: 1; width: 100%; max-width: calc(var(--ap-col) + 48px); margin: 0 auto; padding: 32px 24px 40px; }
 
         /* ── Footer ──────────────────────────────── */
-        .ap-footer-wrap {
-            flex-shrink: 0;
-        }
-
-        /* Content panel — slides up above the menu row */
-        .ap-footer-panel {
-            display: none;
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--apple-border);
-            border-bottom: 1px solid var(--apple-border);
-            padding: 24px 32px;
-            position: relative;
-            animation: footerPanelIn 0.22s ease;
-        }
-
+        .ap-footer-wrap { flex-shrink: 0; }
+        .ap-footer-panel { display: none; position: relative; padding: 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
         .ap-footer-panel.show { display: block; }
-
-        @keyframes footerPanelIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        .ap-footer-panel-title {
-            font-size: 1rem;
-            font-weight: 700;
-            color: var(--apple-text);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .ap-footer-panel-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--apple-muted);
-            font-size: 1.1rem;
-            line-height: 1;
-            padding: 2px 6px;
-            border-radius: 6px;
-            transition: background 0.12s, color 0.12s;
-        }
-
-        .ap-footer-panel-close:hover {
-            background: rgba(0,0,0,0.06);
-            color: var(--apple-text);
-        }
-
-        .ap-footer-panel-body {
-            font-size: 0.85rem;
-            line-height: 1.7;
-            color: #3A3A3C;
-            max-height: 220px;
-            overflow-y: auto;
-        }
-
-        .ap-footer-panel-body a { color: var(--apple-blue-hov); text-decoration: underline; }
-
-        /* Footer menu bar */
-        .ap-footer {
-            background: var(--apple-topbar);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid var(--apple-border);
-            padding: 14px 24px 12px;
-            font-size: 0.75rem;
-            color: var(--apple-muted);
-        }
-
-        .ap-footer-copy {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-
-        .ap-footer-brand {
-            font-weight: 700;
-            color: var(--apple-blue-hov);
-        }
-
-        /* Footer bottom row */
-        .ap-footer-bottom {
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        /* Pyramid rows — plain text, left-aligned */
+        .ap-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.05rem; font-weight: 700; }
+        .ap-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); font-size: 1.1rem; }
+        .ap-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .ap-footer-panel-body { max-height: 240px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
+        .ap-footer { padding: 20px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); font-size: 0.875rem; color: var(--ui-muted); }
+        .ap-footer-copy { margin-bottom: 12px; text-align: center; }
+        .ap-footer-brand { font-weight: 700; color: var(--ui-text); }
+        .ap-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; max-width: var(--ap-col); margin: 0 auto; }
         .ap-footer-menu-rows { flex: 1; }
+        .ap-footer-menu-row { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-bottom: 4px; }
+        .ap-footer-menu-btn { padding: 6px 0; border: none; background: none; color: var(--ui-text-2); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+        .ap-footer-menu-btn:hover, .ap-footer-menu-btn.active { color: var(--ui-blue-text); }
+        .ap-footer-follow { flex-shrink: 0; text-align: right; }
+        .ap-footer-follow-label { margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; color: var(--ui-muted); }
+        .ap-footer-follow-icons { display: flex; justify-content: flex-end; gap: 8px; }
+        .ap-footer-follow-icons a { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--ui-r); background: var(--ui-neutral-tint); color: var(--ui-text-2); text-decoration: none; }
+        .ap-footer-follow-icons a:hover { background: var(--ui-navy-900); color: #fff; }
 
-        .ap-footer-menu-row {
-            display: flex;
-            justify-content: flex-start;
-            gap: 20px;
-            margin-bottom: 4px;
-            flex-wrap: wrap;
+        /* ── Desk widths: the bar carries the nav, no drawer ── */
+        @media (min-width: 992px) {
+            .ap-sidebar, .ap-overlay, #apSidebarToggle { display: none !important; }
+            .ap-topbar-title { display: none; }
         }
-
-        .ap-footer-menu-row:last-child { margin-bottom: 0; }
-
-        .ap-footer-menu-btn {
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 0.78rem;
-            color: var(--apple-muted);
-            cursor: pointer;
-            transition: color 0.15s;
-            white-space: nowrap;
+        @media (max-width: 991.98px) {
+            .ap-topnav, .ap-topbar .ap-brand { display: none; }
         }
-
-        .ap-footer-menu-btn:hover,
-        .ap-footer-menu-btn.active {
-            background: none;
-            border: none;
-            color: var(--apple-blue-hov);
-        }
-
-        /* Follow Us */
-        .ap-footer-follow { text-align: right; flex-shrink: 0; }
-
-        .ap-footer-follow-label {
-            font-size: 0.7rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: var(--apple-muted);
-            margin-bottom: 7px;
-        }
-
-        .ap-footer-follow-icons {
-            display: flex;
-            gap: 8px;
-            justify-content: flex-end;
-        }
-
-        .ap-footer-follow-icons a {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 28px;
-            height: 28px;
-            border-radius: 7px;
-            background: rgba(0,0,0,0.05);
-            color: var(--apple-muted);
-            font-size: 0.9rem;
-            text-decoration: none;
-            transition: background 0.15s, color 0.15s;
-        }
-
-        .ap-footer-follow-icons a:hover {
-            background: var(--apple-blue);
-            color: #fff;
-        }
-
         @media (max-width: 576px) {
+            .ap-content { padding: 20px 16px 32px; }
             .ap-footer-bottom { flex-direction: column; }
             .ap-footer-follow { text-align: left; }
             .ap-footer-follow-icons { justify-content: flex-start; }
+            .ap-user-menu span { display: none; }
         }
 
-        /* ── Mobile sidebar ──────────────────────── */
-        @media (max-width: 991px) {
-            .ap-sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-                box-shadow: none;
-            }
-            .ap-sidebar.open {
-                transform: translateX(0);
-                box-shadow: var(--apple-shadow-lg);
-            }
-            .ap-main { margin-left: 0; }
-            .ap-topbar-title { display: none; }
-            .ap-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.25);
-                backdrop-filter: blur(2px);
-                z-index: 999;
-            }
-            .ap-overlay.show { display: block; }
-        }
-
-        @media (max-width: 576px) {
-            .ap-content { padding: 16px 14px; }
-        }
-
-        /* ── Enlarged text ───────────────────────── */
-        html.text-large, html.text-large body { font-size: 1.04rem !important; }
-        html.text-xlarge, html.text-xlarge body { font-size: 1.18rem !important; }
-
-        .ap-text-size-btn.active {
-            background: rgba(0, 122, 255, 0.1);
-            color: var(--apple-blue-hov);
-        }
+        /* The portal's text-size toggle: older eyes come first here. */
+        html.text-large, html.text-large body { font-size: 1.12rem !important; }
+        html.text-xlarge, html.text-xlarge body { font-size: 1.26rem !important; }
     </style>
 
     @stack('styles')
@@ -549,15 +171,7 @@
 <aside class="ap-sidebar" id="apSidebar">
     <div class="ap-sidebar-header">
         <a href="{{ route('dashboard') }}" class="ap-brand">
-            <div class="ap-brand-icon">
-                <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <rect x="1.5" y="3" width="9" height="11" rx="1.8" fill="rgba(255,255,255,0.3)" stroke="rgba(255,255,255,0.7)" stroke-width="1.1"/>
-                    <rect x="4.5" y="1.5" width="9" height="11" rx="1.8" fill="white"/>
-                    <rect x="6.5" y="4.5" width="5" height="1.1" rx="0.55" fill="#007AFF"/>
-                    <rect x="6.5" y="6.5" width="3.5" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                    <rect x="6.5" y="8.5" width="4" height="1.1" rx="0.55" fill="#007AFF" opacity="0.55"/>
-                </svg>
-            </div>
+            <span class="ap-brand-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span>
             <span class="ap-brand-name">undilot</span>
         </a>
     </div>
@@ -610,9 +224,20 @@
     <header class="ap-topbar">
         <div class="ap-topbar-left">
             <button class="ap-icon-btn" id="apSidebarToggle" aria-label="Toggle sidebar">
-                <i class="bi bi-sidebar"></i>
+                <i class="bi bi-list" aria-hidden="true"></i>
             </button>
             <span class="ap-topbar-title">@yield('page-title', 'Dashboard')</span>
+            <a href="{{ route('dashboard') }}" class="ap-brand">
+                <span class="ap-brand-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+                <span class="ap-brand-name">undilot</span>
+            </a>
+            <nav class="ap-topnav" aria-label="Main">
+                @foreach($apNav as $apItem)
+                    <a href="{{ route($apItem['route']) }}" class="{{ request()->routeIs($apItem['match'] ?? $apItem['route']) ? 'active' : '' }}">
+                        {{ $apItem['label'] }}
+                    </a>
+                @endforeach
+            </nav>
         </div>
 
         <div class="ap-topbar-right">
@@ -642,7 +267,7 @@
                 <ul class="dropdown-menu dropdown-menu-end ap-dropdown-menu">
                     <li>
                         <a class="dropdown-item" href="{{ route('dashboard') }}">
-                            <i class="bi bi-house-door" style="color:var(--apple-blue)"></i> Dashboard
+                            <i class="bi bi-house-door"></i> Dashboard
                         </a>
                     </li>
                     <li><hr class="dropdown-divider"></li>

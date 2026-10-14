@@ -30,13 +30,11 @@
     <div class="mac-header mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div>
             <h2 class="mb-1">{{ $event->title }}</h2>
-            <span class="mac-status {{ $event->polling_status_colour }}">
-                <span class="mac-status-dot"></span>{{ $event->polling_status_label }}
-            </span>
             @if($event->polling_start_date && $event->polling_deadline)
-                <span class="mac-muted small ms-2">
+                <p class="mac-muted mb-0">
+                    <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>
                     Voting {{ $event->polling_start_date->format('d M Y, H:i') }} – {{ $event->polling_deadline->format('d M Y, H:i') }}
-                </span>
+                </p>
             @endif
         </div>
 
@@ -82,20 +80,24 @@
         </div>
     @endif
 
-    <div class="row g-3 mb-4">
-        @foreach([
-            ['Plots', $event->plots->count()],
-            ['Held', $held],
-            ['In the draw', $event->registrations->count()],
-            ['Seated', $seated],
-        ] as [$label, $value])
-            <div class="col-6 col-md-3">
-                <div class="mac-card mac-card-padded">
-                    <div class="mac-label mb-1">{{ $label }}</div>
-                    <div class="fs-3 fw-bold">{{ $value }}</div>
+    {{-- Where the draw is, and how full it is, in one band. --}}
+    <div class="mac-card draw-band mb-4">
+        <div class="draw-band-stage">
+            @include('partials.draw-stepper', ['status' => $stage])
+        </div>
+        <dl class="draw-band-facts">
+            @foreach([
+                ['Plots', $event->plots->count()],
+                ['Held', $held],
+                ['In the draw', $event->registrations->count()],
+                ['Seated', $seated],
+            ] as [$label, $value])
+                <div>
+                    <dt>{{ $label }}</dt>
+                    <dd class="ui-num">{{ $value }}</dd>
                 </div>
-            </div>
-        @endforeach
+            @endforeach
+        </dl>
     </div>
 
     <ul class="nav nav-tabs mb-3" role="tablist">

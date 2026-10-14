@@ -1,683 +1,232 @@
 <style>
 /* ══════════════════════════════════════════════════════
-   Apple UI Design System — User Portal Components
-   Include at the top of the content section in user views.
+   Participant components, on the shared tokens (partials/ui-tokens).
+   Usahawan read this on a phone, many with older eyes: larger type, 48px
+   targets, plain status words. Class names are unchanged, so every view
+   takes this without an edit.
    Never spell a Blade directive out in here — Blade compiles them inside CSS
-   comments too, and this line once left an unclosed section on every page.
+   comments too.
    ══════════════════════════════════════════════════════ */
-
-/* ── Tokens ────────────────────────────────────────────
-   Mirrors the :root layer mac-styles.blade.php already has, so a future
-   brand pass has one place to change instead of ~90 literals. Values are
-   unchanged from what shipped before, with one exception noted at
-   --ap-placeholder. */
 :root {
-    /* Text */
-    --ap-text:        #1C1C1E;
-    --ap-text2:       #3A3A3C;
-    --ap-muted:       #6E6E73;
-    /* Placeholder was #AEAEB2, which measured 2.06:1 against the field's own
-       background — under half of WCAG 1.4.3 AA. --ap-muted measures 5.07:1
-       and was already in this system. */
-    --ap-placeholder: var(--ap-muted);
-
-    /* Accent */
-    --ap-accent:      #007AFF;
-    --ap-accent-tx:   #0066DD;  /* accent darkened to carry text/fills at AA */
-    --ap-accent-hv:   #0052B4;
-
-    /* Semantic hues */
-    --ap-green:       #34C759;
-    --ap-orange:      #FF9500;
-    --ap-red:         #FF3B30;
-    --ap-purple:      #5856D6;
-    --ap-teal:        #0099FF;
-    --ap-purple-alt:  #AF52DE;
-
-    /* Semantic text-on-tint (all ≥4.5:1 on their own tinted background) */
-    --ap-green-tx:    #166534;
-    --ap-orange-tx:   #92400E;
-    --ap-red-tx:      #B91C1C;
-    --ap-purple-tx:   #5B21B6;
-    --ap-gray-tx:     #636366;
-    --ap-blue-tx:     #0052B4;
-
-    /* Alert text */
-    --ap-alert-green:  #1A7A30;
-    --ap-alert-red:    #C0291F;
-    --ap-alert-orange: #965A00;
-    --ap-alert-blue:   #005ED8;
-
-    /* Surfaces & lines */
-    --ap-surface:     #FFFFFF;
-    --ap-surface-alt: rgba(242,242,247,0.5);
-    --ap-border:      rgba(60,60,67,0.1);
-    --ap-border-soft: rgba(60,60,67,0.07);
-    --ap-sep:         #C7C7CC;
-    --ap-field-bg:    rgba(118,118,128,0.06);
-
-    /* Type */
-    --ap-font: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif;
+    /* Old names, kept so inline styles in views still resolve. */
+    --ap-text: var(--ui-text);
+    --ap-text2: var(--ui-text-2);
+    --ap-muted: var(--ui-muted);
+    --ap-placeholder: var(--ui-muted);
+    --ap-accent: var(--ui-blue);
+    --ap-accent-tx: var(--ui-blue-text);
+    --ap-accent-hv: var(--ui-blue-hover);
+    --ap-green: var(--ui-ok);
+    --ap-orange: var(--ui-warn);
+    --ap-red: var(--ui-bad);
+    --ap-purple: var(--ui-violet-text);
+    --ap-teal: var(--ui-blue);
+    --ap-purple-alt: var(--ui-violet-text);
+    --ap-green-tx: var(--ui-ok-text);
+    --ap-orange-tx: var(--ui-warn-text);
+    --ap-red-tx: var(--ui-bad-text);
+    --ap-purple-tx: var(--ui-violet-text);
+    --ap-gray-tx: var(--ui-neutral-text);
+    --ap-blue-tx: var(--ui-blue-text);
+    --ap-alert-green: var(--ui-ok-text);
+    --ap-alert-red: var(--ui-bad-text);
+    --ap-alert-orange: var(--ui-warn-text);
+    --ap-alert-blue: var(--ui-blue-text);
+    --ap-surface: var(--ui-surface);
+    --ap-surface-alt: var(--ui-surface-2);
+    --ap-border: var(--ui-border);
+    --ap-border-soft: var(--ui-sep);
+    --ap-sep: var(--ui-border-strong);
+    --ap-field-bg: var(--ui-surface);
+    --ap-font: var(--ui-font);
 }
 
-/* ── Page wrapper ──────────────────────────────────── */
-.ap-page {
-    font-family: var(--ap-font);
-    -webkit-font-smoothing: antialiased;
-}
+.ap-page { font-family: var(--ui-font); color: var(--ui-text); }
 
 /* ── Page header ───────────────────────────────────── */
-.ap-page-header {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    margin-bottom: 20px;
-}
+.ap-page-header { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 24px; }
+.ap-page-title { margin: 0 0 4px; font-size: 1.75rem; font-weight: 700; line-height: 1.2; letter-spacing: -0.015em; color: var(--ui-text); }
+.ap-page-subtitle { margin: 0; font-size: 1rem; color: var(--ui-muted); }
+.ap-page-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 
-.ap-page-title {
-    font-size: 1.55rem;
-    font-weight: 700;
-    color: var(--ap-text);
-    letter-spacing: -0.03em;
-    line-height: 1.2;
-    margin: 0 0 3px;
-}
-
-.ap-page-subtitle {
-    font-size: 0.845rem;
-    color: var(--ap-muted);
-    margin: 0;
-}
-
-.ap-page-actions {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-/* ── Breadcrumb ────────────────────────────────────── */
-.ap-breadcrumb {
-    font-size: 0.78rem;
-    color: var(--ap-muted);
-    margin-bottom: 6px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.ap-breadcrumb a { color: var(--ap-accent-tx); text-decoration: underline; }
-.ap-breadcrumb a:hover { text-decoration: underline; }
-/* Purely decorative separator glyph; the crumb structure reads without it. */
-.ap-breadcrumb .sep { color: var(--ap-sep); font-size: 0.65rem; }
+.ap-breadcrumb { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: 0.9rem; color: var(--ui-muted); }
+.ap-breadcrumb a { color: var(--ui-blue-text); text-decoration: underline; }
+.ap-breadcrumb .sep { color: var(--ui-border-strong); }
 
 /* ── Cards ─────────────────────────────────────────── */
-.ap-card {
-    background: var(--ap-surface);
-    border: 1px solid var(--ap-border);
-    border-radius: 14px;
-    overflow: hidden;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.05);
-    transition: box-shadow 0.18s;
-}
-
-.ap-card:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06), 0 8px 28px rgba(0,0,0,0.07);
-}
-
+.ap-card { overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); }
+.ap-card-padded { padding: 20px 22px; }
 .ap-card-body { padding: 20px 22px; }
-.ap-card-body-sm { padding: 14px 18px; }
-.ap-card-body-lg { padding: 28px 30px; }
-
-.ap-card-header {
-    padding: 14px 22px 12px;
-    border-bottom: 1px solid rgba(60, 60, 67, 0.08);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-}
-
-.ap-card-header-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--ap-text);
-    letter-spacing: -0.01em;
-    margin: 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.ap-card-footer {
-    padding: 12px 22px;
-    border-top: 1px solid rgba(60, 60, 67, 0.08);
-    background: var(--ap-surface-alt);
-}
+.ap-card-body-sm { padding: 16px 18px; }
+.ap-card-body-lg { padding: 28px; }
+.ap-card-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 22px; border-bottom: 1px solid var(--ui-sep); }
+.ap-card-header-title { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 1.1rem; font-weight: 700; color: var(--ui-text); }
+.ap-card-header-title > i { color: var(--ui-muted) !important; }
+.ap-card-footer { padding: 14px 22px; background: var(--ui-surface-2); border-top: 1px solid var(--ui-sep); }
 
 /* ── Stat card ─────────────────────────────────────── */
-.ap-stat-card {
-    background: var(--ap-surface);
-    border: 1px solid var(--ap-border);
-    border-radius: 14px;
-    padding: 20px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 14px rgba(0,0,0,0.04);
-    transition: transform 0.15s, box-shadow 0.15s;
-    height: 100%;
-}
-
-.ap-stat-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-}
-
-.ap-stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.1rem;
-    flex-shrink: 0;
-    margin-bottom: 14px;
-}
-
-.ap-stat-icon.blue   { background: rgba(0,122,255,0.1);   color: var(--ap-accent); }
-.ap-stat-icon.purple { background: rgba(88,86,214,0.1);   color: var(--ap-purple); }
-.ap-stat-icon.green  { background: rgba(52,199,89,0.1);   color: var(--ap-green); }
-.ap-stat-icon.orange { background: rgba(255,149,0,0.1);   color: var(--ap-orange); }
-.ap-stat-icon.red    { background: rgba(255,59,48,0.1);   color: var(--ap-red); }
-.ap-stat-icon.teal   { background: rgba(90,200,250,0.12); color: var(--ap-teal); }
-
-.ap-stat-value {
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: var(--ap-text);
-    letter-spacing: -0.03em;
-    line-height: 1;
-    margin-bottom: 4px;
-}
-
-.ap-stat-label {
-    font-size: 0.82rem;
-    color: var(--ap-muted);
-    font-weight: 500;
-}
+.ap-stat-card { height: 100%; padding: 20px; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); }
+.ap-stat-icon { width: 44px; height: 44px; flex-shrink: 0; display: grid; place-items: center; margin-bottom: 12px; border-radius: var(--ui-r); font-size: 1.15rem; background: var(--ui-blue-tint); color: var(--ui-blue-text); }
+.ap-stat-icon.green { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
+.ap-stat-icon.orange { background: var(--ui-warn-tint); color: var(--ui-warn-text); }
+.ap-stat-icon.red { background: var(--ui-bad-tint); color: var(--ui-bad-text); }
+.ap-stat-icon.purple { background: var(--ui-violet-tint); color: var(--ui-violet-text); }
+.ap-stat-value { margin-bottom: 4px; font-size: 1.75rem; font-weight: 700; line-height: 1; color: var(--ui-text); font-variant-numeric: tabular-nums; }
+.ap-stat-label { font-size: 0.95rem; font-weight: 500; color: var(--ui-muted); }
 
 /* ── Buttons ───────────────────────────────────────── */
 .ap-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    border-radius: 980px;
-    padding: 8px 18px;
-    font-size: 0.845rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
-    border: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    text-decoration: none;
-    line-height: 1;
-    white-space: nowrap;
-    /* WCAG 2.5.8 (AA) requires a 24×24 CSS px target. line-height:1 plus tight
-       padding otherwise lands .ap-btn-sm at ~23px. */
-    min-height: 32px;
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    min-height: var(--ui-control-h-lg); padding: 0 20px; border: 1px solid transparent; border-radius: var(--ui-r);
+    font-size: 1rem; font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap; cursor: pointer;
+    transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
 }
-
-.ap-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(0,122,255,0.3);
-}
-
-.ap-btn-primary {
-    background: var(--ap-accent-tx);
-    color: #fff;
-}
-.ap-btn-primary:hover { background: var(--ap-accent-hv); color: #fff; transform: scale(1.02); }
-
-.ap-btn-secondary {
-    background: rgba(60,60,67,0.1);
-    color: var(--ap-text);
-}
-.ap-btn-secondary:hover { background: rgba(60,60,67,0.16); color: var(--ap-text); }
-
-.ap-btn-outline {
-    background: transparent;
-    color: var(--ap-accent-tx);
-    border: 1.5px solid var(--ap-accent);
-}
-.ap-btn-outline:hover { background: rgba(0,122,255,0.08); color: var(--ap-accent-tx); }
-
-.ap-btn-danger {
-    background: rgba(255,59,48,0.1);
-    color: var(--ap-red-tx);
-    border: 1px solid rgba(255,59,48,0.18);
-}
-.ap-btn-danger:hover { background: var(--ap-red-tx); color: #fff; }
-
-.ap-btn-success {
-    background: rgba(52,199,89,0.12);
-    color: var(--ap-green-tx);
-    border: 1px solid rgba(52,199,89,0.2);
-}
-.ap-btn-success:hover { background: var(--ap-green-tx); color: #fff; }
-
-/* Stays visually small; min-height keeps the hit target legal. */
-.ap-btn-sm { padding: 5px 13px; font-size: 0.8rem; min-height: 26px; }
-.ap-btn-lg { padding: 11px 24px; font-size: 0.92rem; min-height: 40px; }
+.ap-btn-primary { background: var(--ui-blue); color: #fff; box-shadow: var(--ui-shadow-1), inset 0 -2px 0 rgba(0, 0, 0, 0.15); }
+.ap-btn-primary:hover { background: var(--ui-blue-hover); color: #fff; }
+.ap-btn-primary:active { background: var(--ui-blue-press); }
+.ap-btn-secondary { background: var(--ui-surface); color: var(--ui-text); border-color: var(--ui-border-strong); box-shadow: var(--ui-shadow-1); }
+.ap-btn-secondary:hover { background: var(--ui-surface-2); color: var(--ui-text); border-color: #a9b4c3; }
+.ap-btn-outline { background: var(--ui-surface); color: var(--ui-blue-text); border-color: #9db8ef; }
+.ap-btn-outline:hover { background: var(--ui-blue-tint); color: var(--ui-blue-press); border-color: var(--ui-blue); }
+.ap-btn-danger { background: var(--ui-surface); color: var(--ui-bad-text); border-color: #f1b8a8; }
+.ap-btn-danger:hover { background: var(--ui-bad); color: #fff; border-color: var(--ui-bad); }
+.ap-btn-success { background: var(--ui-ok); color: #fff; }
+.ap-btn-success:hover { background: var(--ui-ok-text); color: #fff; }
+.ap-btn-sm { min-height: 40px; padding: 0 14px; font-size: 0.92rem; }
+.ap-btn-lg { min-height: 56px; padding: 0 28px; font-size: 1.08rem; }
+.ap-btn:disabled, .ap-btn[disabled] { opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none; }
 
 /* ── Form inputs ───────────────────────────────────── */
 .ap-input, .ap-select, .ap-textarea {
-    width: 100%;
-    background: var(--ap-field-bg);
-    border: 1px solid rgba(60,60,67,0.12);
-    border-radius: 10px;
-    padding: 9px 13px;
-    font-size: 0.87rem;
-    color: var(--ap-text);
-    font-family: var(--ap-font);
-    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
+    width: 100%; min-height: var(--ui-control-h-lg); padding: 10px 14px;
+    background: var(--ui-surface); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-r);
+    color: var(--ui-text); font-size: 1rem; outline: none; appearance: none; -webkit-appearance: none;
+    transition: border-color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
 }
+.ap-input:hover, .ap-select:hover, .ap-textarea:hover { border-color: #a9b4c3; }
+.ap-input:focus, .ap-select:focus, .ap-textarea:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
+.ap-input::placeholder, .ap-textarea::placeholder { color: var(--ui-muted); }
+.ap-label { display: block; margin-bottom: 6px; font-size: 0.95rem; font-weight: 600; color: var(--ui-text-2); }
+.ap-form-group { margin-bottom: 18px; }
+.ap-filter-bar { margin-bottom: 18px; padding: 14px; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); }
 
-.ap-input:focus, .ap-select:focus, .ap-textarea:focus {
-    background: #fff;
-    border-color: var(--ap-accent);
-    box-shadow: 0 0 0 3px rgba(0,122,255,0.18);
-}
-
-.ap-input::placeholder, .ap-textarea::placeholder { color: var(--ap-placeholder); }
-
-.ap-label {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: var(--ap-text2);
-    margin-bottom: 5px;
-    display: block;
-    letter-spacing: -0.005em;
-}
-
-.ap-form-group { margin-bottom: 16px; }
-
-.ap-filter-bar {
-    background: rgba(255,255,255,0.8);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
-    border: 1px solid var(--ap-border);
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 18px;
-}
+/* The confirm checkbox is the most important control a usahawan touches. */
+.ap-page .form-check-input, .ap-card .form-check-input { width: 1.4em; height: 1.4em; margin-top: 0.1em; border: 2px solid var(--ui-border-strong); }
+.ap-page .form-check-input:checked, .ap-card .form-check-input:checked { background-color: var(--ui-blue); border-color: var(--ui-blue); }
+.ap-page .form-check-label, .ap-card .form-check-label { padding-left: 4px; font-size: 1rem; }
 
 /* ── Table ─────────────────────────────────────────── */
 .ap-table { width: 100%; border-collapse: separate; border-spacing: 0; }
-
-.ap-table thead th {
-    background: rgba(242,242,247,0.7);
-    padding: 10px 16px;
-    font-size: 0.73rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--ap-muted);
-    border-bottom: 1px solid var(--ap-border);
-    white-space: nowrap;
-}
-
-.ap-table tbody td {
-    padding: 13px 16px;
-    font-size: 0.87rem;
-    color: var(--ap-text);
-    border-bottom: 1px solid rgba(60,60,67,0.06);
-    vertical-align: middle;
-}
-
+.ap-table thead th { padding: 10px 16px; background: var(--ui-surface-2); border-bottom: 1px solid var(--ui-border); font-size: 0.82rem; font-weight: 600; color: var(--ui-muted); white-space: nowrap; }
+.ap-table tbody td { padding: 14px 16px; border-bottom: 1px solid var(--ui-sep); font-size: 0.95rem; color: var(--ui-text); vertical-align: middle; }
 .ap-table tbody tr:last-child td { border-bottom: none; }
-
-.ap-table tbody tr:hover td {
-    background: rgba(0,122,255,0.025);
-}
 
 /* ── Status badges ─────────────────────────────────── */
 .ap-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 3px 12px 3px 10px;
+    border-radius: 999px; background: var(--ui-neutral-tint); color: var(--ui-neutral-text);
+    font-size: 0.88rem; font-weight: 600; white-space: nowrap;
 }
+.ap-badge::before { content: ""; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: currentColor; }
+.ap-badge-green { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
+.ap-badge-blue { background: var(--ui-blue-tint); color: var(--ui-blue-text); }
+.ap-badge-orange { background: var(--ui-warn-tint); color: var(--ui-warn-text); }
+.ap-badge-red { background: var(--ui-bad-tint); color: var(--ui-bad-text); }
+.ap-badge-purple { background: var(--ui-violet-tint); color: var(--ui-violet-text); }
+.ap-badge-gray { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
 
-.ap-badge::before {
-    content: '';
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    background: currentColor;
-    opacity: 0.7;
-}
+/* ── Alerts ────────────────────────────────────────── */
+.ap-alert { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; padding: 14px 16px; border: 1px solid transparent; border-radius: var(--ui-r-lg); font-size: 1rem; line-height: 1.5; }
+.ap-alert-icon { flex-shrink: 0; margin-top: 2px; font-size: 1.15rem; }
+.ap-alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
+.ap-alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
+.ap-alert-warning { background: var(--ui-warn-tint); border-color: #f3d29a; color: var(--ui-warn-text); }
+.ap-alert-info { background: var(--ui-blue-tint); border-color: #c4d5f8; color: var(--ui-blue-text); }
+.ap-page .alert, .ap-card .alert { display: flex; align-items: flex-start; gap: 10px; border: 1px solid transparent; border-radius: var(--ui-r-lg); font-size: 1rem; line-height: 1.5; padding: 14px 44px 14px 16px; }
+.ap-page .alert-success, .ap-card .alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
+.ap-page .alert-danger, .ap-card .alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
 
-.ap-badge-green  { background: rgba(52,199,89,0.12);   color: var(--ap-green-tx); }
-.ap-badge-blue   { background: rgba(0,122,255,0.1);    color: var(--ap-blue-tx); }
-.ap-badge-orange { background: rgba(255,149,0,0.12);   color: var(--ap-orange-tx); }
-.ap-badge-red    { background: rgba(255,59,48,0.1);    color: var(--ap-red-tx); }
-.ap-badge-purple { background: rgba(175,82,222,0.1);   color: var(--ap-purple-tx); }
-.ap-badge-gray   { background: rgba(142,142,147,0.12); color: var(--ap-gray-tx); }
+/* ── Section title, divider, empty ─────────────────── */
+.ap-section-head { margin: 36px 0 12px; }
+.ap-section-title { margin: 6px 0 10px; font-size: 1.1rem; font-weight: 700; color: var(--ui-text); }
+.ap-divider { margin: 18px 0; border: none; border-top: 1px solid var(--ui-sep); opacity: 1; }
+.ap-empty { padding: 44px 24px; text-align: center; color: var(--ui-muted); }
+.ap-empty-icon { display: block; margin-bottom: 12px; font-size: 2.25rem; color: var(--ui-border-strong); }
+.ap-empty-title { margin-bottom: 6px; font-size: 1.1rem; font-weight: 700; color: var(--ui-text-2); }
+.ap-empty-text { margin-bottom: 16px; font-size: 1rem; color: var(--ui-muted); }
 
-/* ── Alert / Flash ─────────────────────────────────── */
-.ap-alert {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 13px 16px;
-    border-radius: 12px;
-    font-size: 0.865rem;
-    margin-bottom: 16px;
-}
+/* ── Progress ──────────────────────────────────────── */
+.ap-progress { height: 8px; overflow: hidden; border-radius: 999px; background: var(--ui-neutral-tint); }
+.ap-progress-bar { height: 100%; border-radius: 999px; background: var(--ui-blue); }
+.ap-progress-bar.green { background: var(--ui-ok); }
+.ap-progress-bar.orange { background: var(--ui-warn); }
+.ap-progress-bar.red { background: var(--ui-bad); }
 
-.ap-alert-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
-
-.ap-alert-success { background: rgba(52,199,89,0.1);  border: 1px solid rgba(52,199,89,0.2);  color: var(--ap-alert-green); }
-.ap-alert-danger  { background: rgba(255,59,48,0.08); border: 1px solid rgba(255,59,48,0.15); color: var(--ap-alert-red); }
-.ap-alert-warning { background: rgba(255,149,0,0.09); border: 1px solid rgba(255,149,0,0.18); color: var(--ap-alert-orange); }
-.ap-alert-info    { background: rgba(0,122,255,0.07); border: 1px solid rgba(0,122,255,0.14); color: var(--ap-alert-blue); }
-
-/* ── Section title ─────────────────────────────────── */
-.ap-section-title {
-    font-size: 0.78rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.055em;
-    color: var(--ap-muted);
-    margin-bottom: 10px;
-    margin-top: 6px;
-}
-
-/* ── Divider ───────────────────────────────────────── */
-.ap-divider {
-    border: none;
-    border-top: 1px solid var(--ap-border);
-    margin: 16px 0;
-}
-
-/* ── Empty state ───────────────────────────────────── */
-.ap-empty {
-    text-align: center;
-    padding: 44px 24px;
-    color: var(--ap-muted);
-}
-
-.ap-empty-icon {
-    font-size: 2.5rem;
-    display: block;
-    margin-bottom: 12px;
-    opacity: 0.45;
-}
-
-.ap-empty-title {
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--ap-text2);
-    margin-bottom: 5px;
-}
-
-.ap-empty-text {
-    font-size: 0.83rem;
-    color: var(--ap-muted);
-    margin-bottom: 16px;
-}
-
-/* ── Progress bar ──────────────────────────────────── */
-.ap-progress {
-    height: 6px;
-    border-radius: 999px;
-    background: rgba(60,60,67,0.1);
-    overflow: hidden;
-}
-
-/* Deliberately not animated. The only caller (dashboard.blade.php) sets the
-   bar length server-side at render and no JS ever changes it, so the old
-   animation could never fire — it was a layout-property tween for nothing. */
-.ap-progress-bar {
-    height: 100%;
-    border-radius: 999px;
-    background: var(--ap-accent);
-}
-
-.ap-progress-bar.green  { background: var(--ap-green); }
-.ap-progress-bar.orange { background: var(--ap-orange); }
-.ap-progress-bar.red    { background: var(--ap-red); }
-
-/* ── Detail grid (label / value rows) ─────────────── */
-.ap-detail-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--ap-border-soft);
-    gap: 12px;
-    font-size: 0.87rem;
-}
-
+/* ── Detail rows and lists ─────────────────────────── */
+.ap-detail-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--ui-sep); font-size: 1rem; }
 .ap-detail-row:last-child { border-bottom: none; }
-
-.ap-detail-label {
-    color: var(--ap-muted);
-    font-weight: 500;
-    flex-shrink: 0;
-    min-width: 120px;
-}
-
-.ap-detail-value {
-    color: var(--ap-text);
-    font-weight: 500;
-    text-align: right;
-}
-
-/* ── List group (Apple-style) ──────────────────────── */
-.ap-list { list-style: none; padding: 0; margin: 0; }
-
-.ap-list-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    padding: 11px 0;
-    border-bottom: 1px solid var(--ap-border-soft);
-    font-size: 0.875rem;
-    color: var(--ap-text);
-}
-
+.ap-detail-label { flex-shrink: 0; min-width: 120px; font-weight: 500; color: var(--ui-muted); }
+.ap-detail-value { font-weight: 600; text-align: right; color: var(--ui-text); }
+.ap-list { list-style: none; margin: 0; padding: 0; }
+.ap-list-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--ui-sep); font-size: 1rem; }
 .ap-list-item:last-child { border-bottom: none; }
 
 /* ── Timeline ──────────────────────────────────────── */
-.ap-timeline { padding-left: 18px; border-left: 2px solid var(--ap-border); }
-
-.ap-timeline-item {
-    position: relative;
-    padding-bottom: 18px;
-    padding-left: 14px;
-}
-
+.ap-timeline { padding-left: 18px; border-left: 2px solid var(--ui-border); }
+.ap-timeline-item { position: relative; padding: 0 0 18px 14px; }
 .ap-timeline-item:last-child { padding-bottom: 0; }
+.ap-timeline-dot { position: absolute; left: -25px; top: 4px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--ui-surface); background: currentColor; box-shadow: 0 0 0 2px currentColor; }
+.ap-timeline-dot.green { color: var(--ui-ok); }
+.ap-timeline-dot.blue { color: var(--ui-blue); }
+.ap-timeline-dot.orange { color: var(--ui-warn); }
+.ap-timeline-dot.red { color: var(--ui-bad); }
+.ap-timeline-dot.gray { color: var(--ui-border-strong); }
+.ap-timeline-label { margin-bottom: 2px; font-size: 1rem; font-weight: 600; color: var(--ui-text); }
+.ap-timeline-desc { font-size: 0.9rem; color: var(--ui-muted); }
 
-.ap-timeline-dot {
-    position: absolute;
-    left: -24px;
-    top: 3px;
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid #fff;
-    box-shadow: 0 0 0 2px currentColor;
-    background: currentColor;
-}
+/* ── Identity and fact grid ────────────────────────── */
+.ap-identity-logo { width: 88px; height: 88px; flex-shrink: 0; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface-2); }
+.ap-identity-logo img { width: 100%; height: 100%; object-fit: cover; }
+.ap-identity-logo i { font-size: 2.2rem; color: var(--ui-border-strong); }
+.ap-identity-name { margin: 0 0 8px; font-size: 1.4rem; font-weight: 700; color: var(--ui-text); }
+.ap-factgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr)); gap: 12px 20px; padding-top: 18px; border-top: 1px solid var(--ui-sep); }
+.ap-factgrid dt { margin-bottom: 2px; font-size: 0.85rem; font-weight: 600; color: var(--ui-muted); }
+.ap-factgrid dd { margin: 0; font-size: 1rem; color: var(--ui-text); }
 
-.ap-timeline-dot.green  { color: var(--ap-green); }
-.ap-timeline-dot.blue   { color: var(--ap-accent); }
-.ap-timeline-dot.orange { color: var(--ap-orange); }
-.ap-timeline-dot.red    { color: var(--ap-red); }
-.ap-timeline-dot.gray   { color: var(--ap-sep); }
+/* ── Tabs ──────────────────────────────────────────── */
+.ap-tabs { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0 8px; list-style: none; border-bottom: 1px solid var(--ui-border); }
+.ap-tabs .nav-link { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; margin-bottom: -1px; padding: 0 14px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--ui-muted); font-weight: 600; }
+.ap-tabs .nav-link:hover { color: var(--ui-text); }
+.ap-tabs .nav-link.active { color: var(--ui-text); border-bottom-color: var(--ui-blue); background: none; }
+.ap-tab-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--ui-border-strong); }
 
-.ap-timeline-label {
-    font-size: 0.845rem;
-    font-weight: 600;
-    color: var(--ap-text);
-    margin-bottom: 2px;
-}
+.ap-muted { font-size: 0.95rem; color: var(--ui-muted); }
 
-.ap-timeline-desc {
-    font-size: 0.78rem;
-    color: var(--ap-muted);
-}
+/* ── A draw, as a usahawan sees it ─────────────────── */
+/* One card per draw on the dashboard: the fair, where its draw is, and the
+   single thing left to do. The stepper reads larger here than in the office. */
+.ap-draw { padding: 22px; }
+.ap-draw-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px 20px; }
+.ap-draw-title { margin: 0 0 4px; font-size: 1.2rem; font-weight: 700; color: var(--ui-text); }
+.ap-draw-meta { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 0.95rem; color: var(--ui-muted); }
+.ap-draw-meta i { margin-right: 4px; }
+.ap-draw .ui-stepper { margin: 22px 0 18px; }
+.ap-draw .ui-stepper .label { font-size: 0.9rem; }
+.ap-draw-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--ui-sep); font-size: 1rem; color: var(--ui-text-2); }
+.ap-draw-lot-link { gap: 8px; border-color: var(--ui-gold) !important; background: var(--ui-gold-tint) !important; color: var(--ui-gold-text) !important; font-size: 1.05rem; }
+.ap-draw-lot-link:hover { background: #fbe7bd !important; }
+.ap-draw-lot-link i { color: var(--ui-gold); }
 
-/* ── Muted text ────────────────────────────────────── */
-.ap-muted { color: var(--ap-muted); font-size: 0.83rem; }
-
-/* ── Responsive helpers ────────────────────────────── */
 @media (max-width: 576px) {
     .ap-page-header { flex-direction: column; }
-    .ap-detail-row  { flex-direction: column; }
+    .ap-page-title { font-size: 1.45rem; }
+    .ap-detail-row { flex-direction: column; gap: 2px; }
     .ap-detail-value { text-align: left; }
+    .ap-draw { padding: 18px; }
+    .ap-draw-next .ap-btn { width: 100%; }
 }
 
-/* ── Reduced motion ────────────────────────────────────
-   Targeted, not a blanket 0.01ms kill: spatial transforms are what trigger
-   vestibular symptoms, so those are dropped. Colour, background, shadow and
-   focus-ring transitions stay — they carry state feedback the user still
-   needs, and none of them move anything on screen. */
 @media (prefers-reduced-motion: reduce) {
-    .ap-btn-primary:hover,
-    .ap-stat-card:hover {
-        transform: none;
-    }
-    .ap-stat-card,
-    .ap-btn {
-        transition-property: background-color, border-color, color, box-shadow;
-    }
-}
-
-/* ── Section heading ───────────────────────────────── */
-/* A page of equal-weight cards has no reading order. These name the three
-   groups a company profile actually splits into, and carry more space above
-   than below so the heading belongs to what follows it. */
-.ap-section-head { margin: 34px 0 12px; }
-.ap-section-title {
-    font-size: 1.05rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--ap-text);
-    margin: 0;
-}
-
-/* ── Identity block ────────────────────────────────── */
-.ap-identity-logo {
-    width: 88px; height: 88px; flex-shrink: 0;
-    border-radius: 14px;
-    overflow: hidden;
-    background: var(--ap-surface-alt);
-    border: 1px solid var(--ap-border);
-    display: flex; align-items: center; justify-content: center;
-}
-.ap-identity-logo img { width: 100%; height: 100%; object-fit: cover; }
-.ap-identity-logo i { font-size: 2.2rem; color: #C8C8D0; }
-
-.ap-identity-name {
-    font-size: 1.35rem;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    color: var(--ap-text);
-    margin: 0 0 8px;
-}
-
-/* Facts the office owns: read-only, so they are a definition list rather than
-   a form. auto-fit keeps the column count honest at every width instead of
-   locking a grid the content has to fit. */
-.ap-factgrid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(13.5rem, 1fr));
-    gap: 12px 20px;
-    padding-top: 18px;
-    border-top: 1px solid var(--ap-border);
-}
-.ap-factgrid dt {
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--ap-muted);
-    margin-bottom: 2px;
-}
-.ap-factgrid dd {
-    font-size: 0.87rem;
-    color: var(--ap-text);
-    margin: 0;
-}
-
-/* ── Premise tabs ──────────────────────────────────── */
-/* Five premises of the same shape. Stacked, they were five screens of near
-   identical markup; here the set is visible at once and the dot says which
-   are filled without opening any of them. */
-.ap-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 2px;
-    padding: 6px 8px 0;
-    border-bottom: 1px solid var(--ap-border);
-    background: var(--ap-surface-alt);
-    list-style: none;
-    margin: 0;
-}
-.ap-tabs .nav-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    border: 0;
-    border-radius: 10px 10px 0 0;
-    padding: 9px 14px;
-    font-size: 0.845rem;
-    font-weight: 500;
-    color: var(--ap-muted);
-    background: transparent;
-    transition: background-color 0.15s, color 0.15s;
-}
-.ap-tabs .nav-link i { font-size: 0.9rem; }
-.ap-tabs .nav-link:hover { background: rgba(60,60,67,0.06); color: var(--ap-text); }
-.ap-tabs .nav-link.active {
-    color: var(--ap-accent-tx);
-    font-weight: 600;
-    background: var(--ap-surface);
-    box-shadow: inset 0 -2px 0 var(--ap-accent-tx);
-}
-.ap-tabs .nav-link:focus-visible {
-    outline: 2px solid var(--ap-accent-tx);
-    outline-offset: -2px;
-}
-
-/* Filled or empty, at a glance. Never the only carrier — the tab also ships a
-   visually-hidden "(filled in)" / "(empty)". */
-.ap-tab-dot {
-    width: 7px; height: 7px;
-    border-radius: 999px;
-    background: rgba(60,60,67,0.22);
-}
-.ap-tab-dot.is-filled { background: var(--ap-green); }
-
-@media (max-width: 575.98px) {
-    .ap-identity-logo { width: 64px; height: 64px; border-radius: 12px; }
-    .ap-identity-logo i { font-size: 1.6rem; }
-    .ap-identity-name { font-size: 1.15rem; }
-    .ap-tabs .nav-link { padding: 8px 11px; font-size: 0.8rem; }
+    .ap-btn, .ap-input, .ap-select, .ap-textarea { transition: none; }
 }
 </style>

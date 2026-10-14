@@ -105,7 +105,7 @@ test('voting opens through its guard', async ({ page }) => {
 
     expect(dialog.type).toBe('confirm');
     expect(dialog.message).toContain('Open voting?');
-    await expect(page.locator('.mac-header .mac-status')).toHaveText(/Open/);
+    await expect(page.locator('.draw-band [aria-current="step"]')).toHaveText(/Open/);
 });
 
 test('two participants confirm, and each sees a lot of their own code revealed', async ({ page }) => {
@@ -137,7 +137,7 @@ test('the office closes voting and assigns the rest, and the draw completes', as
     expect(dialog.type).toBe('confirm');
 
     await expect(page.locator('.alert-success')).toContainText('Every company in the draw now has a lot');
-    await expect(page.locator('.mac-header .mac-status')).toHaveText(/End/);
+    await expect(page.locator('.draw-band [aria-current="step"]')).toHaveText(/End/);
 
     await signInAs(page, 'kayu@e2e.test');
     await expect(page.getByText(/DEWAN B-RKP1/)).toBeVisible();

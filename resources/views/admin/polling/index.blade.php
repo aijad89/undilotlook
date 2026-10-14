@@ -51,7 +51,7 @@
                         <th class="text-center">Plots</th>
                         <th class="text-center">Locations</th>
                         <th class="text-center">Code allocations</th>
-                        <th class="text-center">Stage</th>
+                        <th>Stage</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -84,10 +84,8 @@
                             <td class="text-center">{{ $event->total_plots ?? 0 }}</td>
                             <td class="text-center">{{ $event->plotSizes->pluck('location')->unique()->count() }}</td>
                             <td class="text-center">{{ $event->bidangAllocations->count() }}</td>
-                            <td class="text-center">
-                                <span class="mac-status {{ $event->polling_status_colour }}">
-                                    <span class="mac-status-dot"></span>{{ $event->polling_status_label }}
-                                </span>
+                            <td>
+                                @include('partials.draw-stepper', ['status' => $event->polling_status, 'compact' => true])
                             </td>
                             <td class="text-end">
                                 <a href="{{ route('admin.polling.show', $event) }}" class="mac-action-btn">View</a>

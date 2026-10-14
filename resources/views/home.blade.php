@@ -5,21 +5,32 @@
 
 @push('styles')
 <style>
-    .ev-page { max-width: 1080px; margin: 0 auto; padding: 32px 20px 48px; }
-    .ev-head { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
-    .ev-head h1 { font-size: 1.6rem; font-weight: 700; margin: 0; letter-spacing: -0.02em; }
-    .ev-head p { color: #6E6E73; margin: 4px 0 0; }
-    .ev-search { display: flex; gap: 8px; }
-    .ev-search input { border: 1px solid rgba(60,60,67,0.18); border-radius: 10px; padding: 8px 12px; min-width: 220px; }
-    .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-    .ev-card { background: #fff; border: 1px solid rgba(60,60,67,0.1); border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; }
-    .ev-banner { aspect-ratio: 797 / 235; background: linear-gradient(135deg, #E0EBFF, #F2F2F7); object-fit: cover; width: 100%; }
-    .ev-body { padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-    .ev-title { font-weight: 650; font-size: 1.02rem; color: #1C1C1E; }
-    .ev-meta { font-size: 0.84rem; color: #6E6E73; display: flex; gap: 6px; align-items: baseline; }
-    .ev-draw { margin-top: auto; padding-top: 8px; font-size: 0.82rem; color: #1C1C1E; border-top: 1px solid rgba(60,60,67,0.08); }
-    .ev-section { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: #6E6E73; margin: 32px 0 12px; }
-    .ev-empty { background: #fff; border: 1px dashed rgba(60,60,67,0.2); border-radius: 14px; padding: 32px; text-align: center; color: #6E6E73; }
+    .ev-page { max-width: 1120px; margin: 0 auto; padding: 40px 24px 16px; }
+    .ev-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
+    .ev-head h1 { margin: 0 0 6px; font-size: 2rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ui-text); }
+    .ev-head p { max-width: 60ch; margin: 0; font-size: 1.05rem; color: var(--ui-muted); }
+    .ev-search { display: flex; gap: 8px; flex: 0 1 420px; }
+    .ev-search input { flex: 1; min-width: 0; height: 48px; padding: 0 14px; border: 1px solid var(--ui-border-strong); border-radius: var(--ui-r); background: var(--ui-surface); font-size: 1rem; }
+    .ev-search input:focus { outline: none; border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
+    .ev-search button { min-height: 48px; padding: 0 20px; border: none; border-radius: var(--ui-r); background: var(--ui-blue); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; }
+    .ev-search button:hover { background: var(--ui-blue-hover); }
+    .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+    .ev-card { display: flex; flex-direction: column; overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); transition: box-shadow var(--ui-fast) var(--ui-ease); }
+    .ev-card:hover { box-shadow: var(--ui-shadow-2); }
+    .ev-banner { width: 100%; aspect-ratio: 797 / 235; object-fit: cover; }
+    .ev-body { flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 18px 20px 20px; }
+    .ev-title { font-size: 1.15rem; font-weight: 700; line-height: 1.3; color: var(--ui-text); }
+    .ev-meta { display: flex; align-items: baseline; gap: 8px; font-size: 0.95rem; color: var(--ui-muted); }
+    .ev-draw { margin-top: auto; padding-top: 14px; border-top: 1px solid var(--ui-sep); font-size: 0.95rem; line-height: 1.5; color: var(--ui-text-2); }
+    .ev-draw a { font-weight: 600; }
+    .ev-section { margin: 44px 0 16px; font-size: 1.15rem; font-weight: 700; color: var(--ui-text); }
+    .ev-empty { padding: 40px; border: 1px dashed var(--ui-border-strong); border-radius: var(--ui-r-lg); background: var(--ui-surface); text-align: center; font-size: 1rem; color: var(--ui-muted); }
+    @media (max-width: 640px) {
+        .ev-page { padding: 24px 16px 8px; }
+        .ev-head h1 { font-size: 1.6rem; }
+        .ev-search { flex: 1 1 100%; }
+        .ev-grid { grid-template-columns: 1fr; }
+    }
 </style>
 @endpush
 
@@ -32,7 +43,7 @@
         </div>
         <form method="GET" class="ev-search" role="search">
             <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari acara atau lokasi" aria-label="Cari acara">
-            <button type="submit" class="pub-btn-primary" style="border:none;">Cari</button>
+            <button type="submit">Cari</button>
         </form>
     </div>
 

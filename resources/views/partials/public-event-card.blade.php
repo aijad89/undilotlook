@@ -5,8 +5,6 @@
 <article class="ev-card">
     @if($event->banner_url)
         <img class="ev-banner" src="{{ $event->banner_url }}" alt="" loading="lazy">
-    @else
-        <div class="ev-banner" aria-hidden="true"></div>
     @endif
     <div class="ev-body">
         <div class="ev-title">{{ $event->title }}</div>

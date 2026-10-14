@@ -48,7 +48,7 @@
     .lr-flap {
         display:inline-flex; align-items:center; justify-content:center;
         min-width:34px; height:46px; padding:0 6px;
-        background:#1C1C1E; color:#fff; border-radius:6px;
+        background:var(--ui-navy-900); color:#fff; border-radius:6px;
         font-size:1.35rem; font-weight:700; font-variant-numeric:tabular-nums;
         box-shadow:0 1px 3px rgba(0,0,0,0.18), 0 6px 18px rgba(0,0,0,0.10);
         /* The hairline is the split in the flap, not decoration. */
@@ -89,7 +89,7 @@
         position:absolute; left:50%; top:52px; transform:translate(-50%,-50%);
         width:34px; height:34px; border-radius:50%; z-index:4;
         display:flex; align-items:center; justify-content:center;
-        background:rgba(0,122,255,0.12); color:#0066DD; font-size:1rem;
+        background:var(--ui-gold-tint); color:var(--ui-gold-text); font-size:1rem;
         transition:transform 0.5s ease, opacity 0.5s ease;
     }
     .lr-env-card {
@@ -101,7 +101,7 @@
         /* Ends 2.0s after .is-open lands — the second half of the 4s. */
         transition:opacity 0.9s ease 0.6s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
     }
-    .lr-env-code { font-size:1.45rem; font-weight:700; color:#1C1C1E; letter-spacing:0.02em; }
+    .lr-env-code { font-size:1.45rem; font-weight:700; color:var(--ui-gold-text); letter-spacing:0.02em; }
 
     .lot-reveal.is-open .lr-env-flap { transform:rotateX(-172deg); }
     .lot-reveal.is-open .lr-env-seal { transform:translate(-50%,-50%) scale(0.4); opacity:0; }

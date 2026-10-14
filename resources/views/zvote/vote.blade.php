@@ -6,275 +6,240 @@
 @section('content')
 @include('partials.apple-styles')
 
-<div class="ap-page py-2">
-    <div class="row justify-content-center">
-        <div class="col-lg-7 col-md-9">
+<style>
+    /* The lot page: one decision, made once, then its record. */
+    .lot-page { max-width: 640px; margin: 0 auto; }
+    .lot-page .ui-stepper { margin: 4px 0 24px; }
+    .lot-page .ui-stepper .label { font-size: 0.9rem; }
+    @media (max-width: 576px) { .lot-page .ap-detail-row.align-items-center { align-items: flex-start !important; } .lot-page .lot-where { text-align: left; } }
+    .lot-fact { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border-radius: var(--ui-r-lg); background: var(--ui-surface-2); border: 1px solid var(--ui-sep); }
+    .lot-fact-label { font-size: 0.95rem; color: var(--ui-muted); }
+    .lot-fact-value { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ui-text); }
+    .lot-fact-value.is-missing { font-size: 1.15rem; color: var(--ui-bad-text); }
+    .lot-rules { margin: 18px 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+    .lot-rules li { display: flex; gap: 12px; align-items: flex-start; font-size: 1rem; color: var(--ui-text-2); }
+    .lot-rules i { flex-shrink: 0; margin-top: 2px; font-size: 1.15rem; color: var(--ui-blue); }
+    .lot-agree { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 16px; padding: 16px; border: 2px solid var(--ui-border); border-radius: var(--ui-r-lg); cursor: pointer; transition: border-color var(--ui-fast) var(--ui-ease), background-color var(--ui-fast) var(--ui-ease); }
+    .lot-agree:has(input:checked) { border-color: var(--ui-blue); background: var(--ui-blue-tint); }
+    .lot-agree .form-check-input { flex-shrink: 0; float: none; margin: 1px 0 0; }
+    .lot-agree span { font-size: 1rem; font-weight: 600; color: var(--ui-text); }
+    .lot-note { display: flex; gap: 10px; margin-top: 14px; font-size: 0.95rem; color: var(--ui-muted); }
+    .lot-done-head { text-align: center; padding: 6px 0 4px; }
+    .lot-done-icon { width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; background: var(--ui-ok-tint); color: var(--ui-ok); font-size: 2rem; }
+    .lot-done-head h3 { margin: 0 0 4px; font-size: 1.4rem; font-weight: 700; color: var(--ui-text); }
+    .lot-done-head p { margin: 0; font-size: 1rem; color: var(--ui-muted); }
+    .lot-code { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--ui-r); background: var(--ui-gold-tint); color: var(--ui-gold-text); font-size: 1.15rem; font-weight: 700; }
+    .lot-code i { color: var(--ui-gold); }
+    .lot-where { display: block; margin-top: 4px; font-size: 0.9rem; font-weight: 500; color: var(--ui-muted); text-align: right; }
+    .lot-qr { text-align: center; }
+    .lot-qr img { width: 168px; height: 168px; image-rendering: pixelated; }
+    .lot-qr-code { margin-top: 8px; font-family: var(--ui-font-mono); font-size: 1rem; letter-spacing: 3px; color: var(--ui-text); }
+    .lot-qr-empty { width: 168px; height: 168px; margin: 0 auto; display: grid; place-items: center; border: 2px dashed var(--ui-border-strong); border-radius: var(--ui-r-lg); color: var(--ui-border-strong); font-size: 2.5rem; }
+    .lot-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 18px 0; }
+    @media (max-width: 576px) { .lot-actions .ap-btn { flex: 1 1 100%; } }
+</style>
 
-            <div class="ap-card">
-                <div class="ap-card-header">
-                    {{-- .ap-card-title does not exist in the design system; the
-                         real class is .ap-card-header-title. The heading on the
-                         lot-draw confirmation card was rendering unstyled. --}}
-                    <div class="ap-card-header-title">
-                        <i class="bi bi-ballot" style="color:#007AFF;"></i> Lot Draw — {{ $event->title }}
-                    </div>
-                </div>
-                <div class="ap-card-body">
-
-                    {{-- Flash alerts --}}
-                    @if($errors->any())
-                        <div class="alert alert-danger alert-dismissible fade show mb-3">
-                            <i class="bi bi-exclamation-triangle me-2"></i>
-                            <strong>Validation Errors:</strong>
-                            <ul class="mb-0 mt-1">
-                                @foreach($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-                    @if(session('success'))
-                        <div class="alert alert-success alert-dismissible fade show mb-3">
-                            <i class="bi bi-check-circle me-2"></i>{{ session('success') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-                    @if(session('error'))
-                        <div class="alert alert-danger alert-dismissible fade show mb-3">
-                            <i class="bi bi-exclamation-triangle me-2"></i>{{ session('error') }}
-                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                        </div>
-                    @endif
-
-                    @if($hasVoted ?? false)
-                        {{-- Already voted --}}
-                        <div class="text-center py-3">
-                            <div class="d-inline-flex align-items-center justify-content-center mb-3"
-                                 style="width:60px;height:60px;border-radius:50%;background:rgba(52,199,89,0.12);">
-                                <i class="bi bi-check-circle-fill" style="font-size:1.8rem;color:#34C759;"></i>
-                            </div>
-                            <h5 style="font-weight:700;color:#1C1C1E;margin-bottom:4px;">Your Lot Is Confirmed!</h5>
-                            <p style="font-size:0.85rem;color:#8E8E93;margin-bottom:20px;">Thank you for confirming your participation.</p>
-
-                            @if(session('just_drawn') && isset($assignedPlot) && $assignedPlot)
-                                @include('zvote.partials.lot-reveal', [
-                                    'lotCode' => $assignedPlot->plot_code,
-                                    'style'   => $event->drawAnimation(),
-                                ])
-                            @endif
-
-                            @if(isset($poll) && $poll)
-                                <div class="ap-card mb-3" style="text-align:left;">
-                                    <div class="ap-card-body-sm">
-                                        <div class="d-flex justify-content-between py-2"
-                                             style="border-bottom:1px solid rgba(60,60,67,0.07);font-size:0.85rem;">
-                                            <span style="color:#8E8E93;">Craft Category Code</span>
-                                            <strong>{{ $poll->code ?? $registration->code ?? 'N/A' }}</strong>
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center py-2"
-                                             style="border-bottom:1px solid rgba(60,60,67,0.07);font-size:0.85rem;">
-                                            <span style="color:#8E8E93;">Lot No.</span>
-                                            @if(isset($assignedPlot) && $assignedPlot)
-                                                <span>
-                                                    <strong style="color:#34C759;" data-lot-code="{{ $assignedPlot->plot_code }}">
-                                                        <i class="bi bi-geo-alt-fill me-1"></i>{{ $assignedPlot->plot_code }}
-                                                    </strong>
-                                                    <span style="color:#8E8E93;font-size:0.78rem;margin-left:6px;">
-                                                        {{ $assignedPlot->plotSize->size ?? '' }}
-                                                        @if($assignedPlot->plotSize->location ?? false)
-                                                            | {{ $assignedPlot->plotSize->location }}
-                                                        @endif
-                                                    </span>
-                                                </span>
-                                            @else
-                                                {{-- Confirming draws the lot, so no lot here means a broken
-                                                     link, not a wait. --}}
-                                                <span class="ap-badge ap-badge-red">
-                                                    <i class="bi bi-exclamation-triangle me-1"></i>Not linked — contact admin
-                                                </span>
-                                            @endif
-                                        </div>
-                                        @if(isset($assignedPlot) && $assignedPlot)
-                                            <div class="d-flex justify-content-between py-2"
-                                                 style="border-bottom:1px solid rgba(60,60,67,0.07);font-size:0.85rem;">
-                                                <span style="color:#8E8E93;">How it was allocated</span>
-                                                {{-- One wording for every participant, and one that is true
-                                                     whichever way the lot came to them.
-
-                                                     Deliberate, and not to be "fixed" back into a branch on
-                                                     allocation_type. Reserving is infrastructure — agencies
-                                                     mapped so the draw cannot misplace them, NGOs, and lots
-                                                     reconciled against the plots actually built.
-                                                     Naming it on a participant's own screen exposes internal
-                                                     operations and reads as preferential treatment to anyone
-                                                     comparing notes. showVote already withholds the same
-                                                     thing before confirming; this is the other half of it.
-
-                                                     It says nothing about *how* on purpose. "Drawn at random"
-                                                     would have concealed the reservation just as well, but it
-                                                     is not true of a reserved lot, and a false line on the
-                                                     participant's own record is the wrong thing to be holding
-                                                     if an allocation is ever disputed. --}}
-                                                <span style="text-align:right;">
-                                                    <strong>By the organiser's lot draw</strong>
-                                                    <span style="display:block;color:#8E8E93;font-size:0.78rem;">You do not choose your own lot.</span>
-                                                </span>
-                                            </div>
-                                        @endif
-                                        <div class="d-flex justify-content-between py-2" style="font-size:0.85rem;">
-                                            <span style="color:#8E8E93;">Confirmed On</span>
-                                            <strong>{{ $poll->created_at->format('d M Y, h:i A') }}</strong>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endif
-
-                            @if(isset($assignedPlot) && $assignedPlot)
-                                {{-- The check-in code, so a participant can be checked in from
-                                     their phone without printing anything — see User::icHash().
-                                     The printed slip carries the same code once it exists. --}}
-                                @php
-                                    $icQr = auth()->user()->icQrDataUri(200);
-                                    $icHash = auth()->user()->icHash();
-                                @endphp
-                                <div class="ap-card mb-3">
-                                    <div class="ap-card-body-sm text-center">
-                                        @if($icQr)
-                                            <img src="{{ $icQr }}" alt="Your check-in code" loading="lazy"
-                                                 style="width:150px;height:150px;image-rendering:pixelated;">
-                                            <div style="font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
-                                                        font-size:0.9rem;letter-spacing:2px;color:#1C1C1E;margin-top:6px;">
-                                                {{ strtoupper(substr($icHash, 0, 8)) }}
-                                            </div>
-                                            <div style="font-size:0.78rem;color:#8E8E93;margin-top:4px;">
-                                                Show this at the counter to check in.
-                                            </div>
-                                        @else
-                                            {{-- Without an IC there is nothing to encode. Say what is
-                                                 missing and where to fix it — a blank space here reads
-                                                 as a broken page on the day it is needed. --}}
-                                            <div style="width:150px;height:150px;margin:0 auto;border:2px dashed rgba(60,60,67,0.18);
-                                                        border-radius:12px;display:flex;align-items:center;justify-content:center;">
-                                                <i class="bi bi-qr-code" style="font-size:2.4rem;color:#C7C7CC;"></i>
-                                            </div>
-                                            <div style="font-size:0.85rem;color:#1C1C1E;margin-top:10px;font-weight:600;">
-                                                No check-in code yet
-                                            </div>
-                                            <div style="font-size:0.78rem;color:#8E8E93;margin-top:2px;">
-                                                Your IC number is not on file. Ask the office to add it, and the code appears here.
-                                            </div>
-                                        @endif
-                                    </div>
-                                </div>
-
-                                {{-- Print opens the slip in the browser's own viewer, which
-                                     has a print button; share hands the file itself to the
-                                     OS share sheet. --}}
-                                <div class="d-flex justify-content-center gap-2 mb-3">
-                                    <a href="{{ route('zvote.slip', $event) }}" target="_blank" rel="noopener"
-                                       class="ap-btn ap-btn-secondary ap-btn-sm">
-                                        <i class="bi bi-printer me-1"></i>Print Slip
-                                    </a>
-                                    <button type="button" class="ap-btn ap-btn-secondary ap-btn-sm"
-                                            data-share-slip="{{ route('zvote.slip', $event) }}"
-                                            data-slip-name="lot-{{ $assignedPlot->plot_code }}.pdf">
-                                        <i class="bi bi-share me-1"></i>Share Slip
-                                    </button>
-                                </div>
-                            @endif
-
-                            <a href="{{ route('dashboard') }}" class="ap-btn ap-btn-outline ap-btn-sm">
-                                <i class="bi bi-arrow-left me-1"></i>Back to Dashboard
-                            </a>
-                        </div>
-
-                    @else
-                        {{-- Vote form --}}
-
-                        {{-- Allocated category notice --}}
-                        <div class="mb-3 p-3" style="background:rgba(0,122,255,0.06);border-radius:10px;border:1px solid rgba(0,122,255,0.15);">
-                            <div class="d-flex align-items-start gap-2">
-                                <i class="bi bi-info-circle mt-1" style="color:#007AFF;flex-shrink:0;"></i>
-                                <div>
-                                    <div style="font-weight:600;font-size:0.82rem;color:#007AFF;margin-bottom:4px;">Allocated Lot Category</div>
-                                    @if($code === 'NOT SET' || !$code)
-                                        <div style="font-weight:700;color:#FF3B30;font-size:1rem;">
-                                            <i class="bi bi-exclamation-triangle me-1"></i>NOT SET
-                                        </div>
-                                        <p style="font-size:0.8rem;color:#FF3B30;margin:4px 0 0;">Company code has not been assigned. Please contact admin.</p>
-                                    @else
-                                        <div style="font-weight:700;color:#1C1C1E;font-size:1.05rem;">{{ $code }}</div>
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Worded to hold for both paths. showVote deliberately does not
-                             tell this page whether the lot was reserved in advance or is
-                             still to be drawn — "kept a surprise" — so saying "drawn" was
-                             wrong for anyone holding a reserved lot. "Assigned" is true
-                             either way, and the two limits below are what the participant
-                             actually needs before ticking the box. --}}
-                        <div class="mb-3 p-3" style="background:rgba(52,199,89,0.06);border-radius:10px;border:1px solid rgba(52,199,89,0.15);">
-                            <p style="font-size:0.82rem;color:#28A745;margin:0 0 6px;">
-                                <i class="bi bi-gift me-1"></i>
-                                <strong>Lot Draw</strong> — Confirming assigns you one lot from
-                                @if($code && $code !== 'NOT SET')
-                                    category <strong>{{ $code }}</strong>
-                                @else
-                                    your craft category
-                                @endif
-                                and reveals it straight away.
-                            </p>
-                            <p style="font-size:0.78rem;color:#5C8F6B;margin:0;">
-                                You do not choose which lot, and you can only confirm once.
-                            </p>
-                        </div>
-
-                        <form action="{{ route('zvote.submit', $event) }}" method="POST">
-                            @csrf
-
-                            <div class="mb-3 p-3" style="border:1px solid rgba(60,60,67,0.15);border-radius:10px;">
-                                <div class="form-check ps-4">
-                                    <input class="form-check-input" type="checkbox" name="agreement" id="agree" value="1" required
-                                        {{ $code === 'NOT SET' ? 'disabled' : '' }}>
-                                    <label class="form-check-label fw-semibold" for="agree" style="font-size:0.88rem;">
-                                        I agree to this lot allocation and confirm my participation
-                                    </label>
-                                </div>
-                            </div>
-
-                            <button type="submit" class="ap-btn ap-btn-primary w-100 text-center"
-                                {{ $code === 'NOT SET' ? 'disabled' : '' }}>
-                                <i class="bi bi-check-circle me-2"></i>Confirm Lot
-                            </button>
-                        </form>
-
-                        @if($code === 'NOT SET')
-                            <div class="mt-2 p-3" style="background:rgba(255,149,0,0.08);border-radius:10px;border:1px solid rgba(255,149,0,0.2);">
-                                <p style="font-size:0.8rem;color:#C77800;margin:0;">
-                                    <i class="bi bi-lock me-1"></i>
-                                    <strong>Lot draw locked:</strong> Company code must be set by admin first.
-                                </p>
-                            </div>
-                        @endif
-
-                        <div class="mt-2 p-3" style="background:rgba(255,149,0,0.06);border-radius:10px;border:1px solid rgba(255,149,0,0.15);">
-                            <p style="font-size:0.8rem;color:#C77800;margin:0;">
-                                <i class="bi bi-clock me-1"></i>
-                                <strong>Lot draw closes:</strong>
-                                {{ $event->polling_deadline?->format('d M Y, h:i A') ?? 'Not set' }}
-                                &middot; Your lot is final once confirmed.
-                            </p>
-                        </div>
-                    @endif
-
-                </div>
-            </div>
-
+<div class="ap-page lot-page">
+    <div class="ap-page-header">
+        <div>
+            <h2 class="ap-page-title">{{ $event->title }}</h2>
+            <p class="ap-page-subtitle">Lot Draw</p>
         </div>
     </div>
+
+    @include('partials.draw-stepper', ['status' => $event->polling_status])
+
+    @if($errors->any())
+        <div class="ap-alert ap-alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle ap-alert-icon" aria-hidden="true"></i>
+            <div>
+                <strong>Validation Errors:</strong>
+                <ul class="mb-0 mt-1 ps-3">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
+    @endif
+    @if(session('success'))
+        <div class="ap-alert ap-alert-success" role="status">
+            <i class="bi bi-check-circle ap-alert-icon" aria-hidden="true"></i><div>{{ session('success') }}</div>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="ap-alert ap-alert-danger" role="alert">
+            <i class="bi bi-exclamation-triangle ap-alert-icon" aria-hidden="true"></i><div>{{ session('error') }}</div>
+        </div>
+    @endif
+
+    @if($hasVoted ?? false)
+        {{-- Already voted --}}
+        <div class="ap-card ap-card-body-lg mb-3">
+            <div class="lot-done-head">
+                <div class="lot-done-icon" aria-hidden="true"><i class="bi bi-check-lg"></i></div>
+                <h3>Your Lot Is Confirmed!</h3>
+                <p>Thank you for confirming your participation.</p>
+            </div>
+
+            @if(session('just_drawn') && isset($assignedPlot) && $assignedPlot)
+                @include('zvote.partials.lot-reveal', [
+                    'lotCode' => $assignedPlot->plot_code,
+                    'style'   => $event->drawAnimation(),
+                ])
+            @endif
+
+            @if(isset($poll) && $poll)
+                <div class="mt-3">
+                    <div class="ap-detail-row">
+                        <span class="ap-detail-label">Craft Category Code</span>
+                        <span class="ap-detail-value">{{ $poll->code ?? $registration->code ?? 'N/A' }}</span>
+                    </div>
+                    <div class="ap-detail-row align-items-center">
+                        <span class="ap-detail-label">Lot No.</span>
+                        @if(isset($assignedPlot) && $assignedPlot)
+                            <span class="ap-detail-value">
+                                <strong class="lot-code" data-lot-code="{{ $assignedPlot->plot_code }}">
+                                    <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>{{ $assignedPlot->plot_code }}
+                                </strong>
+                                <span class="lot-where">
+                                    {{ $assignedPlot->plotSize->size ?? '' }}
+                                    @if($assignedPlot->plotSize->location ?? false)
+                                        | {{ $assignedPlot->plotSize->location }}
+                                    @endif
+                                </span>
+                            </span>
+                        @else
+                            {{-- Confirming draws the lot, so no lot here means a broken
+                                 link, not a wait. --}}
+                            <span class="ap-badge ap-badge-red">Not linked — contact admin</span>
+                        @endif
+                    </div>
+                    @if(isset($assignedPlot) && $assignedPlot)
+                        <div class="ap-detail-row">
+                            <span class="ap-detail-label">How it was allocated</span>
+                            {{-- One wording for every participant, true whichever way the
+                                 lot came to them: naming a reservation on a participant's own
+                                 screen exposes internal operations and reads as preference. --}}
+                            <span class="ap-detail-value">
+                                By the organiser's lot draw
+                                <span class="lot-where">You do not choose your own lot.</span>
+                            </span>
+                        </div>
+                    @endif
+                    <div class="ap-detail-row">
+                        <span class="ap-detail-label">Confirmed On</span>
+                        <span class="ap-detail-value">{{ $poll->created_at->format('d M Y, h:i A') }}</span>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        @if(isset($assignedPlot) && $assignedPlot)
+            {{-- The check-in code, so a participant can be checked in from their
+                 phone without printing anything — see User::icHash(). --}}
+            @php
+                $icQr = auth()->user()->icQrDataUri(200);
+                $icHash = auth()->user()->icHash();
+            @endphp
+            <div class="ap-card ap-card-body-lg lot-qr mb-3">
+                @if($icQr)
+                    <img src="{{ $icQr }}" alt="Your check-in code" loading="lazy">
+                    <div class="lot-qr-code">{{ strtoupper(substr($icHash, 0, 8)) }}</div>
+                    <p class="ap-muted mt-1 mb-0">Show this at the counter to check in.</p>
+                @else
+                    {{-- Without an IC there is nothing to encode. Say what is missing
+                         and who can fix it. --}}
+                    <div class="lot-qr-empty" aria-hidden="true"><i class="bi bi-qr-code"></i></div>
+                    <p class="mt-3 mb-1 fw-semibold">No check-in code yet</p>
+                    <p class="ap-muted mb-0">Your IC number is not on file. Ask the office to add it, and the code appears here.</p>
+                @endif
+            </div>
+
+            {{-- Print opens the slip in the browser's own viewer; share hands the
+                 file itself to the OS share sheet. --}}
+            <div class="lot-actions">
+                <a href="{{ route('zvote.slip', $event) }}" target="_blank" rel="noopener" class="ap-btn ap-btn-secondary">
+                    <i class="bi bi-printer" aria-hidden="true"></i>Print Slip
+                </a>
+                <button type="button" class="ap-btn ap-btn-secondary"
+                        data-share-slip="{{ route('zvote.slip', $event) }}"
+                        data-slip-name="lot-{{ $assignedPlot->plot_code }}.pdf">
+                    <i class="bi bi-share" aria-hidden="true"></i>Share Slip
+                </button>
+            </div>
+        @endif
+
+        <div class="text-center">
+            <a href="{{ route('dashboard') }}" class="ap-btn ap-btn-secondary">
+                <i class="bi bi-arrow-left" aria-hidden="true"></i>Back to Dashboard
+            </a>
+        </div>
+
+    @else
+        {{-- Vote form --}}
+        <div class="ap-card ap-card-body-lg mb-3">
+            <div class="lot-fact">
+                <span class="lot-fact-label">Allocated Lot Category</span>
+                @if($code === 'NOT SET' || ! $code)
+                    <span class="lot-fact-value is-missing"><i class="bi bi-exclamation-triangle me-1" aria-hidden="true"></i>NOT SET</span>
+                @else
+                    <span class="lot-fact-value">{{ $code }}</span>
+                @endif
+            </div>
+            @if($code === 'NOT SET' || ! $code)
+                <p class="mt-2 mb-0" style="color:var(--ui-bad-text)">Company code has not been assigned. Please contact admin.</p>
+            @endif
+
+            {{-- Worded to hold whether the lot was reserved or is still to be
+                 drawn: the page is not told which, and "assigned" is true either way. --}}
+            <ul class="lot-rules">
+                <li>
+                    <i class="bi bi-gift" aria-hidden="true"></i>
+                    <span><strong>Lot Draw</strong> — Confirming assigns you one lot from
+                        @if($code && $code !== 'NOT SET')
+                            category <strong>{{ $code }}</strong>
+                        @else
+                            your craft category
+                        @endif
+                        and reveals it straight away.</span>
+                </li>
+                <li>
+                    <i class="bi bi-info-circle" aria-hidden="true"></i>
+                    <span>You do not choose which lot, and you can only confirm once.</span>
+                </li>
+            </ul>
+
+            <form action="{{ route('zvote.submit', $event) }}" method="POST">
+                @csrf
+
+                <label class="lot-agree" for="agree">
+                    <input class="form-check-input" type="checkbox" name="agreement" id="agree" value="1" required
+                        {{ $code === 'NOT SET' ? 'disabled' : '' }}>
+                    <span>I agree to this lot allocation and confirm my participation</span>
+                </label>
+
+                <button type="submit" class="ap-btn ap-btn-primary ap-btn-lg w-100"
+                    {{ $code === 'NOT SET' ? 'disabled' : '' }}>
+                    <i class="bi bi-check-circle" aria-hidden="true"></i>Confirm Lot
+                </button>
+            </form>
+
+            @if($code === 'NOT SET')
+                <div class="ap-alert ap-alert-warning mt-3 mb-0">
+                    <i class="bi bi-lock ap-alert-icon" aria-hidden="true"></i>
+                    <div><strong>Lot draw locked:</strong> Company code must be set by admin first.</div>
+                </div>
+            @endif
+
+            <p class="lot-note mb-0">
+                <i class="bi bi-clock" aria-hidden="true"></i>
+                <span><strong>Lot draw closes:</strong>
+                    {{ $event->polling_deadline?->format('d M Y, h:i A') ?? 'Not set' }}
+                    &middot; Your lot is final once confirmed.</span>
+            </p>
+        </div>
+    @endif
 </div>
 @endsection
 

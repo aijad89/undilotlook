@@ -1,485 +1,299 @@
 <style>
-    /* ── Admin Design System — White/Amber theme ── */
+    /* ── Admin components, on the shared tokens (partials/ui-tokens) ──────────
+       The office works here for hours: Stripe-calm tables and forms, one blue
+       that acts, status that names itself. Class names are unchanged, so every
+       admin view takes this without an edit. */
     :root {
-        --mac-primary:    #D97706;
-        --mac-primary-hv: #B45309;
-        --mac-primary-tx: #92400E;
-        --mac-primary-lt: rgba(217, 119, 6, 0.10);
-        --mac-primary-md: rgba(217, 119, 6, 0.18);
-        --mac-primary-rg: rgba(217, 119, 6, 0.15);
-        --mac-text:       #1C1C1E;
-        --mac-text2:      #374151;
-        --mac-muted:      #4B5563;
-        --mac-bg:         #FAFAF8;
-        --mac-border:     rgba(0,0,0,0.07);
-        --mac-sep:        rgba(0,0,0,0.04);
+        /* The old names, kept so inline styles in views still resolve. */
+        --mac-primary: var(--ui-blue);
+        --mac-primary-hv: var(--ui-blue-hover);
+        --mac-primary-tx: var(--ui-blue-text);
+        --mac-primary-lt: var(--ui-blue-tint);
+        --mac-primary-md: #d7e3fb;
+        --mac-primary-rg: rgba(26, 86, 219, 0.18);
+        --mac-text: var(--ui-text);
+        --mac-text2: var(--ui-text-2);
+        --mac-muted: var(--ui-muted);
+        --mac-bg: var(--ui-ground);
+        --mac-border: var(--ui-border);
+        --mac-sep: var(--ui-sep);
     }
 
-    .mac-page { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif; }
+    .mac-page { font-family: var(--ui-font); color: var(--ui-text); }
 
-    /* ── Header ─────────────────────────────────── */
-    .mac-header h2 { font-size: 1.65rem; font-weight: 700; letter-spacing: -0.02em; color: var(--mac-text); }
-    .mac-breadcrumb { font-size: 0.8rem; color: var(--mac-muted); }
-    /* Underlined by default (not just on hover) — a link inside plain breadcrumb text must be
-       distinguishable without relying on color alone (WCAG 1.4.1). */
-    .mac-breadcrumb a { color: var(--mac-primary-tx); text-decoration: underline; text-underline-offset: 2px; }
-    .mac-breadcrumb a:hover { text-decoration: underline; }
-    .mac-breadcrumb .sep { margin: 0 6px; color: #D1D5DB; }
+    /* ── Page header ─────────────────────────────── */
+    .mac-header h2 { font-size: 1.5rem; font-weight: 700; letter-spacing: -0.015em; color: var(--ui-text); margin: 0 0 4px; line-height: 1.25; }
+    .mac-header p { color: var(--ui-muted); }
+    .mac-breadcrumb { font-size: 0.82rem; color: var(--ui-muted); }
+    .mac-breadcrumb a { color: var(--ui-blue-text); text-decoration: underline; }
+    .mac-breadcrumb .sep { margin: 0 6px; color: var(--ui-border-strong); }
 
     /* ── Buttons ─────────────────────────────────── */
-    .mac-btn-primary {
-        background: var(--mac-primary-hv); color: #fff; border: none; border-radius: 980px;
-        padding: 8px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: -0.01em;
-        transition: all 0.18s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    .mac-btn-primary, .mac-btn-secondary, .mac-btn-danger, .mac-btn-success, .mac-btn-warning {
+        display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+        min-height: var(--ui-control-h); padding: 0 16px; border-radius: var(--ui-r);
+        font-size: 0.875rem; font-weight: 600; line-height: 1; text-decoration: none; white-space: nowrap;
+        border: 1px solid transparent; cursor: pointer;
+        transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
     }
-    .mac-btn-primary:hover { background: var(--mac-primary-tx); color: #fff; transform: scale(1.02); }
-
-    .mac-btn-secondary {
-        background: rgba(0,0,0,0.05); color: var(--mac-text); border: 1px solid var(--mac-border); border-radius: 980px;
-        padding: 8px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: -0.01em;
-        transition: all 0.18s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-    }
-    .mac-btn-secondary:hover { background: rgba(0,0,0,0.09); color: var(--mac-text); }
-
-    .mac-btn-danger {
-        background: rgba(239,68,68,0.08); color: #B91C1C; border: 1px solid rgba(239,68,68,0.15); border-radius: 980px;
-        padding: 8px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: -0.01em;
-        transition: all 0.18s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-    }
-    .mac-btn-danger:hover { background: #B91C1C; color: #fff; }
-
-    .mac-btn-success {
-        background: rgba(52,199,89,0.10); color: #166534; border: 1px solid rgba(52,199,89,0.20); border-radius: 980px;
-        padding: 8px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: -0.01em;
-        transition: all 0.18s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-    }
-    .mac-btn-success:hover { background: #22C55E; color: #fff; border-color: #22C55E; }
-
-    .mac-btn-warning {
-        background: rgba(245,158,11,0.10); color: #92400E; border: 1px solid rgba(245,158,11,0.22); border-radius: 980px;
-        padding: 8px 20px; font-size: 0.82rem; font-weight: 500; letter-spacing: -0.01em;
-        transition: all 0.18s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-    }
-    .mac-btn-warning:hover { background: #F59E0B; color: #fff; border-color: #F59E0B; }
+    .mac-btn-primary { background: var(--ui-blue); color: #fff; box-shadow: var(--ui-shadow-1), inset 0 -1px 0 rgba(0, 0, 0, 0.12); }
+    .mac-btn-primary:hover { background: var(--ui-blue-hover); color: #fff; }
+    .mac-btn-primary:active { background: var(--ui-blue-press); }
+    .mac-btn-secondary { background: var(--ui-surface); color: var(--ui-text); border-color: var(--ui-border-strong); box-shadow: var(--ui-shadow-1); }
+    .mac-btn-secondary:hover { background: var(--ui-surface-2); color: var(--ui-text); border-color: #a9b4c3; }
+    .mac-btn-danger { background: var(--ui-surface); color: var(--ui-bad-text); border-color: #f1b8a8; box-shadow: var(--ui-shadow-1); }
+    .mac-btn-danger:hover { background: var(--ui-bad); color: #fff; border-color: var(--ui-bad); }
+    .mac-btn-success { background: var(--ui-ok); color: #fff; box-shadow: var(--ui-shadow-1), inset 0 -1px 0 rgba(0, 0, 0, 0.14); }
+    .mac-btn-success:hover { background: var(--ui-ok-text); color: #fff; }
+    .mac-btn-warning { background: var(--ui-surface); color: var(--ui-warn-text); border-color: #efc98a; box-shadow: var(--ui-shadow-1); }
+    .mac-btn-warning:hover { background: var(--ui-warn-tint); color: var(--ui-warn-text); }
 
     /* ── Filter bar ──────────────────────────────── */
     .mac-filter-bar {
-        background: rgba(255,255,255,0.85); backdrop-filter: blur(20px) saturate(160%);
-        -webkit-backdrop-filter: blur(20px) saturate(160%);
-        border: 1px solid var(--mac-border); border-radius: 14px; padding: 14px 18px; margin-bottom: 16px;
+        background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg);
+        padding: 12px; margin-bottom: 16px; box-shadow: var(--ui-shadow-1);
     }
-    .mac-input, .mac-select {
-        background: rgba(0,0,0,0.04); border: 1px solid var(--mac-border); border-radius: 10px;
-        padding: 9px 14px; font-size: 0.85rem; line-height: 1.5; height: 43px; box-sizing: border-box;
-        color: var(--mac-text); transition: all 0.18s; width: 100%; outline: none;
+    /* A filter form lays its fields out in one row that wraps, whatever markup
+       a view used: search widest, selects next, the buttons at their own size. */
+    form.mac-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    form.mac-filter-bar > .row { flex: 1 1 100%; }
+    form.mac-filter-bar > input { flex: 2 1 240px; width: auto; }
+    form.mac-filter-bar > select { flex: 1 1 170px; width: auto; }
+    form.mac-filter-bar > button, form.mac-filter-bar > a { flex: 0 0 auto; }
+    .mac-input, .mac-select, .mac-form-control {
+        width: 100%; height: var(--ui-control-h); box-sizing: border-box;
+        padding: 0 12px; border-radius: var(--ui-r);
+        background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
+        color: var(--ui-text); font-size: 0.9rem; line-height: 1.4; outline: none;
+        transition: border-color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
     }
-    .mac-input:focus, .mac-select:focus {
-        background: #fff; border-color: var(--mac-primary); box-shadow: 0 0 0 3px var(--mac-primary-rg);
+    .mac-select {
+        appearance: none; -webkit-appearance: none; padding-right: 34px;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23586477' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+        background-repeat: no-repeat; background-position: right 10px center;
     }
-    .mac-input::placeholder { color: var(--mac-muted); }
-    .mac-filter-btn {
-        background: var(--mac-primary-hv); color: #fff; border: none; border-radius: 10px;
-        padding: 7px 16px; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+    select.mac-select[multiple], select.mac-form-control[multiple] { height: auto; padding: 6px 8px; background-image: none; }
+    .mac-input:hover, .mac-select:hover, .mac-form-control:hover { border-color: #a9b4c3; }
+    .mac-input:focus, .mac-select:focus, .mac-form-control:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px var(--mac-primary-rg); }
+    .mac-input:focus-visible, .mac-select:focus-visible, .mac-form-control:focus-visible { box-shadow: var(--ui-focus-ring) !important; border-color: var(--ui-focus-ink); }
+    .mac-input::placeholder, .mac-form-control::placeholder { color: var(--ui-muted); }
+    textarea.mac-form-control { height: auto; min-height: 96px; padding: 10px 12px; resize: vertical; line-height: 1.5; }
+    .mac-filter-btn, .mac-clear-btn {
+        display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+        min-height: var(--ui-control-h); padding: 0 16px; border-radius: var(--ui-r);
+        font-size: 0.875rem; font-weight: 600; text-decoration: none; cursor: pointer;
+        transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease);
     }
-    .mac-filter-btn:hover { background: var(--mac-primary-tx); }
-    .mac-clear-btn {
-        background: rgba(0,0,0,0.05); color: var(--mac-text); border: 1px solid var(--mac-border); border-radius: 10px;
-        padding: 7px 16px; font-size: 0.82rem; font-weight: 500; text-decoration: none; transition: all 0.15s;
-    }
-    .mac-clear-btn:hover { background: rgba(0,0,0,0.09); color: var(--mac-text); }
+    .mac-filter-btn { background: var(--ui-blue); color: #fff; border: 1px solid transparent; }
+    .mac-filter-btn:hover { background: var(--ui-blue-hover); }
+    .mac-clear-btn { background: transparent; color: var(--ui-text-2); border: 1px solid transparent; }
+    .mac-clear-btn:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
 
     /* ── Card ────────────────────────────────────── */
-    /* Opaque, not frosted. The Frosted-Chrome rule puts blur on chrome
-       and never on content, and a card is content. The blur also bought nothing
-       here: 85% white over the #FAFAF8 page background composites to #FEFEFE —
-       one step off solid white per channel — so every admin card was paying for
-       a backdrop-filter that is invisible. The filter bar keeps its blur; it is
-       chrome and it sits over scrolling content. */
-    .mac-card {
-        background: #FFFFFF;
-        border: 1px solid var(--mac-border); border-radius: 14px; overflow: hidden;
-    }
+    .mac-card { background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); overflow: hidden; }
     .mac-card-padded { padding: 24px; }
-    .mac-card-header {
-        padding: 16px 20px; border-bottom: 1px solid var(--mac-border); background: rgba(0,0,0,0.02);
-    }
-    .mac-card-title {
-        font-size: 0.95rem; font-weight: 600; color: var(--mac-text); letter-spacing: -0.01em;
-        display: flex; align-items: center; gap: 8px;
-    }
+    .mac-card-header { padding: 14px 20px; border-bottom: 1px solid var(--ui-sep); background: var(--ui-surface); }
+    .mac-card-title { font-size: 1rem; font-weight: 650; color: var(--ui-text); letter-spacing: -0.005em; display: flex; align-items: center; gap: 8px; margin: 0; }
+    .mac-card-title > i { color: var(--ui-muted); }
+    .mac-card > .mac-card-title, .mac-card-padded > .mac-card-title { margin-bottom: 12px; }
 
     /* ── Table ───────────────────────────────────── */
     .mac-table { width: 100%; border-collapse: separate; border-spacing: 0; }
     .mac-table thead th {
-        background: rgba(0,0,0,0.025); padding: 10px 16px; font-size: 0.72rem; font-weight: 600;
-        text-transform: uppercase; letter-spacing: 0.05em; color: var(--mac-muted);
-        border-bottom: 1px solid var(--mac-border); white-space: nowrap;
+        background: var(--ui-surface-2); padding: 10px 16px;
+        font-size: 0.75rem; font-weight: 600; letter-spacing: 0.02em; color: var(--ui-muted);
+        border-bottom: 1px solid var(--ui-border); white-space: nowrap; text-align: left;
     }
-    .mac-table tbody td {
-        padding: 14px 16px; font-size: 0.85rem; color: var(--mac-text);
-        border-bottom: 1px solid var(--mac-sep); vertical-align: middle;
-    }
+    .mac-table thead th.text-center { text-align: center; }
+    .mac-table thead th.text-end { text-align: right; }
+    .mac-table tbody td { padding: 13px 16px; font-size: 0.875rem; color: var(--ui-text); border-bottom: 1px solid var(--ui-sep); vertical-align: middle; }
     .mac-table tbody tr:last-child td { border-bottom: none; }
-    .mac-table tbody tr:hover td { background: var(--mac-primary-lt); }
+    .mac-table tbody tr { transition: background-color var(--ui-fast) var(--ui-ease); }
+    .mac-table tbody tr:hover td { background: #f6f9ff; }
+    .mac-table tbody td a.fw-semibold, .mac-table tbody td a.text-decoration-none { color: var(--ui-text); }
+    .mac-table tbody td a.fw-semibold:hover { color: var(--ui-blue-text); }
 
     /* ── Status pills ─────────────────────────────── */
     .mac-status {
-        display: inline-flex; align-items: center; gap: 5px;
-        padding: 4px 10px; border-radius: 980px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.01em;
+        display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; min-height: 24px;
+        border-radius: 999px; font-size: 0.78rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
+        background: var(--ui-neutral-tint); color: var(--ui-neutral-text);
     }
-    .mac-status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
-    .mac-status-green  { background: rgba(52,199,89,0.12);  color: #166534; }
-    .mac-status-green .mac-status-dot  { background: #22C55E; }
-    .mac-status-gray   { background: rgba(156,163,175,0.15); color: #52525B; }
-    .mac-status-gray .mac-status-dot   { background: #9CA3AF; }
-    .mac-status-orange { background: rgba(217,119,6,0.12);  color: #92400E; }
-    .mac-status-orange .mac-status-dot { background: #D97706; }
-    .mac-status-red    { background: rgba(239,68,68,0.10);  color: #991B1B; }
-    .mac-status-red .mac-status-dot    { background: #EF4444; }
-    .mac-status-blue   { background: rgba(59,130,246,0.10); color: #1D4ED8; }
-    .mac-status-blue .mac-status-dot   { background: #3B82F6; }
-    .mac-status-purple { background: rgba(139,92,246,0.10); color: #5B21B6; }
-    .mac-status-purple .mac-status-dot { background: #8B5CF6; }
-    /* Amber/yellow status variant */
-    .mac-status-yellow { background: rgba(217,119,6,0.12);  color: #92400E; }
-    .mac-status-yellow .mac-status-dot { background: #D97706; }
+    .mac-status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: currentColor; }
+    .mac-status-green  { background: var(--ui-ok-tint);   color: var(--ui-ok-text); }
+    .mac-status-gray   { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
+    .mac-status-orange, .mac-status-yellow { background: var(--ui-warn-tint); color: var(--ui-warn-text); }
+    .mac-status-red    { background: var(--ui-bad-tint);  color: var(--ui-bad-text); }
+    .mac-status-blue   { background: var(--ui-blue-tint); color: var(--ui-blue-text); }
+    .mac-status-purple { background: var(--ui-violet-tint); color: var(--ui-violet-text); }
 
-    /* ── Action buttons ──────────────────────────── */
-    .mac-action-btn {
-        padding: 5px 12px; border-radius: 8px; font-size: 0.76rem; font-weight: 500;
-        border: 1px solid var(--mac-border); background: #fff; color: var(--mac-primary-tx);
-        text-decoration: none; transition: border-color 0.15s; display: inline-flex; align-items: center; gap: 4px;
+    /* ── Row actions ─────────────────────────────── */
+    .mac-action-btn, .mac-action-btn-danger {
+        display: inline-flex; align-items: center; justify-content: center; gap: 5px;
+        min-height: 32px; padding: 0 12px; border-radius: var(--ui-r-sm);
+        font-size: 0.82rem; font-weight: 600; text-decoration: none; cursor: pointer;
+        background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
+        transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
     }
-    .mac-action-btn:hover { background: var(--mac-primary-hv); color: #fff; border-color: var(--mac-primary-hv); }
-    .mac-action-btn-danger {
-        padding: 5px 12px; border-radius: 8px; font-size: 0.76rem; font-weight: 500;
-        border: 1px solid rgba(239,68,68,0.2); background: #fff; color: #B91C1C;
-        text-decoration: none; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px;
-    }
-    .mac-action-btn-danger:hover { background: #B91C1C; color: #fff; border-color: #B91C1C; }
+    .mac-action-btn { color: var(--ui-text-2); }
+    .mac-action-btn:hover { background: var(--ui-blue-tint); border-color: #b6c9f4; color: var(--ui-blue-text); }
+    .mac-action-btn-danger { color: var(--ui-bad-text); border-color: #f1b8a8; }
+    .mac-action-btn-danger:hover { background: var(--ui-bad); border-color: var(--ui-bad); color: #fff; }
+    .mac-action-btn-field { height: var(--ui-control-h); min-height: var(--ui-control-h); padding: 0 12px; border-radius: var(--ui-r); }
 
-    /* An action button standing in a form row rather than a table row: matches
-       the 43px field height so the row reads as one baseline. The base class
-       stays table-sized — fourteen other views rely on it. */
-    .mac-action-btn-field { height: 43px; padding: 0 14px; border-radius: 10px; justify-content: center; }
-
-    /* A disabled button still looked clickable — every mac button is custom-painted,
-       so the browser's default :disabled styling never showed through. */
     .mac-btn-primary:disabled, .mac-btn-secondary:disabled, .mac-btn-danger:disabled,
-    .mac-btn-success:disabled, .mac-action-btn:disabled, .mac-action-btn-danger:disabled {
-        opacity: 0.4; cursor: not-allowed;
-        pointer-events: none; /* else the :hover fill still lights up on a dead button */
+    .mac-btn-success:disabled, .mac-btn-warning:disabled, .mac-action-btn:disabled, .mac-action-btn-danger:disabled,
+    .mac-filter-btn:disabled {
+        opacity: 0.45; cursor: not-allowed; pointer-events: none; box-shadow: none;
     }
 
     /* ── Form elements ───────────────────────────── */
-    .mac-label {
-        font-size: 0.78rem; font-weight: 600; color: var(--mac-muted); text-transform: uppercase;
-        letter-spacing: 0.04em; margin-bottom: 6px; display: block;
-    }
-    .mac-form-control {
-        background: rgba(0,0,0,0.04); border: 1px solid var(--mac-border); border-radius: 10px;
-        padding: 9px 14px; font-size: 0.85rem; line-height: 1.5; height: 43px; box-sizing: border-box;
-        color: var(--mac-text); transition: all 0.18s; width: 100%; outline: none;
-    }
-    textarea.mac-form-control { height: auto; min-height: 80px; }
-    .mac-form-control:focus {
-        background: #fff; border-color: var(--mac-primary); box-shadow: 0 0 0 3px var(--mac-primary-rg);
-    }
-    .mac-form-control::placeholder { color: var(--mac-muted); }
-    textarea.mac-form-control { resize: vertical; min-height: 80px; }
+    .mac-label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--ui-text-2); }
+    .mac-page .form-check-input { width: 1.15em; height: 1.15em; border-color: var(--ui-border-strong); }
+    .mac-page .form-check-input:checked { background-color: var(--ui-blue); border-color: var(--ui-blue); }
+    .mac-page .form-check-input:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px var(--mac-primary-rg); }
+    .mac-page .form-check-label { color: var(--ui-text-2); }
+    .mac-page .text-danger { color: var(--ui-bad-text) !important; }
+    .mac-page small.text-danger { display: inline-block; margin-top: 4px; font-size: 0.82rem; }
 
-    /* Bootstrap sizes an input-group's field with `.form-control`, which we do
-       not use — so mac-form-control kept its width:100%, filled the group on
-       its own and pushed the suffix onto a second line. These give it the same
-       flex behaviour and join the two halves into one control.
-
-       nowrap matters as much as the sizing: Bootstrap lets .input-group wrap,
-       so in a narrow column the addon still dropped below the field even once
-       the widths were right. An addon belongs beside its input or nowhere. */
     .input-group { flex-wrap: nowrap; }
     .input-group > .mac-form-control { flex: 1 1 auto; width: 1%; min-width: 0; }
-    .input-group > .mac-form-control:not(:last-child) {
-        border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0;
-    }
-    .input-group > .mac-form-control:not(:first-child) {
-        border-top-left-radius: 0; border-bottom-left-radius: 0;
-    }
+    .input-group > .mac-form-control:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
+    .input-group > .mac-form-control:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
     .input-group > .input-group-text {
-        height: 43px; padding: 9px 12px; font-size: 0.85rem; line-height: 1.5;
-        background: rgba(0,0,0,0.04); border: 1px solid var(--mac-border);
-        border-radius: 10px; color: var(--mac-muted); white-space: nowrap;
+        height: var(--ui-control-h); padding: 0 12px; font-size: 0.875rem;
+        background: var(--ui-surface-2); border: 1px solid var(--ui-border-strong); border-radius: var(--ui-r);
+        color: var(--ui-muted); white-space: nowrap;
     }
-    .input-group > .input-group-text:not(:first-child) {
-        border-top-left-radius: 0; border-bottom-left-radius: 0;
-    }
-    .input-group > .input-group-text:not(:last-child) {
-        border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0;
-    }
+    .input-group > .input-group-text:not(:first-child) { border-top-left-radius: 0; border-bottom-left-radius: 0; }
+    .input-group > .input-group-text:not(:last-child) { border-top-right-radius: 0; border-bottom-right-radius: 0; border-right: 0; }
 
     /* ── Detail rows ─────────────────────────────── */
     .mac-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
-    .mac-detail-row {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        padding: 12px 20px; border-bottom: 1px solid var(--mac-sep);
-    }
+    .mac-detail-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--ui-sep); }
     .mac-detail-row:last-child { border-bottom: none; }
-    .mac-detail-label { font-size: 0.82rem; font-weight: 500; color: var(--mac-muted); flex-shrink: 0; min-width: 140px; }
-    .mac-detail-value { font-size: 0.85rem; color: var(--mac-text); text-align: right; font-weight: 500; }
+    .mac-detail-label { flex-shrink: 0; min-width: 140px; font-size: 0.85rem; font-weight: 500; color: var(--ui-muted); }
+    .mac-detail-value { font-size: 0.875rem; font-weight: 500; color: var(--ui-text); text-align: right; }
 
-    /* ── Section heading inside cards ────────────── */
-    .mac-section-title {
-        font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-        color: var(--mac-muted); padding: 16px 20px 8px; border-top: 1px solid var(--mac-sep);
-    }
+    .mac-section-title { padding: 18px 20px 8px; border-top: 1px solid var(--ui-sep); font-size: 0.8rem; font-weight: 650; color: var(--ui-text-2); }
     .mac-section-title:first-child { border-top: none; }
 
     /* ── Empty state ─────────────────────────────── */
-    .mac-empty { text-align: center; padding: 48px 24px; color: var(--mac-muted); }
-    .mac-empty-icon { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.35; }
-    .mac-empty-text { font-size: 0.9rem; font-weight: 500; }
+    .mac-empty { padding: 44px 24px; text-align: center; color: var(--ui-muted); font-size: 0.9rem; }
+    .mac-empty-icon { margin-bottom: 10px; font-size: 2rem; color: var(--ui-border-strong); }
+    .mac-empty-text { font-size: 0.92rem; font-weight: 500; color: var(--ui-text-2); }
+    .mac-empty a { font-weight: 600; }
 
     /* ── Pagination ──────────────────────────────── */
-    .mac-card .pagination, .mac-page .pagination { padding: 12px 16px; margin: 0; justify-content: center; }
+    .mac-card .pagination, .mac-page .pagination { gap: 4px; padding: 12px 16px; margin: 0; justify-content: center; }
     .mac-card .page-link, .mac-page .page-link {
-        border: none; border-radius: 8px; color: var(--mac-primary-tx);
-        font-size: 0.82rem; padding: 6px 12px; margin: 0 2px;
+        min-width: 34px; height: 34px; display: grid; place-items: center; padding: 0 10px;
+        border: 1px solid transparent; border-radius: var(--ui-r-sm); color: var(--ui-text-2); font-size: 0.85rem; font-weight: 600;
     }
-    .mac-card .page-link:hover, .mac-page .page-link:hover { background: var(--mac-primary-lt); }
-    .mac-card .page-item.active .page-link, .mac-page .page-item.active .page-link {
-        background: var(--mac-primary-hv); color: #fff;
-    }
-    .mac-card .page-item.disabled .page-link, .mac-page .page-item.disabled .page-link { color: #D1D5DB; }
+    .mac-card .page-link:hover, .mac-page .page-link:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+    .mac-card .page-item.active .page-link, .mac-page .page-item.active .page-link { background: var(--ui-navy-900); color: #fff; }
+    .mac-card .page-item.disabled .page-link, .mac-page .page-item.disabled .page-link { color: var(--ui-border-strong); background: transparent; }
 
     /* ── Alerts ──────────────────────────────────── */
-    /* Bootstrap's 1rem block padding is sized for 1rem text; at 0.85rem it
-       leaves a band of empty space above and below the one line of flash text.
-       The right padding still has to clear the dismiss button, whose own
-       padding is trimmed to match — otherwise it props the alert back open. */
     .mac-page .alert {
-        border-radius: 12px; font-size: 0.85rem; border: none;
-        padding: 10px 44px 10px 14px;
+        display: flex; align-items: flex-start; gap: 10px;
+        padding: 12px 44px 12px 14px; border-radius: var(--ui-r-lg); font-size: 0.9rem; line-height: 1.5;
+        border: 1px solid transparent;
     }
-    .mac-page .alert-dismissible .btn-close { padding: 12px 15px; }
+    .mac-page .alert-success { background: var(--ui-ok-tint); border-color: #b9e1ca; color: var(--ui-ok-text); }
+    .mac-page .alert-danger { background: var(--ui-bad-tint); border-color: #f5c3b6; color: var(--ui-bad-text); }
+    .mac-page .alert-warning { background: var(--ui-warn-tint); border-color: #f3d29a; color: var(--ui-warn-text); }
+    .mac-page .alert-info { background: var(--ui-blue-tint); border-color: #c4d5f8; color: var(--ui-blue-text); }
+    .mac-page .alert-dismissible .btn-close { padding: 14px 15px; }
+    .mac-page .alert ul { margin: 4px 0 0; padding-left: 18px; }
 
     /* ── Tabs ────────────────────────────────────── */
-    .mac-tabs {
-        display: flex; list-style: none; margin: 0; padding: 0 20px; gap: 0;
-        border-bottom: 1px solid var(--mac-border);
-    }
+    .mac-tabs { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0 4px; border-bottom: 1px solid var(--ui-border); }
     .mac-tabs .nav-link {
-        padding: 12px 18px; font-size: 0.85rem; font-weight: 500; color: var(--mac-muted);
-        border: none; border-bottom: 2px solid transparent; background: none;
-        cursor: pointer; transition: all 0.15s; margin-bottom: -1px; border-radius: 0; letter-spacing: -0.01em;
+        position: relative; padding: 10px 14px; margin-bottom: -1px;
+        font-size: 0.9rem; font-weight: 600; color: var(--ui-muted);
+        background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; cursor: pointer;
+        transition: color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease);
     }
-    .mac-tabs .nav-link:hover { color: var(--mac-text); background: var(--mac-primary-lt); }
-    .mac-tabs .nav-link.active {
-        color: var(--mac-primary-tx); border-bottom-color: var(--mac-primary); font-weight: 600; background: none;
+    .mac-tabs .nav-link:hover { color: var(--ui-text); border-bottom-color: var(--ui-border-strong); }
+    .mac-tabs .nav-link.active { color: var(--ui-text); border-bottom-color: var(--ui-blue); background: none; }
+    .mac-page .nav-tabs { border-bottom: 1px solid var(--ui-border); gap: 4px; }
+    .mac-page .nav-tabs .nav-link {
+        margin-bottom: -1px; padding: 10px 14px; border: none; border-bottom: 2px solid transparent; border-radius: 0;
+        font-size: 0.9rem; font-weight: 600; color: var(--ui-muted); background: none;
     }
-    .mac-tabs .nav-link .badge { font-size: 0.65rem; padding: 2px 6px; vertical-align: middle; }
+    .mac-page .nav-tabs .nav-link:hover { color: var(--ui-text); border-bottom-color: var(--ui-border-strong); }
+    .mac-page .nav-tabs .nav-link.active { color: var(--ui-text); border-bottom-color: var(--ui-blue); background: none; }
 
-    /* ── Badges (inline count pills) ─────────────── */
+    /* ── Badges ──────────────────────────────────── */
     .mac-badge {
-        display: inline-flex; align-items: center; padding: 2px 8px;
-        border-radius: 980px; font-size: 0.72rem; font-weight: 600; letter-spacing: 0.01em;
+        display: inline-flex; align-items: center; gap: 5px; padding: 2px 8px; min-height: 22px;
+        border-radius: var(--ui-r-sm); font-size: 0.75rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
+        background: var(--ui-neutral-tint); color: var(--ui-neutral-text);
     }
-    .mac-badge-green  { background: rgba(52,199,89,0.12);  color: #166534; }
-    .mac-badge-orange { background: rgba(217,119,6,0.12);  color: #92400E; }
-    .mac-badge-red    { background: rgba(239,68,68,0.10);  color: #991B1B; }
-    .mac-badge-blue   { background: rgba(59,130,246,0.10); color: #1D4ED8; }
-    .mac-badge-gray   { background: rgba(156,163,175,0.15); color: #52525B; }
+    .mac-badge-green  { background: var(--ui-ok-tint);   color: var(--ui-ok-text); }
+    .mac-badge-orange { background: var(--ui-warn-tint); color: var(--ui-warn-text); }
+    .mac-badge-red    { background: var(--ui-bad-tint);  color: var(--ui-bad-text); }
+    .mac-badge-blue   { background: var(--ui-blue-tint); color: var(--ui-blue-text); }
+    .mac-badge-gray   { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
 
     /* ── Misc ────────────────────────────────────── */
-    .mac-muted   { color: var(--mac-muted); font-size: 0.82rem; }
-    .mac-text-sm { font-size: 0.78rem; }
-    .mac-divider { border: none; border-top: 1px solid var(--mac-sep); margin: 0; }
+    .mac-muted { color: var(--ui-muted); font-size: 0.85rem; }
+    .mac-text-sm { font-size: 0.8rem; }
+    .mac-divider { border: none; border-top: 1px solid var(--ui-sep); margin: 4px 0; opacity: 1; }
+    .mac-page .text-warning { color: var(--ui-warn-text) !important; }
+    .mac-page .text-success { color: var(--ui-ok-text) !important; }
+    .mac-page code { color: var(--ui-violet-text); font-family: var(--ui-font-mono); font-size: 0.85em; }
+    .mac-page .fs-3.fw-bold { font-variant-numeric: tabular-nums; letter-spacing: -0.02em; color: var(--ui-text); }
+    .mac-page .form-switch .form-check-input { width: 2.2em; }
 
-    /* Bootstrap's default .text-warning (#ffc107) only reaches ~1.6:1 against white — far
-       under WCAG AA's 4.5:1. Several admin views use it ad-hoc for "inherited from elsewhere"
-       style notes; override globally here rather than patching each call site. */
-    .mac-page .text-warning { color: #92400E !important; }
+    .mac-addr-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 8px 18px; margin: 0; }
+    .mac-addr-fields dt { margin-bottom: 1px; font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); }
+    .mac-addr-fields dd { margin: 0; font-size: 0.875rem; color: var(--ui-text); overflow-wrap: anywhere; }
 
-    /* ── Mobile ──────────────────────────────────── */
-    /* Table action rows (View/Approve/Reject/etc. buttons) are right-aligned via
-       justify-content-end inside a colspan row spanning the full (often wider-than-viewport)
-       table width. On a narrow screen that pushes the buttons off the visible edge of the
-       .table-responsive scroll area — reachable only via a non-obvious horizontal swipe,
-       and Playwright's actionability auto-scroll doesn't reliably reach them either. Wrapping
-       and left-aligning keeps them inside the initially-visible scroll position. */
+    /* ── Draw band: the stage and the counts of one draw ── */
+    .draw-band { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 40px; padding: 22px 24px; }
+    .draw-band-stage { flex: 1 1 420px; min-width: 0; }
+    .draw-band-facts { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; padding-left: 32px; border-left: 1px solid var(--ui-sep); }
+    .draw-band-facts dt { font-size: 0.8rem; font-weight: 500; color: var(--ui-muted); }
+    .mac-cell { display: contents; }
+    .draw-band-facts dd { font-variant-numeric: tabular-nums; margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
     @media (max-width: 767.98px) {
-        /* ── Admin tables stack into cards ──────────────────────────────────
-           WHY THIS EXISTS, measured rather than assumed: the registrations
-           table renders 1231px wide inside a 345px scroller on a 393px
-           device. Reaching the per-row controls — which sit in the far-right
-           columns — means scrolling right through eight columns, and in that
-           state a tap lands on whatever the scroller has under the finger
-           rather than the button. Three mobile specs failed that way with
-           "element is visible, enabled and stable ... intercepts pointer
-           events", which is the browser saying the control is on the page and
-           not reachable.
+        .draw-band { padding: 18px; }
+        .draw-band-facts { padding-left: 0; border-left: 0; width: 100%; justify-content: space-between; }
+    }
 
-           NOT the flex-wrap rule below. That was the cheap suspect and it was
-           tested: disabling it changed nothing, two specs still failed and the
-           interception was still reported. The width is the cause.
-
-           LABELS ARE OPTIONAL ON PURPOSE. A stacked cell loses its column
-           header, so a bare "3x3" reads as nothing. The fix is
-           `data-label` on the <td>, and it is opt-in: a view that adds it gets
-           the label, a view that has not been touched still stacks and is
-           still usable. Twenty-four admin views carry .table-responsive and
-           none of them had to change for this rule to help. Add data-label
-           where a cell is meaningless without it, not everywhere. */
+    /* ── Mobile: tables become cards ─────────────── */
+    /* A wide table inside a phone-width scroller puts its row actions where a
+       tap lands on the scroller instead. Below 768px each row is a card and
+       each cell a label/value line; the labels come from the header (the
+       script below), so no view has to annotate its cells. */
+    @media (max-width: 767.98px) {
         .mac-table thead { display: none; }
-
-        .mac-table,
-        .mac-table tbody { display: block; width: 100%; }
-
-        .mac-table tbody tr {
-            display: block;
-            background: #FFFFFF;
-            border: 1px solid var(--mac-border);
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
-
-        .mac-table tbody td {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            width: auto;
-            padding: 10px 14px;
-            border-bottom: 1px solid var(--mac-sep);
-        }
-
+        .mac-table, .mac-table tbody { display: block; width: 100%; }
+        .mac-table tbody tr { display: block; margin: 0 0 10px; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); }
+        /* Inside a card the rows are the cards: the outer one gives up its
+           chrome rather than nesting card in card. */
+        .mac-card:has(.mac-table) { background: none !important; border: 0 !important; box-shadow: none !important; overflow: visible; }
+        .mac-card:has(.mac-table) > .mac-card-header { padding: 4px 0 10px; background: none; border: 0; }
+        .mac-card .mac-table tbody tr { margin: 0 0 10px; }
+        .mac-table tbody td { display: flex; align-items: flex-start; gap: 10px; width: auto; padding: 10px 14px; border-bottom: 1px solid var(--ui-sep); text-align: left !important; }
+        .mac-cell { display: block; flex: 1; min-width: 0; }
         .mac-table tbody tr > td:last-child { border-bottom: 0; }
-
-        .mac-table tbody td[data-label]::before {
-            content: attr(data-label);
-            flex: 0 0 38%;
-            font-size: 0.72rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--mac-muted);
-        }
-
-        /* A colspan cell is a full-width band inside the card (the rejection
-           history strip, the per-row summary), not a label/value pair. */
+        .mac-table tbody td[data-label]::before { content: attr(data-label); flex: 0 0 38%; font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); }
         .mac-table tbody td[colspan] { display: block; }
-
-        /* Once rows stack there is nothing left to scroll sideways, and a
-           scroller that still clips would re-create the problem this rule
-           exists to remove. Scoped with :has() so only stacked tables lose
-           their overflow — other .table-responsive users are untouched. */
         .table-responsive:has(.mac-table) { overflow-x: visible; }
-
-        .table-responsive .d-flex.justify-content-end {
-            flex-wrap: wrap;
-            justify-content: flex-start !important;
-        }
-
-        /* Section-header rows (title + a non-wrapping button group pushed to the far edge via
-           justify-content-between) overflow the same way — a 3-button toolbar next to a heading
-           has nowhere to go but off the right edge of a 375-420px viewport. Wrapping drops the
-           button group to its own line under the title instead of clipping it. */
-        .mac-page .d-flex.justify-content-between {
-            flex-wrap: wrap;
-            row-gap: 8px;
-        }
-
-        /* WRAPPING THE HEADER IS NOT ENOUGH ON ITS OWN. The rule above drops a
-           section header's button group onto its own line, but the group is
-           itself a nowrap flex box — on the registrations page it is five
-           buttons (Select All, Save Selected Codes, Mark Selected as Ready,
-           Grant and Remove Payment Waiver) measuring 590px as one unbreakable
-           block. Wrapping its parent moves it down; it does not make it fit.
-
-           MEASURED, and the cost is not cosmetic. 590px inside a 393px device
-           pushes the document to 614px, so Chromium zooms out and the LAYOUT
-           viewport becomes 614x1136 while the VISUAL viewport stays 393x727 at
-           scale 1. document.elementFromPoint then works in layout coordinates
-           and correctly reports a button on top, while input is dispatched in
-           visual-viewport coordinates where the same y sits past the bottom
-           edge. Playwright reports "<td> ... intercepts pointer events" about an
-           element covering nothing at all, and no CSS on the table can fix it.
-           Four hypotheses died on that symptom — the flex-wrap rule below, table
-           width, body overflow, and Bootstrap's smooth scrolling — before this
-           toolbar was measured. If a mobile click failure ever names an
-           innocent-looking interceptor again, measure innerWidth first. */
-        .mac-page .d-flex.justify-content-between > .d-flex {
-            flex-wrap: wrap;
-        }
+        .table-responsive .d-flex.justify-content-end { flex-wrap: wrap; justify-content: flex-start !important; }
+        /* Header rows and their button groups wrap rather than widening the
+           document: a too-wide toolbar zooms the whole page out on a phone. */
+        .mac-page .d-flex.justify-content-between { flex-wrap: wrap; row-gap: 8px; }
+        .mac-page .d-flex.justify-content-between > .d-flex { flex-wrap: wrap; }
+        .mac-header h2 { font-size: 1.3rem; }
     }
 
-    /* ── Keyboard focus ──────────────────────────────
-       The user portal has had a designed focus ring on .ap-btn for a while;
-       the admin portal was still falling back to the browser's default blue
-       one, which reads as foreign against an amber UI and varies per browser.
-
-       outline rather than box-shadow on purpose: several admin controls are
-       transparent at rest (.sidebar-toggle, .mac-action-btn), and a
-       translucent shadow on a transparent button can disappear into whatever
-       is behind it. An outline always renders.
-
-       :focus-visible, not :focus — mouse users should not see a ring on
-       every click, only keyboard and other non-pointer input. */
-    .mac-btn-primary:focus-visible,
-    .mac-btn-secondary:focus-visible,
-    .mac-btn-danger:focus-visible,
-    .mac-btn-success:focus-visible,
-    .mac-btn-warning:focus-visible,
-    .mac-action-btn:focus-visible,
-    .mac-action-btn-danger:focus-visible,
-    .mac-filter-btn:focus-visible,
-    .mac-clear-btn:focus-visible,
-    .mac-tabs .nav-link:focus-visible {
-        outline: 2px solid var(--mac-primary);
-        outline-offset: 2px;
-    }
-
-    /* ── Reduced motion ──────────────────────────────
-       Deliberately narrow: only the spatial transform is dropped. The colour
-       and background transitions on buttons, rows and tabs stay, because they
-       are how this UI confirms hover/focus/active state — killing them all
-       with a blanket 0.01ms rule would remove feedback, not just motion. */
     @media (prefers-reduced-motion: reduce) {
-        .mac-btn-primary:hover {
-            transform: none;
-        }
-        .mac-btn-primary,
-        .mac-btn-secondary,
-        .mac-btn-danger,
-        .mac-btn-success,
-        .mac-btn-warning,
-        .mac-input,
-        .mac-select,
-        .mac-form-control {
-            transition-property: background-color, border-color, color, box-shadow;
-        }
+        .mac-table tbody tr, .mac-btn-primary, .mac-btn-secondary, .mac-input, .mac-select, .mac-form-control { transition: none; }
     }
-
-/* Labelled premise fields on a company page. Two columns where there is room,
-   one where there is not — a fax number and a postcode both need their name
-   attached, and a run-together block only reads as an address. */
-.mac-addr-fields {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: 8px 18px;
-    margin: 0;
-}
-.mac-addr-fields dt {
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: #6B7280;
-    margin-bottom: 1px;
-}
-.mac-addr-fields dd {
-    font-size: 0.82rem;
-    color: #1C1C1E;
-    margin: 0;
-    overflow-wrap: anywhere;
-}
 </style>
 
 {{-- ── Stacked-table labels, derived rather than written ───────────────────────
@@ -551,6 +365,14 @@
                     if (td.querySelector('form, button, select, input, textarea')) return;
 
                     td.setAttribute('data-label', label);
+
+                    // One box for the value, so a title and its second line stack
+                    // under each other on a phone instead of sitting side by side.
+                    // It is `display: contents` above 768px, where nothing changes.
+                    var cell = document.createElement('div');
+                    cell.className = 'mac-cell';
+                    while (td.firstChild) cell.appendChild(td.firstChild);
+                    td.appendChild(cell);
                 });
             });
         });

@@ -81,8 +81,8 @@
                                 <span class="mac-status {{ $event->status_colour }}">
                                     <span class="mac-status-dot"></span>{{ $event->status_label }}
                                 </span>
-                                <div class="mac-text-sm mac-muted mt-1">
-                                    Draw: {{ $event->polling_status_label }}
+                                <div class="mt-2">
+                                    @include('partials.draw-stepper', ['status' => $event->polling_status, 'compact' => true])
                                 </div>
                             </td>
                             <td class="text-end">{{ $event->registrations_count }}</td>

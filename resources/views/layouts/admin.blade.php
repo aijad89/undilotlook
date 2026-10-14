@@ -15,417 +15,135 @@
     {{-- Apply enlarged-text class before paint to avoid flash --}}
     <script>(function(){var s=localStorage.getItem('textSizeLevel');if(s==='1')document.documentElement.classList.add('text-large');else if(s==='2')document.documentElement.classList.add('text-xlarge');})();</script>
 
+    @include('partials.ui-tokens')
+
     <style>
+        /* The office shell: a navy rail that holds still, a quiet white top bar,
+           work on the grey ground. Gold marks where you are; nothing else. */
         :root {
-            --adm-yellow:     #D97706;
-            --adm-yellow-hov: #B45309;
-            --adm-yellow-lt:  rgba(217, 119, 6, 0.10);
-            --adm-yellow-md:  rgba(217, 119, 6, 0.18);
-            --adm-bg:         #FAFAF8;
-            --adm-sidebar-bg: #FFFFFF;
-            --adm-text:       #1C1C1E;
-            --adm-text2:      #374151;
-            --adm-muted:      #6B7280;
-            --adm-border:     rgba(0, 0, 0, 0.07);
-            --adm-font:       -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Helvetica Neue', sans-serif;
+            --adm-sidebar-w: 264px;
+            /* Old names some views still read. */
+            --adm-yellow: var(--ui-blue);
+            --adm-yellow-hov: var(--ui-blue-hover);
+            --adm-yellow-lt: var(--ui-blue-tint);
+            --adm-yellow-md: #d7e3fb;
+            --adm-bg: var(--ui-ground);
+            --adm-text: var(--ui-text);
+            --adm-text2: var(--ui-text-2);
+            --adm-muted: var(--ui-muted);
+            --adm-border: var(--ui-border);
+            --adm-font: var(--ui-font);
         }
 
-        body {
-            background-color: var(--adm-bg);
-            overflow-x: hidden;
-            font-family: var(--adm-font);
-            color: var(--adm-text);
-            -webkit-font-smoothing: antialiased;
-        }
+        body { background: var(--ui-ground); overflow-x: hidden; }
 
         /* ── Sidebar ─────────────────────────────── */
         #sidebar {
-            width: 250px;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: var(--adm-sidebar-bg);
-            border-right: 1px solid var(--adm-border);
-            box-shadow: 2px 0 12px rgba(0,0,0,0.04);
-            transition: margin-left 0.3s cubic-bezier(0.25,0.1,0.25,1);
-            flex-shrink: 0;
-            overflow-y: auto;
-            overflow-x: hidden;
-            z-index: 1050;
+            position: fixed; inset: 0 auto 0 0; z-index: 1050;
+            width: var(--adm-sidebar-w); height: 100vh; flex-shrink: 0;
+            overflow-y: auto; overflow-x: hidden;
+            background: var(--ui-navy-900); color: var(--ui-on-navy);
+            transition: margin-left 0.3s var(--ui-ease);
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
         }
+        #sidebar::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.18); background-clip: padding-box; }
+        body.sidebar-collapsed #sidebar { margin-left: calc(-1 * var(--adm-sidebar-w)); }
 
-        /* Sidebar scrollbar */
-        #sidebar::-webkit-scrollbar { width: 5px; }
-        #sidebar::-webkit-scrollbar-track { background: transparent; }
-        #sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.08); border-radius: 3px; }
-        #sidebar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.14); }
+        #main-content { margin-left: var(--adm-sidebar-w); width: calc(100% - var(--adm-sidebar-w)); min-height: 100vh; transition: margin-left 0.3s var(--ui-ease), width 0.3s var(--ui-ease); }
+        body.sidebar-collapsed #main-content { margin-left: 0; width: 100%; }
 
-        body.sidebar-collapsed #sidebar { margin-left: -250px; }
-
-        #main-content {
-            margin-left: 250px;
-            width: calc(100% - 250px);
-            transition: margin-left 0.3s cubic-bezier(0.25,0.1,0.25,1), width 0.3s cubic-bezier(0.25,0.1,0.25,1);
-        }
-
-        body.sidebar-collapsed #main-content {
-            margin-left: 0;
-            width: 100%;
-        }
-
-        /* Sidebar brand */
-        #sidebar .brand {
-            padding: 20px 20px 16px;
-            border-bottom: 1px solid var(--adm-border);
-        }
-
-        #sidebar .brand-eyebrow {
-            font-size: 0.67rem;
-            font-weight: 700;
-            color: var(--adm-muted);
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            display: block;
-            margin-bottom: 2px;
-        }
-
-        #sidebar .brand-name {
+        #sidebar .brand { display: flex; align-items: center; gap: 12px; padding: 20px 20px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+        #sidebar .brand-mark {
+            width: 36px; height: 36px; flex-shrink: 0; border-radius: 10px;
+            display: grid; place-items: center; background: var(--ui-gold); color: var(--ui-navy-950);
             font-size: 1.05rem;
-            font-weight: 800;
-            color: var(--adm-text);
-            letter-spacing: -0.02em;
-            display: flex;
-            align-items: center;
-            gap: 8px;
+        }
+        #sidebar .brand-name { display: block; font-size: 1.05rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; line-height: 1.2; }
+        #sidebar .brand-sub { display: block; font-size: 0.78rem; color: var(--ui-on-navy-2); line-height: 1.3; }
+
+        #sidebar .nav-section { padding: 20px 22px 6px; font-size: 0.75rem; font-weight: 600; color: #8fa1ba; letter-spacing: 0.02em; }
+
+        #sidebar .nav-link, #sidebar .nav-item a {
+            position: relative; display: flex; align-items: center; gap: 12px;
+            margin: 2px 10px; padding: 9px 12px; min-height: 40px; border-radius: var(--ui-r);
+            color: #d6deea; font-size: 0.9rem; font-weight: 500; text-decoration: none;
+            transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
+        }
+        #sidebar .nav-link i, #sidebar .nav-item a i { width: 18px; flex-shrink: 0; text-align: center; font-size: 1rem; color: #93a4bb; transition: color var(--ui-fast) var(--ui-ease); }
+        #sidebar .nav-link:hover, #sidebar .nav-item a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+        #sidebar .nav-link:hover i, #sidebar .nav-item a:hover i { color: #fff; }
+        #sidebar .nav-link.active, #sidebar .nav-item > a.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; }
+        #sidebar .nav-link.active i, #sidebar .nav-item > a.active i { color: var(--ui-gold); }
+        /* Gold is "you are here": a bar on the active item, nowhere else. */
+        #sidebar .nav-link.active::before, #sidebar .nav-item > a.active::before {
+            content: ""; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--ui-gold);
         }
 
-        #sidebar .brand-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--adm-yellow);
-            display: inline-block;
-            flex-shrink: 0;
-        }
-
-        /* Sidebar section label */
-        #sidebar .nav-section {
-            font-size: 0.66rem;
-            font-weight: 700;
-            color: var(--adm-muted);
-            letter-spacing: 0.07em;
-            text-transform: uppercase;
-            padding: 18px 20px 5px;
-        }
-
-        /* Sidebar nav links */
-        #sidebar .nav-link,
-        #sidebar .nav-item a {
-            color: var(--adm-text2);
-            padding: 8px 12px;
-            margin: 1px 8px;
-            border-radius: 9px;
-            font-size: 0.845rem;
-            font-weight: 500;
-            transition: all 0.13s ease;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            letter-spacing: -0.01em;
-        }
-
-        #sidebar .nav-link i,
-        #sidebar .nav-item a i {
-            color: var(--adm-muted);
-            margin-right: 10px;
-            width: 18px;
-            text-align: center;
-            font-size: 0.9rem;
-            transition: color 0.13s;
-            flex-shrink: 0;
-        }
-
-        #sidebar .nav-link:hover,
-        #sidebar .nav-item a:hover {
-            background: rgba(0,0,0,0.04);
-            color: var(--adm-text);
-        }
-
-        #sidebar .nav-link:hover i,
-        #sidebar .nav-item a:hover i {
-            color: var(--adm-text2);
-        }
-
-        #sidebar .nav-link.active,
-        #sidebar .nav-item a.active {
-            background: var(--adm-yellow-lt);
-            /* #D97706 (the brand accent used elsewhere against white/dark backgrounds) only
-               reaches ~2.9:1 against this light amber-tint background — a dedicated darker
-               shade is used here specifically to clear WCAG AA's 4.5:1 for normal text. */
-            color: #92400E;
-            font-weight: 600;
-        }
-
-        #sidebar .nav-link.active i,
-        #sidebar .nav-item a.active i {
-            color: #92400E;
-        }
-
-        /* Collapsible submenu */
-        #sidebar ul.submenu {
-            list-style: none;
-            padding-left: 0;
-            margin: 2px 0;
-            display: none;
-        }
+        #sidebar ul.submenu { list-style: none; margin: 2px 0 6px; padding: 0; display: none; }
         #sidebar .nav-item.with-sub.show ul.submenu { display: block; }
-        #sidebar .submenu li a {
-            padding-left: 46px !important;
-            font-size: 0.81rem;
-            margin: 0 8px;
-            border-radius: 8px;
-        }
+        #sidebar .submenu li a { margin: 1px 10px; padding: 8px 12px 8px 42px !important; min-height: 36px; font-size: 0.85rem; color: #c3cedd; }
+        #sidebar .submenu li a.active { background: rgba(255, 255, 255, 0.08); color: #fff; font-weight: 600; }
+        #sidebar .submenu li a.active::before { display: none; }
+        #sidebar .nav-item.with-sub > a .chevron-icon { margin-left: auto; font-size: 0.7rem; color: #8fa1ba; transition: transform 0.2s var(--ui-ease); }
+        #sidebar .nav-item.with-sub.show > a .chevron-icon { transform: rotate(180deg); }
+        #sidebar .nav-item.with-sub > a.active { background: rgba(255, 255, 255, 0.05); }
+        #sidebar .sidebar-badge { margin-left: auto; padding: 2px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.7rem; font-weight: 700; line-height: 1.3; }
+        #sidebar button.nav-link { width: calc(100% - 20px) !important; color: #c3cedd; cursor: pointer; }
+        #sidebar button.nav-link:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
 
-        /* Sidebar chevron */
-        #sidebar .nav-item.with-sub > a .chevron-icon {
-            font-size: 0.65rem;
-            transition: transform 0.2s ease;
-            opacity: 0.4;
-        }
-        #sidebar .nav-item.with-sub.show > a .chevron-icon {
-            transform: rotate(180deg);
-        }
-
-        /* Sidebar badge */
-        #sidebar .sidebar-badge {
-            background: #EF4444;
-            color: #fff;
-            font-size: 0.64rem;
-            font-weight: 700;
-            padding: 2px 7px;
-            border-radius: 980px;
-            margin-left: auto;
-            line-height: 1.3;
-        }
-
-        /* Sidebar logout */
-        #sidebar .sidebar-logout-btn {
-            color: #9CA3AF;
-            border: 1px solid rgba(0,0,0,0.08);
-            border-radius: 10px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            padding: 8px 14px;
-            margin: 0 8px;
-            transition: all 0.13s;
-            background: none;
-            display: flex;
-            align-items: center;
-            width: calc(100% - 16px);
-            text-align: left;
-            cursor: pointer;
-        }
-        #sidebar .sidebar-logout-btn:hover {
-            background: rgba(239,68,68,0.07);
-            color: #EF4444;
-            border-color: rgba(239,68,68,0.18);
-        }
-        #sidebar .sidebar-logout-btn i {
-            margin-right: 10px;
-            width: 18px;
-            text-align: center;
-            font-size: 0.9rem;
-        }
-
-        /* Sidebar footer divider */
-        #sidebar .sidebar-footer-sep {
-            border: none;
-            border-top: 1px solid var(--adm-border);
-            margin: 12px 8px 10px;
-        }
-
-        /* ── Topbar ──────────────────────────────── */
+        /* ── Top bar ─────────────────────────────── */
         .topbar {
-            background: rgba(255, 255, 255, 0.90);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--adm-border);
-            position: sticky;
-            top: 0;
-            z-index: 1030;
-            padding: 0 24px;
-            height: 52px;
-            display: flex;
-            align-items: center;
+            position: sticky; top: 0; z-index: 1030;
+            display: flex; align-items: center; gap: 8px;
+            height: 60px; padding: 0 28px;
+            background: var(--ui-surface); border-bottom: 1px solid var(--ui-border);
         }
-
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--adm-muted);
-            transition: all 0.13s;
+        .sidebar-toggle, .text-size-btn {
+            width: 38px; height: 38px; display: grid; place-items: center; flex-shrink: 0;
+            border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); cursor: pointer;
+            transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
-        .sidebar-toggle:hover {
-            background: rgba(0,0,0,0.04);
-            color: var(--adm-text);
-        }
-
-        /* Keyboard focus for the layout chrome. mac-styles.blade.php carries
-           the matching rule for in-page controls, but the sidebar and topbar
-           render outside the content section, so they need their own — and use
-           this layout's own --adm-yellow rather than the partial's token.
-
-           (Do not write a Blade directive name here, even inside a CSS
-           comment: Blade compiles the file before any CSS is parsed, so a
-           literal section directive in this comment becomes a real
-           startSection() call that opens an output buffer and never closes
-           it. That is what AccessibilityBaselineTest's buffer check guards.)
-
-           .sidebar-toggle in particular is transparent at rest, so an outline
-           is used instead of a shadow that could vanish into the topbar. */
-        .sidebar-toggle:focus-visible,
-        .topbar-user-btn:focus-visible,
-        .sidebar-logout-btn:focus-visible,
-        #sidebar .nav-link:focus-visible,
-        #sidebar .nav-item a:focus-visible {
-            outline: 2px solid var(--adm-yellow);
-            outline-offset: 2px;
-        }
-
-        /* Topbar user dropdown */
+        .sidebar-toggle:hover, .text-size-btn:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .text-size-btn.active { background: var(--ui-blue-tint); color: var(--ui-blue-text); }
         .topbar-user-btn {
-            background: rgba(0,0,0,0.04);
-            border: 1px solid var(--adm-border);
-            border-radius: 980px;
-            padding: 4px 14px 4px 5px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            color: var(--adm-text);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: all 0.13s;
-            text-decoration: none;
-            letter-spacing: -0.01em;
+            display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 4px 12px 4px 4px;
+            border: 1px solid var(--ui-border); border-radius: 999px; background: var(--ui-surface);
+            color: var(--ui-text); font-size: 0.875rem; font-weight: 600; text-decoration: none;
+            transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease);
         }
-        .topbar-user-btn:hover {
-            background: rgba(0,0,0,0.07);
-            color: var(--adm-text);
-        }
-        .topbar-avatar {
-            width: 26px;
-            height: 26px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--adm-yellow), #F59E0B);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 700;
-            flex-shrink: 0;
-        }
+        .topbar-user-btn:hover { background: var(--ui-surface-2); border-color: var(--ui-border-strong); color: var(--ui-text); }
+        .topbar-user-btn::after { display: none; }
+        .topbar-avatar { width: 30px; height: 30px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: var(--ui-navy-900); color: #fff; font-size: 0.72rem; font-weight: 700; }
 
-        /* Dropdown menu */
-        .dropdown-menu {
-            border-radius: 12px;
-            border: 1px solid var(--adm-border);
-            box-shadow: 0 8px 32px rgba(0,0,0,0.10), 0 2px 8px rgba(0,0,0,0.05);
-            padding: 6px;
-            backdrop-filter: blur(20px);
-            background: rgba(255,255,255,0.97);
-        }
-        .dropdown-menu .dropdown-item {
-            border-radius: 8px;
-            font-size: 0.82rem;
-            font-weight: 500;
-            padding: 7px 12px;
-            color: var(--adm-text);
-            transition: background 0.1s;
-        }
-        .dropdown-menu .dropdown-item:hover {
-            background: var(--adm-yellow-lt);
-            color: var(--adm-yellow);
-        }
-        .dropdown-menu .dropdown-item.text-danger:hover {
-            background: rgba(239,68,68,0.08);
-            color: #EF4444;
-        }
-        .dropdown-menu .dropdown-divider {
-            margin: 4px 0;
-            border-color: var(--adm-border);
-        }
+        /* ── Menus ───────────────────────────────── */
+        .dropdown-menu { padding: 6px; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-pop); }
+        .dropdown-menu .dropdown-item { padding: 8px 12px; border-radius: var(--ui-r-sm); color: var(--ui-text); font-size: 0.875rem; font-weight: 500; }
+        .dropdown-menu .dropdown-item:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
+        .dropdown-menu .dropdown-item.text-danger { color: var(--ui-bad-text) !important; }
+        .dropdown-menu .dropdown-item.text-danger:hover { background: var(--ui-bad-tint); }
+        .dropdown-menu .dropdown-divider { margin: 4px 0; border-color: var(--ui-sep); }
 
-        /* ── Content ─────────────────────────────── */
-        .card {
-            border: 1px solid var(--adm-border);
-            border-radius: 14px;
-            width: 100%;
-            background: rgba(255,255,255,0.85);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-        }
+        /* Any Bootstrap .card a view still uses sits on the same surface. */
+        .card { width: 100%; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-1); }
 
-        /* ── Mobile ──────────────────────────────── */
+        /* ── Content frame ───────────────────────── */
+        #content-main > .mac-page, .mac-page { max-width: 1360px; }
+
         @media (max-width: 767.98px) {
-            #sidebar { margin-left: -250px; }
-            body.sidebar-mobile-open #sidebar { margin-left: 0; }
+            #sidebar { margin-left: calc(-1 * var(--adm-sidebar-w)); box-shadow: none; }
+            body.sidebar-mobile-open #sidebar { margin-left: 0; box-shadow: var(--ui-shadow-pop); }
             #main-content { margin-left: 0; width: 100%; }
-            .sidebar-overlay {
-                display: none;
-                position: fixed;
-                inset: 0;
-                background: rgba(0,0,0,0.28);
-                z-index: 1040;
-                backdrop-filter: blur(4px);
-            }
+            .sidebar-overlay { display: none; position: fixed; inset: 0; z-index: 1040; background: rgba(7, 26, 51, 0.45); }
             body.sidebar-mobile-open .sidebar-overlay { display: block; }
-            .topbar { padding: 0 16px; }
+            .topbar { padding: 0 12px; height: 56px; }
         }
-        @media (min-width: 768px) {
-            .sidebar-overlay { display: none !important; }
-        }
+        @media (min-width: 768px) { .sidebar-overlay { display: none !important; } }
 
-        /* ── Enlarged text ───────────────────────── */
         html.text-large { font-size: 112%; }
         html.text-xlarge { font-size: 124%; }
 
-        .text-size-btn {
-            background: none;
-            border: none;
-            border-radius: 8px;
-            width: 34px;
-            height: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            color: var(--adm-muted);
-            transition: all 0.13s;
-        }
-        .text-size-btn:hover { background: rgba(0,0,0,0.04); color: var(--adm-text); }
-        .text-size-btn.active { background: var(--adm-yellow-lt); color: var(--adm-yellow); }
-
-        /* ── Utilities ───────────────────────────── */
-        .zoom-on-hover {
-            transition: transform 0.25s ease;
-            cursor: zoom-in;
-            max-width: 200px;
-            max-height: 200px;
-        }
-        .zoom-on-hover:hover {
-            transform: scale(2.5);
-            z-index: 1000;
-            position: relative;
-        }
+        .zoom-on-hover { max-width: 200px; max-height: 200px; cursor: zoom-in; transition: transform 0.25s var(--ui-ease); }
+        .zoom-on-hover:hover { position: relative; z-index: 1000; transform: scale(2.5); }
     </style>
 
     @stack('styles')
@@ -440,10 +158,10 @@
     <div id="sidebar">
         <nav aria-label="Admin sidebar navigation">
         <div class="brand">
-            <span class="brand-eyebrow">Admin Panel</span>
-            <span class="brand-name">
-                <span class="brand-dot"></span>
-                undilot
+            <span class="brand-mark" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span>
+            <span>
+                <span class="brand-name">undilot</span>
+                <span class="brand-sub">Admin Panel</span>
             </span>
         </div>
 
@@ -610,8 +328,8 @@
     <!-- Main Content -->
     <div id="main-content">
         <nav class="topbar" aria-label="Admin top bar">
-            <button class="sidebar-toggle" id="sidebarToggle" type="button" title="Toggle sidebar">
-                <i class="bi bi-sidebar-fill" style="font-size:1rem;"></i>
+            <button class="sidebar-toggle" id="sidebarToggle" type="button" title="Toggle sidebar" aria-label="Toggle sidebar">
+                <i class="bi bi-list" style="font-size:1.35rem;" aria-hidden="true"></i>
             </button>
 
             <div class="ms-auto d-flex align-items-center gap-2">
