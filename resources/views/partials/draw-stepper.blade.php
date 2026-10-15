@@ -7,12 +7,16 @@
       $labels   — optional [draft, polling, closed, completed, cancelled] wording;
                   defaults to Event::POLLING_STATUSES, the admin's own words
       $compact  — optional; dots and one word, for a table cell
+      $stops    — optional; which stops to draw, in order (default all four).
+                  A status that is not among them, such as draft when the
+                  list starts at polling, means no stop is reached yet.
 --}}
 @php
     $labels = ($labels ?? null) ?: \App\Models\Event::POLLING_STATUSES;
-    $stops = ['draft', 'polling', 'closed', 'completed'];
+    $stops = ($stops ?? null) ?: ['draft', 'polling', 'closed', 'completed'];
     $cancelled = $status === 'cancelled';
-    $at = $cancelled ? -1 : (int) array_search($status ?: 'draft', $stops, true);
+    $found = array_search($status ?: 'draft', $stops, true);
+    $at = $cancelled || $found === false ? -1 : $found;
 @endphp
 
 @if($compact ?? false)

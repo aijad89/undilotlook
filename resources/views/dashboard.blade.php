@@ -47,7 +47,8 @@
                 @endif
             </div>
 
-            @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => $stopLabels])
+            {{-- From Dibuka on: a draft draw is the office's, not yet the usahawan's. --}}
+            @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => $stopLabels, 'stops' => ['polling', 'closed', 'completed']])
 
             <div class="ap-draw-next">
                 {{-- A drawn lot is named once, on its own link. --}}
