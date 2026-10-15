@@ -35,12 +35,12 @@
     <div class="mb-3">
         <label class="mac-label">Icon Type</label>
         <div class="d-flex gap-3 mt-1">
-            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.85rem;">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.8125rem;">
                 <input type="radio" name="icon_type" value="bootstrap" id="typeBootstrap"
                        {{ old('icon_type', $link?->icon_type ?? 'bootstrap') === 'bootstrap' ? 'checked' : '' }}>
                 Bootstrap Icon (built-in)
             </label>
-            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.85rem;">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:6px;font-size:0.8125rem;">
                 <input type="radio" name="icon_type" value="image" id="typeImage"
                        {{ old('icon_type', $link?->icon_type) === 'image' ? 'checked' : '' }}>
                 Custom Logo (upload)
@@ -56,7 +56,7 @@
             @foreach($presets as $cls => $name)
                 <button type="button" class="preset-btn mac-action-btn d-flex align-items-center gap-1"
                         data-class="{{ $cls }}"
-                        style="font-size:0.78rem;">
+                        style="font-size:0.8125rem;">
                     <i class="bi {{ $cls }}"></i> {{ $name }}
                 </button>
             @endforeach
@@ -67,9 +67,9 @@
                    style="max-width:220px;"
                    value="{{ old('icon_class', $link?->icon_class ?? 'bi-globe') }}"
                    placeholder="bi-facebook">
-            <div id="iconPreview" style="font-size:1.6rem;width:36px;text-align:center;"></div>
+            <div id="iconPreview" style="font-size:1.5rem;width:36px;text-align:center;"></div>
         </div>
-        @error('icon_class')<div class="text-danger mt-1" style="font-size:0.82rem;">{{ $message }}</div>@enderror
+        @error('icon_class')<div class="text-danger mt-1" style="font-size:0.8125rem;">{{ $message }}</div>@enderror
     </div>
 
     {{-- Custom image section --}}
@@ -79,25 +79,25 @@
         {{-- Existing image --}}
         @if($link?->icon_image)
             <div class="mb-2" id="existingImg">
-                <div class="mac-muted" style="font-size:0.78rem;margin-bottom:4px;">Current logo:</div>
+                <div class="mac-muted" style="font-size:0.8125rem;margin-bottom:4px;">Current logo:</div>
                 <img src="{{ $link->icon_image_url }}" width="16" height="24" loading="lazy"
                      alt="Current icon for {{ $link->label }}"
-                     style="object-fit:contain;border:1px solid var(--ui-border-strong);border-radius:3px;padding:2px;">
+                     style="object-fit:contain;border:1px solid var(--ui-border-strong);border-radius:4px;padding:2px;">
             </div>
         @endif
 
         {{-- Upload zone --}}
         <div id="uploadZone"
-             style="border:2px dashed var(--ui-border-strong);border-radius:10px;padding:24px;
+             style="border:2px dashed var(--ui-border-strong);border-radius:8px;padding:24px;
                     text-align:center;cursor:pointer;transition:border-color 0.15s;background:var(--ui-surface-2);"
              onclick="document.getElementById('iconFile').click()"
              ondragover="event.preventDefault();this.style.borderColor='var(--ui-blue)'"
              ondragleave="this.style.borderColor='var(--ui-border-strong)'"
              ondrop="handleDrop(event)">
             <div id="uploadPrompt">
-                <i class="bi bi-cloud-upload" style="font-size:1.6rem;color:var(--ui-muted);"></i>
-                <div class="mac-muted" style="font-size:0.82rem;margin-top:6px;">Click or drag an image here</div>
-                <div class="mac-muted" style="font-size:0.72rem;">JPG · PNG · WebP · GIF · Max 2MB</div>
+                <i class="bi bi-cloud-upload" style="font-size:1.5rem;color:var(--ui-muted);"></i>
+                <div class="mac-muted" style="font-size:0.8125rem;margin-top:6px;">Click or drag an image here</div>
+                <div class="mac-muted" style="font-size:0.75rem;">JPG · PNG · WebP · GIF · Max 2MB</div>
             </div>
             <div id="uploadPreviewWrap" style="display:none;align-items:center;gap:16px;justify-content:center;">
                 <img id="uploadPreview" width="32" height="48" loading="lazy"
@@ -118,24 +118,24 @@
                style="display:none;" onchange="onFileSelected(this)">
         {{-- Base64 result from editor (replaces file upload for raster) --}}
         <input type="hidden" name="icon_image_data" id="iconImageData">
-        @error('icon_image')<div class="text-danger mt-1" style="font-size:0.82rem;">{{ $message }}</div>@enderror
-        @error('icon_image_data')<div class="text-danger mt-1" style="font-size:0.82rem;">{{ $message }}</div>@enderror
+        @error('icon_image')<div class="text-danger mt-1" style="font-size:0.8125rem;">{{ $message }}</div>@enderror
+        @error('icon_image_data')<div class="text-danger mt-1" style="font-size:0.8125rem;">{{ $message }}</div>@enderror
 
         {{-- ── Editor Modal ─────────────────────────────── --}}
         <div id="iconEditorModal"
              style="display:none;position:fixed;inset:0;z-index:9999;
-                    background:rgba(0,0,0,0.72);backdrop-filter:blur(4px);
+                    background:var(--ui-scrim);backdrop-filter:blur(4px);
                     align-items:center;justify-content:center;">
             <div style="background:var(--ui-surface);border-radius:var(--ui-r-lg);padding:24px;width:340px;max-width:95vw;">
-                <div style="font-weight:600;font-size:0.95rem;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
+                <div style="font-weight:600;font-size:1rem;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;">
                     <span><i class="bi bi-crop"></i> Edit Icon</span>
-                    <button type="button" onclick="closeEditor()" style="background:none;border:none;font-size:1.1rem;cursor:pointer;color:var(--ui-muted);" aria-label="Close" title="Close">
+                    <button type="button" onclick="closeEditor()" style="background:none;border:none;font-size:1.125rem;cursor:pointer;color:var(--ui-muted);" aria-label="Close" title="Close">
                         <i class="bi bi-x-lg" aria-hidden="true"></i>
                     </button>
                 </div>
 
                 {{-- Cropper container --}}
-                <div style="width:100%;height:260px;background:var(--ui-neutral-tint);border-radius:10px;overflow:hidden;margin-bottom:14px;">
+                <div style="width:100%;height:260px;background:var(--ui-neutral-tint);border-radius:8px;overflow:hidden;margin-bottom:14px;">
                     <img id="cropperImg" alt="Icon being cropped" loading="lazy" style="max-width:100%;display:block;">
                 </div>
 
@@ -158,7 +158,7 @@
                     </button>
                 </div>
 
-                <div class="mac-muted text-center mb-3" style="font-size:0.72rem;">
+                <div class="mac-muted text-center mb-3" style="font-size:0.75rem;">
                     Crop area locked to 2:3 ratio (16×24 px output)
                 </div>
 

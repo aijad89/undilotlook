@@ -40,7 +40,7 @@
                 <i class="bi bi-layout-text-sidebar"></i>
                 Menu Items
             </div>
-            <div class="mac-muted mt-1" style="font-size:0.78rem;">Drag rows to reorder</div>
+            <div class="mac-muted mt-1" style="font-size:0.8125rem;">Drag rows to reorder</div>
         </div>
         <div class="table-responsive">
             <table class="mac-table" id="footerMenuTable">
@@ -62,7 +62,7 @@
                             <td class="mac-muted">{{ $loop->iteration }}</td>
                             <td>
                                 <div style="font-weight:500;">{{ $menu->title }}</div>
-                                <div class="mac-muted" style="font-size:0.78rem;margin-top:2px;">
+                                <div class="mac-muted" style="font-size:0.8125rem;margin-top:2px;">
                                     {{ Str::limit(strip_tags($menu->content), 80) }}
                                 </div>
                             </td>
@@ -119,7 +119,7 @@
                     <div class="d-flex justify-content-center gap-4 mb-2 flex-wrap">
                         @foreach($row as $item)
                             {{-- Drawn as the public footer draws it: an underlined text button. --}}
-                            <span style="color:var(--ui-text-2);font-size:0.95rem;text-decoration:underline;text-underline-offset:3px;">
+                            <span style="color:var(--ui-text-2);font-size:1rem;text-decoration:underline;text-underline-offset:3px;">
                                 {{ $item->title }}
                             </span>
                         @endforeach

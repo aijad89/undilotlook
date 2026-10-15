@@ -21,31 +21,31 @@
         .lot-split .lot-rules { margin-bottom: 0; }
     }
     .lot-page .ui-stepper { margin: 4px 0 24px; }
-    .lot-page .ui-stepper .label { font-size: 0.9rem; }
+    .lot-page .ui-stepper .label { font-size: 0.875rem; }
     @media (max-width: 576px) { .lot-page .ap-detail-row.align-items-center { align-items: flex-start !important; } .lot-page .lot-where { text-align: left; } }
     .lot-fact { display: flex; align-items: center; justify-content: space-between; gap: 14px; padding: 18px 20px; border-radius: var(--ui-r-lg); background: var(--ui-surface-2); border: 1px solid var(--ui-sep); }
-    .lot-fact-label { font-size: 0.95rem; color: var(--ui-muted); }
-    .lot-fact-value { font-size: 1.6rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ui-text); }
-    .lot-fact-value.is-missing { font-size: 1.15rem; color: var(--ui-bad-text); }
+    .lot-fact-label { font-size: 1rem; color: var(--ui-muted); }
+    .lot-fact-value { font-size: 1.5rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ui-text); }
+    .lot-fact-value.is-missing { font-size: 1.125rem; color: var(--ui-bad-text); }
     .lot-rules { margin: 18px 0; padding: 0; list-style: none; display: grid; gap: 12px; }
     .lot-rules li { display: flex; gap: 12px; align-items: flex-start; font-size: 1rem; color: var(--ui-text-2); }
-    .lot-rules i { flex-shrink: 0; margin-top: 2px; font-size: 1.15rem; color: var(--ui-blue); }
+    .lot-rules i { flex-shrink: 0; margin-top: 2px; font-size: 1.125rem; color: var(--ui-blue); }
     .lot-agree { display: flex; gap: 12px; align-items: flex-start; margin: 0 0 16px; padding: 16px; border: 2px solid var(--ui-border); border-radius: var(--ui-r-lg); cursor: pointer; transition: border-color var(--ui-fast) var(--ui-ease), background-color var(--ui-fast) var(--ui-ease); }
     .lot-agree:has(input:checked) { border-color: var(--ui-blue); background: var(--ui-blue-tint); }
     .lot-agree .form-check-input { flex-shrink: 0; float: none; margin: 1px 0 0; }
     .lot-agree span { font-size: 1rem; font-weight: 600; color: var(--ui-text); }
-    .lot-note { display: flex; gap: 10px; margin-top: 14px; font-size: 0.95rem; color: var(--ui-muted); }
+    .lot-note { display: flex; gap: 10px; margin-top: 14px; font-size: 1rem; color: var(--ui-muted); }
     .lot-done-head { text-align: center; padding: 6px 0 4px; }
-    .lot-done-icon { width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; background: var(--ui-ok-tint); color: var(--ui-ok); font-size: 2rem; }
-    .lot-done-head h3 { margin: 0 0 4px; font-size: 1.4rem; font-weight: 700; color: var(--ui-text); }
+    .lot-done-icon { width: 64px; height: 64px; margin: 0 auto 12px; display: grid; place-items: center; border-radius: 50%; background: var(--ui-ok-tint); color: var(--ui-ok); font-size: 2.25rem; }
+    .lot-done-head h3 { margin: 0 0 4px; font-size: 1.5rem; font-weight: 700; color: var(--ui-text); }
     .lot-done-head p { margin: 0; font-size: 1rem; color: var(--ui-muted); }
-    .lot-code { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--ui-r); background: var(--ui-gold-tint); color: var(--ui-gold-text); font-size: 1.15rem; font-weight: 700; }
+    .lot-code { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: var(--ui-r); background: var(--ui-gold-tint); color: var(--ui-gold-text); font-size: 1.125rem; font-weight: 700; }
     .lot-code i { color: var(--ui-gold); }
-    .lot-where { display: block; margin-top: 4px; font-size: 0.9rem; font-weight: 500; color: var(--ui-muted); text-align: right; }
+    .lot-where { display: block; margin-top: 4px; font-size: 0.875rem; font-weight: 500; color: var(--ui-muted); text-align: right; }
     .lot-qr { text-align: center; }
     .lot-qr img { width: 168px; height: 168px; image-rendering: pixelated; }
     .lot-qr-code { margin-top: 8px; font-family: var(--ui-font-mono); font-size: 1rem; letter-spacing: 3px; color: var(--ui-text); }
-    .lot-qr-empty { width: 168px; height: 168px; margin: 0 auto; display: grid; place-items: center; border: 2px dashed var(--ui-border-strong); border-radius: var(--ui-r-lg); color: var(--ui-border-strong); font-size: 2.5rem; }
+    .lot-qr-empty { width: 168px; height: 168px; margin: 0 auto; display: grid; place-items: center; border: 2px dashed var(--ui-border-strong); border-radius: var(--ui-r-lg); color: var(--ui-border-strong); font-size: 2.25rem; }
     .lot-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin: 18px 0; }
     @media (max-width: 576px) { .lot-actions .ap-btn { flex: 1 1 100%; } }
 </style>

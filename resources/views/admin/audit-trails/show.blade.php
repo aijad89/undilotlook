@@ -86,7 +86,7 @@
 
         {{-- Changes Card --}}
         <div class="col-md-6">
-            <div class="mac-card">
+            <div class="mac-card mac-card-keep">
                 <div class="mac-card-header"><h3 class="mac-card-title">Changes</h3></div>
                 @php $fields = $auditTrail->changed_fields; @endphp
 
@@ -125,8 +125,8 @@
                     </div>
                 @elseif($auditTrail->old_values)
                     <div style="padding: 12px 20px 20px;">
-                        <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Deleted Values</div>
-                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 10px; font-size: 0.82rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div style="font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Deleted Values</div>
+                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 8px; font-size: 0.8125rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->old_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
 
         {{-- The screen
                              shows ONE row and a delete usually takes more than one: related
@@ -145,7 +145,7 @@
                         @php $summary = $auditTrail->new_values; @endphp
 
                         @if(is_array($summary) && isset($summary['cascade_deleted']))
-                            <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin: 20px 0 8px;">
+                            <div style="font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); margin: 20px 0 8px;">
                                 What Went With It
                             </div>
 
@@ -185,7 +185,7 @@
                                 </table>
                             </div>
 
-                            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.82rem;">
+                            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.8125rem;">
                                 <i class="bi bi-info-circle me-1"></i>
                                 <strong>Counts, not contents.</strong>
                                 The numbers above were taken immediately before the deletion and say
@@ -203,7 +203,7 @@
                                 @endif
                             </div>
                         @else
-                            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.82rem;">
+                            <div class="alert alert-info mt-3 mb-0" style="font-size: 0.8125rem;">
                                 <i class="bi bi-info-circle me-1"></i>
                                 <strong>This is the deleted record only.</strong>
                                 Rows in related tables are removed by the database along with it —
@@ -214,8 +214,8 @@
                     </div>
                 @elseif($auditTrail->new_values)
                     <div style="padding: 12px 20px 20px;">
-                        <div style="font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Created Values</div>
-                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 10px; font-size: 0.82rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                        <div style="font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); margin-bottom: 8px;">Created Values</div>
+                        <pre style="background: var(--ui-neutral-tint); padding: 16px; border-radius: 8px; font-size: 0.8125rem; color: var(--ui-text); margin: 0;">{{ json_encode($auditTrail->new_values, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                     </div>
                 @else
                     <div class="mac-empty">

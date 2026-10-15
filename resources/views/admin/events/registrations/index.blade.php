@@ -117,7 +117,7 @@
                     <tbody>
                         @forelse($registrations as $registration)
                             <tr>
-                                <td>
+                                <td data-label="Select">
                                     {{-- Associated with the bulk form BELOW the table by id.
                                          The per-row forms sit inside this table, and a form
                                          inside a form is not a thing a browser will send. --}}

@@ -6,7 +6,7 @@
 <div style="width: 100%;">
     <div class="mb-4">
         <h2 class="fw-bold mb-1">Welcome back</h2>
-        <p class="text-muted mb-0" style="font-size: 0.9rem;">Sign in to your account</p>
+        <p class="text-muted mb-0" style="font-size: 0.875rem;">Sign in to your account</p>
     </div>
 
     @if (session('status'))

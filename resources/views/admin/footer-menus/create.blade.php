@@ -64,16 +64,16 @@
                 <div id="editor"
                      contenteditable="true"
                      oninput="document.getElementById('contentInput').value = this.innerHTML"
-                     style="min-height:200px;padding:12px 14px;border:1px solid rgba(0,0,0,0.12);
-                            border-radius:10px;background:#fff;font-size:0.85rem;line-height:1.6;
+                     style="min-height:200px;padding:12px 14px;border:1px solid var(--ui-border-strong);
+                            border-radius:8px;background:#fff;font-size:0.8125rem;line-height:1.6;
                             outline:none;"
                      class="@error('content') border-danger @enderror"
                      >{!! old('content') !!}</div>
                 <div id="preview"
-                     style="display:none;min-height:200px;padding:12px 14px;border:1px solid rgba(0,0,0,0.12);
-                            border-radius:10px;background:rgba(0,0,0,0.02);font-size:0.85rem;line-height:1.6;"></div>
+                     style="display:none;min-height:200px;padding:12px 14px;border:1px solid var(--ui-border-strong);
+                            border-radius:8px;background:rgba(0,0,0,0.02);font-size:0.8125rem;line-height:1.6;"></div>
                 <input type="hidden" name="content" id="contentInput" value="{{ old('content') }}">
-                @error('content')<div class="text-danger" style="font-size:0.82rem;margin-top:4px;">{{ $message }}</div>@enderror
+                @error('content')<div class="text-danger" style="font-size:0.8125rem;margin-top:4px;">{{ $message }}</div>@enderror
             </div>
 
             <div class="d-flex gap-2 mt-2">

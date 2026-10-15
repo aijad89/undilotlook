@@ -92,8 +92,11 @@
                                                value="{{ $code->name }}" aria-label="Craft" required>
                                     </div>
                                     <div class="col-md-5">
-                                        <input type="text" name="pecahan_bidang" class="mac-form-control"
-                                               value="{{ $code->pecahan_bidang }}" aria-label="Breakdown">
+                                        {{-- A textarea only so a long breakdown wraps instead of being cut
+                                             off; it is one line of text, and Enter saves the row as the
+                                             input it replaced did (script below). --}}
+                                        <textarea name="pecahan_bidang" class="mac-form-control code-breakdown" rows="1"
+                                                  maxlength="255" aria-label="Breakdown">{{ $code->pecahan_bidang }}</textarea>
                                     </div>
                                     <div class="col-md-1">
                                         <button type="submit" class="mac-action-btn" title="Save">
@@ -144,4 +147,24 @@
         </div>
     </div>
 </div>
+<style>
+    textarea.mac-form-control.code-breakdown { display: block; resize: none; overflow: hidden; min-height: 40px; padding: 8px 12px; line-height: 1.4; field-sizing: content; }
+    /* On a phone the row's save tick sits on the breakdown's line, beside the field it saves. */
+    @media (max-width: 767.98px) {
+        form[id^="code-"] > .col-md-5 { flex: 1 1 0; width: auto; }
+        form[id^="code-"] > .col-md-1:has(> button) { flex: 0 0 auto; width: auto; align-self: flex-end; }
+        form[id^="code-"] > .col-md-1 > button { height: 40px; min-width: 40px; }
+    }
+</style>
+<script>
+    document.querySelectorAll('.code-breakdown').forEach(function (area) {
+        // Grow to the text where field-sizing is not supported.
+        var fit = function () { area.style.height = 'auto'; area.style.height = area.scrollHeight + 'px'; };
+        if (! CSS.supports('field-sizing', 'content')) { fit(); area.addEventListener('input', fit); }
+        // One line of text: Enter submits, as it did in the input.
+        area.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && ! e.shiftKey) { e.preventDefault(); area.form.requestSubmit(); }
+        });
+    });
+</script>
 @endsection

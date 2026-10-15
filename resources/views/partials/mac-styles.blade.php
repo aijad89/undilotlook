@@ -28,8 +28,9 @@
     :is(.mac-header, .mac-header > div):has(> h2 + .mac-breadcrumb) { display: flex; flex-direction: column; }
     :is(.mac-header, .mac-header > div) > h2 + .mac-breadcrumb { order: -1; margin-bottom: 6px; }
     .mac-field { display: contents; }
+    .mac-btn-word { display: none; }
     .mac-field-label { display: none; }
-    .mac-breadcrumb { font-size: 0.82rem; color: var(--ui-muted); }
+    .mac-breadcrumb { font-size: 0.8125rem; color: var(--ui-muted); }
     .mac-breadcrumb a { color: var(--ui-blue-text); text-decoration: underline; }
     .mac-breadcrumb .sep { margin: 0 6px; color: var(--ui-border-strong); }
 
@@ -69,7 +70,7 @@
         width: 100%; height: var(--ui-control-h); box-sizing: border-box;
         padding: 0 12px; border-radius: var(--ui-r);
         background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
-        color: var(--ui-text); font-size: 0.9rem; line-height: 1.4; outline: none;
+        color: var(--ui-text); font-size: 0.875rem; line-height: 1.4; outline: none;
         transition: border-color var(--ui-fast) var(--ui-ease), box-shadow var(--ui-fast) var(--ui-ease);
     }
     .mac-select {
@@ -121,7 +122,7 @@
     /* ── Status pills ─────────────────────────────── */
     .mac-status {
         display: inline-flex; align-items: center; gap: 6px; padding: 2px 10px 2px 8px; min-height: 24px;
-        border-radius: 999px; font-size: 0.78rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
+        border-radius: 999px; font-size: 0.8125rem; font-weight: 600; line-height: 1.2; white-space: nowrap;
         background: var(--ui-neutral-tint); color: var(--ui-neutral-text);
     }
     .mac-status-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: currentColor; }
@@ -136,7 +137,7 @@
     .mac-action-btn, .mac-action-btn-danger {
         display: inline-flex; align-items: center; justify-content: center; gap: 5px;
         min-height: 32px; padding: 0 12px; border-radius: var(--ui-r-sm);
-        font-size: 0.82rem; font-weight: 600; text-decoration: none; cursor: pointer;
+        font-size: 0.8125rem; font-weight: 600; text-decoration: none; cursor: pointer;
         background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
         transition: background-color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
     }
@@ -153,13 +154,13 @@
     }
 
     /* ── Form elements ───────────────────────────── */
-    .mac-label { display: block; margin-bottom: 6px; font-size: 0.85rem; font-weight: 600; color: var(--ui-text-2); }
+    .mac-label { display: block; margin-bottom: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-text-2); }
     .mac-page .form-check-input { width: 1.15em; height: 1.15em; border-color: var(--ui-border-strong); }
     .mac-page .form-check-input:checked { background-color: var(--ui-blue); border-color: var(--ui-blue); }
     .mac-page .form-check-input:focus { border-color: var(--ui-blue); box-shadow: 0 0 0 3px var(--mac-primary-rg); }
     .mac-page .form-check-label { color: var(--ui-text-2); }
     .mac-page .text-danger { color: var(--ui-bad-text) !important; }
-    .mac-page small.text-danger { display: inline-block; margin-top: 4px; font-size: 0.82rem; }
+    .mac-page small.text-danger { display: inline-block; margin-top: 4px; font-size: 0.8125rem; }
 
     .input-group { flex-wrap: nowrap; }
     .input-group > .mac-form-control { flex: 1 1 auto; width: 1%; min-width: 0; }
@@ -177,29 +178,29 @@
     .mac-detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
     .mac-detail-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; padding: 12px 20px; border-bottom: 1px solid var(--ui-sep); }
     .mac-detail-row:last-child { border-bottom: none; }
-    .mac-detail-label { flex-shrink: 0; min-width: 140px; font-size: 0.85rem; font-weight: 500; color: var(--ui-muted); }
+    .mac-detail-label { flex-shrink: 0; min-width: 140px; font-size: 0.8125rem; font-weight: 500; color: var(--ui-muted); }
     .mac-detail-value { font-size: 0.875rem; font-weight: 500; color: var(--ui-text); text-align: right; }
 
-    .mac-section-title { padding: 18px 20px 8px; border-top: 1px solid var(--ui-sep); font-size: 0.8rem; font-weight: 650; color: var(--ui-text-2); }
+    .mac-section-title { padding: 18px 20px 8px; border-top: 1px solid var(--ui-sep); font-size: 0.8125rem; font-weight: 650; color: var(--ui-text-2); }
     .mac-section-title:first-child { border-top: none; }
 
     /* ── Empty state ─────────────────────────────── */
-    .mac-empty { padding: 44px 24px; text-align: center; color: var(--ui-muted); font-size: 0.9rem; }
-    .mac-empty-icon { margin-bottom: 10px; font-size: 2rem; color: var(--ui-border-strong); }
-    .mac-empty-text { font-size: 0.92rem; font-weight: 500; color: var(--ui-text-2); }
+    .mac-empty { padding: 44px 24px; text-align: center; color: var(--ui-muted); font-size: 0.875rem; }
+    .mac-empty-icon { margin-bottom: 10px; font-size: 2.25rem; color: var(--ui-border-strong); }
+    .mac-empty-text { font-size: 0.875rem; font-weight: 500; color: var(--ui-text-2); }
     .mac-empty a { font-weight: 600; }
 
     /* ── Pagination ──────────────────────────────── */
     /* Laravel's bootstrap-5 view: a phone row (Previous / Next) and a wider row
        ("Showing x to y of z" and the page numbers). The nav is the padded footer. */
     .mac-page nav:has(> div > .pagination) { padding: 12px 16px; border-top: 1px solid var(--ui-sep); }
-    .mac-page nav:has(> div > .pagination) p { margin: 0; font-size: 0.85rem; color: var(--ui-muted) !important; }
+    .mac-page nav:has(> div > .pagination) p { margin: 0; font-size: 0.8125rem; color: var(--ui-muted) !important; }
     .mac-card .pagination, .mac-page .pagination { gap: 4px; padding: 0; margin: 0; justify-content: center; }
     .mac-page .d-sm-none > .pagination { width: 100%; justify-content: space-between; }
     .mac-page .d-sm-none .page-link { min-height: 44px; padding: 0 18px; border-color: var(--ui-border-strong); background: var(--ui-surface); }
     .mac-card .page-link, .mac-page .page-link {
         min-width: 34px; height: 34px; display: grid; place-items: center; padding: 0 10px;
-        border: 1px solid transparent; border-radius: var(--ui-r-sm); color: var(--ui-text-2); font-size: 0.85rem; font-weight: 600;
+        border: 1px solid transparent; border-radius: var(--ui-r-sm); color: var(--ui-text-2); font-size: 0.8125rem; font-weight: 600;
     }
     .mac-card .page-link:hover, .mac-page .page-link:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
     .mac-card .page-item.active .page-link, .mac-page .page-item.active .page-link { background: var(--ui-navy-900); color: #fff; }
@@ -208,8 +209,8 @@
     /* ── Empty state: a quiet mark, a title, the reason ── */
     .mac-empty { padding: 48px 24px; text-align: center; }
     .mac-empty p { max-width: 56ch; margin: 0 auto; }
-    .mac-empty-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: var(--ui-r-lg); background: var(--ui-neutral-tint); color: var(--ui-muted); font-size: 1.4rem; }
-    .mac-empty-title { margin: 0 0 6px; font-size: 1.05rem; font-weight: 650; color: var(--ui-text); }
+    .mac-empty-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: var(--ui-r-lg); background: var(--ui-neutral-tint); color: var(--ui-muted); font-size: 1.5rem; }
+    .mac-empty-title { margin: 0 0 6px; font-size: 1rem; font-weight: 650; color: var(--ui-text); }
 
     /* ── Alerts ──────────────────────────────────── */
     /* Block, not flex: an alert's words are often a <strong> and a run of plain
@@ -217,7 +218,7 @@
        leading icon hangs in the left padding instead. */
     .mac-page .alert {
         position: relative; display: block;
-        padding: 12px 44px 12px 40px; border-radius: var(--ui-r-lg); font-size: 0.9rem; line-height: 1.5;
+        padding: 12px 44px 12px 40px; border-radius: var(--ui-r-lg); font-size: 0.875rem; line-height: 1.5;
         border: 1px solid transparent;
     }
     .mac-page .alert-success { background: var(--ui-ok-tint); border-color: var(--ui-ok-border); color: var(--ui-ok-text); }
@@ -233,7 +234,7 @@
     .mac-tabs { display: flex; gap: 4px; list-style: none; margin: 0; padding: 0 4px; border-bottom: 1px solid var(--ui-border); }
     .mac-tabs .nav-link {
         position: relative; padding: 10px 14px; margin-bottom: -1px;
-        font-size: 0.9rem; font-weight: 600; color: var(--ui-muted);
+        font-size: 0.875rem; font-weight: 600; color: var(--ui-muted);
         background: none; border: none; border-bottom: 2px solid transparent; border-radius: 0; cursor: pointer;
         transition: color var(--ui-fast) var(--ui-ease), border-color var(--ui-fast) var(--ui-ease);
     }
@@ -242,7 +243,7 @@
     .mac-page .nav-tabs { border-bottom: 1px solid var(--ui-border); gap: 4px; }
     .mac-page .nav-tabs .nav-link {
         margin-bottom: -1px; padding: 10px 14px; border: none; border-bottom: 2px solid transparent; border-radius: 0;
-        font-size: 0.9rem; font-weight: 600; color: var(--ui-muted); background: none;
+        font-size: 0.875rem; font-weight: 600; color: var(--ui-muted); background: none;
     }
     .mac-page .nav-tabs .nav-link:hover { color: var(--ui-text); border-bottom-color: var(--ui-border-strong); }
     .mac-page .nav-tabs .nav-link.active { color: var(--ui-text); border-bottom-color: var(--ui-blue); background: none; }
@@ -260,8 +261,8 @@
     .mac-badge-gray   { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
 
     /* ── Misc ────────────────────────────────────── */
-    .mac-muted { color: var(--ui-muted); font-size: 0.85rem; }
-    .mac-text-sm { font-size: 0.8rem; }
+    .mac-muted { color: var(--ui-muted); font-size: 0.8125rem; }
+    .mac-text-sm { font-size: 0.8125rem; }
     .mac-divider { border: none; border-top: 1px solid var(--ui-sep); margin: 4px 0; opacity: 1; }
     .mac-page .text-warning { color: var(--ui-warn-text) !important; }
     .mac-page .text-success { color: var(--ui-ok-text) !important; }
@@ -270,16 +271,16 @@
     .mac-page .form-switch .form-check-input { width: 2.2em; }
 
     .mac-addr-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 8px 18px; margin: 0; }
-    .mac-addr-fields dt { margin-bottom: 1px; font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); }
+    .mac-addr-fields dt { margin-bottom: 1px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); }
     .mac-addr-fields dd { margin: 0; font-size: 0.875rem; color: var(--ui-text); overflow-wrap: anywhere; }
 
     /* ── Draw band: the stage and the counts of one draw ── */
     .draw-band { display: flex; flex-wrap: wrap; align-items: center; gap: 20px 40px; padding: 22px 24px; }
     .draw-band-stage { flex: 1 1 420px; min-width: 0; }
     .draw-band-facts { flex: 0 1 auto; display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; padding-left: 32px; border-left: 1px solid var(--ui-sep); }
-    .draw-band-facts dt { font-size: 0.8rem; font-weight: 500; color: var(--ui-muted); }
+    .draw-band-facts dt { font-size: 0.8125rem; font-weight: 500; color: var(--ui-muted); }
     .mac-cell { display: contents; }
-    .draw-band-facts dd { font-variant-numeric: tabular-nums; margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
+    .draw-band-facts dd { font-variant-numeric: tabular-nums; margin: 0; font-size: 1.5rem; font-weight: 700; color: var(--ui-text); letter-spacing: -0.01em; }
     @media (max-width: 767.98px) {
         .draw-band { padding: 18px; }
         .draw-band-facts { padding-left: 0; border-left: 0; width: 100%; justify-content: space-between; }
@@ -296,8 +297,8 @@
         .mac-table tbody tr { display: block; margin: 0 0 10px; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); }
         /* Inside a card the rows are the cards: the outer one gives up its
            chrome rather than nesting card in card. */
-        .mac-card:has(.mac-table) { background: none !important; border: 0 !important; box-shadow: none !important; overflow: visible; }
-        .mac-card:has(.mac-table) > .mac-card-header { padding: 4px 0 10px; background: none; border: 0; }
+        .mac-card:has(.mac-table):not(.mac-card-keep) { background: none !important; border: 0 !important; box-shadow: none !important; overflow: visible; }
+        .mac-card:has(.mac-table):not(.mac-card-keep) > .mac-card-header { padding: 4px 0 10px; background: none; border: 0; }
         .mac-card .mac-table tbody tr { margin: 0 0 10px; }
         .mac-table tbody td { display: flex; align-items: flex-start; gap: 10px; width: auto; padding: 10px 14px; border-bottom: 1px solid var(--ui-sep); text-align: left !important; }
         .mac-cell { display: block; flex: 1; min-width: 0; }
@@ -311,10 +312,21 @@
         .mac-detail-value { text-align: left !important; overflow-wrap: anywhere; }
         .mac-field { display: flex; flex-direction: column; flex: 1 1 0; min-width: 0; }
         /* A row's own button sits on the fields' baseline, not stretched over label and field. */
+        /* A small table inside a detail card keeps the card: its rows become
+           divided lines in it, labelled at the detail-row size. */
+        .mac-card-keep .mac-table tbody tr { margin: 0 !important; border: 0; border-bottom: 1px solid var(--ui-sep); border-radius: 0; }
+        .mac-card-keep .mac-table tbody tr:last-child { border-bottom: 0; }
+        .mac-card-keep .mac-table tbody td { border-bottom: 0; padding: 8px 20px; }
+        .mac-card-keep .mac-table tbody td[data-label]::before { font-size: 0.8125rem; font-weight: 500; }
         .mac-field ~ button, .mac-field ~ .mac-action-btn { align-self: flex-end; height: 40px; min-width: 40px; }
-        .mac-field-label { display: block; margin: 6px 0 4px; font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); }
+        .mac-action-btn:has(.mac-btn-word) { width: auto; min-height: 40px; padding: 0 12px; gap: 6px; display: inline-flex; align-items: center; }
+        .mac-btn-word { display: inline; font-size: 0.875rem; font-weight: 600; }
+        /* A wide row's fields fill one line; its worded button takes the next. */
+        td[colspan] form:has(.mac-field) { flex-wrap: wrap; }
+        .mac-field ~ .mac-action-btn:has(.mac-btn-word) { flex: 1 1 100%; justify-content: center; }
+        .mac-field-label { display: block; margin: 6px 0 4px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); }
         .mac-table tbody tr > td:last-child { border-bottom: 0; }
-        .mac-table tbody td[data-label]::before { content: attr(data-label); flex: 0 0 38%; font-size: 0.78rem; font-weight: 600; color: var(--ui-muted); }
+        .mac-table tbody td[data-label]::before { content: attr(data-label); flex: 0 0 38%; font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); }
         .mac-table tbody td[colspan] { display: block; }
         .table-responsive:has(.mac-table) { overflow-x: visible; }
         .table-responsive .d-flex.justify-content-end { flex-wrap: wrap; justify-content: flex-start !important; }
@@ -322,7 +334,7 @@
            document: a too-wide toolbar zooms the whole page out on a phone. */
         .mac-page .d-flex.justify-content-between { flex-wrap: wrap; row-gap: 8px; }
         .mac-page .d-flex.justify-content-between > .d-flex { flex-wrap: wrap; }
-        .mac-header h2 { font-size: 1.3rem; }
+        .mac-header h2 { font-size: 1.25rem; }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -400,6 +412,18 @@
                 tag.textContent = field.getAttribute('aria-label');
                 field.before(box);
                 box.append(tag, field);
+            });
+
+            // An icon-only row button says what it does in its title. On a phone
+            // that word is shown beside the icon: older users should not have to
+            // guess what a bare tick or bin does. Hidden above 768px.
+            table.querySelectorAll(':scope > tbody .mac-action-btn[title]').forEach(function (btn) {
+                if (btn.textContent.trim() !== '') return;
+                var word = document.createElement('span');
+                word.className = 'mac-btn-word';
+                word.setAttribute('aria-hidden', 'true');
+                word.textContent = btn.getAttribute('title');
+                btn.append(word);
             });
 
             table.querySelectorAll(':scope > tbody > tr').forEach(function (row) {

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-14T18:00:00+08:00",
+  "generatedAt": "2026-10-15T12:00:00+08:00",
   "title": "Design System: undilot",
   "extensions": {
     "colorMeta": {
@@ -813,36 +813,86 @@
           "#f2beb0",
           "#fbe9e5"
         ]
+      },
+      "shade": {
+        "role": "neutral",
+        "displayName": "Shade",
+        "canonical": "rgba(16, 24, 40, 0.14)",
+        "tonalRamp": [
+          "#050b19",
+          "#1b2435",
+          "#364052",
+          "#545e71",
+          "#737e92",
+          "#939fb4",
+          "#bcc8de",
+          "#eaeff7"
+        ]
+      },
+      "scrim": {
+        "role": "neutral",
+        "displayName": "Scrim",
+        "canonical": "rgba(7, 26, 51, 0.72)",
+        "tonalRamp": [
+          "#000a22",
+          "#11243e",
+          "#2c415d",
+          "#495f7d",
+          "#687f9e",
+          "#88a0c1",
+          "#b0c9ec",
+          "#e6effc"
+        ]
       }
     },
     "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Public event list headline (1.5rem on a phone); large state glyphs."
+      },
       "headline-portal": {
         "displayName": "Headline, portal",
-        "purpose": "Participant page title and greeting; 1.45rem under 576px."
+        "purpose": "Participant page title and greeting; 1.5rem under 576px."
+      },
+      "stat": {
+        "displayName": "Stat",
+        "purpose": "Portal stat values and plan reference counts; tabular figures."
       },
       "headline-admin": {
         "displayName": "Headline, admin",
-        "purpose": "Office page title; 1.3rem under 768px."
-      },
-      "title": {
-        "displayName": "Title",
-        "purpose": "Admin card titles; portal card and section titles step up to 1.1rem/700."
-      },
-      "body-portal": {
-        "displayName": "Body, portal",
-        "purpose": "Usahawan copy; never below 0.9rem."
-      },
-      "body-admin": {
-        "displayName": "Body, admin",
-        "purpose": "Admin table cells and detail values."
-      },
-      "label": {
-        "displayName": "Label",
-        "purpose": "Admin table headers and nav section labels, sentence case."
+        "purpose": "Office page title (1.25rem under 768px); sign-in form heading; portal identity name."
       },
       "figure": {
         "displayName": "Figure",
-        "purpose": "Counts in a draw's band; always tabular figures."
+        "purpose": "Counts in a draw's band, lot fact values, the lot code in the reveal; tabular figures."
+      },
+      "heading-sm": {
+        "displayName": "Small heading",
+        "purpose": "A draw card's title."
+      },
+      "title-lead": {
+        "displayName": "Lead / section title",
+        "purpose": "Portal card, section and empty-state titles; public event titles; brand names; sign-in subtitle; the lot code chip."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Admin card titles, admin empty-state title, notification title."
+      },
+      "body-portal": {
+        "displayName": "Body, portal",
+        "purpose": "Usahawan copy, labels and cells; secondary portal copy is 0.875rem."
+      },
+      "body-admin": {
+        "displayName": "Body, admin",
+        "purpose": "Admin table cells, fields, alerts and detail values; portal secondary copy."
+      },
+      "small": {
+        "displayName": "Small",
+        "purpose": "Admin meta: breadcrumb, status, row action, form and detail labels, pagination; stacked-table cell labels; portal table headers."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Admin table headers, nav section labels, badges and stepper labels, sentence case."
       },
       "mono": {
         "displayName": "Mono",
@@ -943,7 +993,7 @@
       "refersTo": "your-lot",
       "description": "The one place gold fills: the usahawan's own lot on a draw card.",
       "html": "<a class=\"ds-your-lot\" href=\"#\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 16 16\" fill=\"#e3a92b\" aria-hidden=\"true\"><path d=\"M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10m0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6\"/></svg>Lot <strong>DEWAN A-LEH1</strong></a>",
-      "css": ".ds-your-lot { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid #e3a92b; border-radius: 8px; background: #fdf5e1; color: #7a5300; font: 600 1.05rem/1.2 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; text-decoration: none; font-variant-numeric: tabular-nums; } .ds-your-lot:hover { background: #fbe7bd; } .ds-your-lot:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
+      "css": ".ds-your-lot { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 48px; padding: 0 20px; border: 1px solid #e3a92b; border-radius: 8px; background: #fdf5e1; color: #7a5300; font: 600 1rem/1.2 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; text-decoration: none; font-variant-numeric: tabular-nums; } .ds-your-lot:hover { background: #fbe7bd; } .ds-your-lot:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
     },
     {
       "name": "Admin Input",
@@ -951,7 +1001,7 @@
       "refersTo": "input-admin",
       "description": "40px field; blue border on mouse focus, yellow ring on keyboard focus.",
       "html": "<input class=\"ds-input-admin\" placeholder=\"Search company\">",
-      "css": ".ds-input-admin { height: 40px; width: 260px; padding: 0 12px; border: 1px solid #c3ccd8; border-radius: 8px; background: #fff; color: #101828; font: 400 0.9rem/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; outline: none; transition: border-color 140ms cubic-bezier(0.16,1,0.3,1), box-shadow 140ms cubic-bezier(0.16,1,0.3,1); } .ds-input-admin::placeholder { color: #586477; } .ds-input-admin:hover { border-color: #a9b4c3; } .ds-input-admin:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,.18); } .ds-input-admin:focus-visible { border-color: #0b0c0c; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
+      "css": ".ds-input-admin { height: 40px; width: 260px; padding: 0 12px; border: 1px solid #c3ccd8; border-radius: 8px; background: #fff; color: #101828; font: 400 0.875rem/1.4 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; outline: none; transition: border-color 140ms cubic-bezier(0.16,1,0.3,1), box-shadow 140ms cubic-bezier(0.16,1,0.3,1); } .ds-input-admin::placeholder { color: #586477; } .ds-input-admin:hover { border-color: #a9b4c3; } .ds-input-admin:focus { border-color: #1a56db; box-shadow: 0 0 0 3px rgba(26,86,219,.18); } .ds-input-admin:focus-visible { border-color: #0b0c0c; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
     },
     {
       "name": "Status Pill",
@@ -959,7 +1009,7 @@
       "refersTo": "status-ok",
       "description": "State always names itself: tint, word, and a currentColor marker.",
       "html": "<span class=\"ds-status ds-status-ok\"><span class=\"ds-status-dot\"></span>Lot disahkan</span> <span class=\"ds-status ds-status-warn\"><span class=\"ds-status-dot\"></span>Open</span> <span class=\"ds-status ds-status-bad\"><span class=\"ds-status-dot\"></span>Cancelled</span>",
-      "css": ".ds-status { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 2px 10px 2px 8px; border-radius: 999px; font: 600 0.78rem/1.2 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; white-space: nowrap; } .ds-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; } .ds-status-ok { background: #e6f4ec; color: #0b6239; } .ds-status-warn { background: #fdf2df; color: #7f4500; } .ds-status-bad { background: #fdece8; color: #9a2006; }"
+      "css": ".ds-status { display: inline-flex; align-items: center; gap: 6px; min-height: 24px; padding: 2px 10px 2px 8px; border-radius: 999px; font: 600 0.8125rem/1.2 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; white-space: nowrap; } .ds-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; } .ds-status-ok { background: #e6f4ec; color: #0b6239; } .ds-status-warn { background: #fdf2df; color: #7f4500; } .ds-status-bad { background: #fdece8; color: #9a2006; }"
     },
     {
       "name": "Card",
@@ -975,7 +1025,7 @@
       "refersTo": "nav-rail",
       "description": "Navy rail; active item fills navy-700 with a gold bar and gold icon.",
       "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item\" href=\"#\">Events</a><a class=\"ds-rail-item is-active\" href=\"#\">Lot Draw</a><a class=\"ds-rail-item\" href=\"#\">Companies</a></nav>",
-      "css": ".ds-rail { width: 264px; padding: 10px 0; background: #0b2240; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-rail-item { position: relative; display: flex; align-items: center; min-height: 40px; margin: 2px 10px; padding: 9px 12px; border-radius: 8px; color: #d6deea; font-size: 0.9rem; font-weight: 500; text-decoration: none; transition: background-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-rail-item:hover { background: rgba(255,255,255,.07); color: #fff; } .ds-rail-item.is-active { background: #1b3f70; color: #fff; font-weight: 600; } .ds-rail-item.is-active::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #e3a92b; } .ds-rail-item:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
+      "css": ".ds-rail { width: 264px; padding: 10px 0; background: #0b2240; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-rail-item { position: relative; display: flex; align-items: center; min-height: 40px; margin: 2px 10px; padding: 9px 12px; border-radius: 8px; color: #d6deea; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-rail-item:hover { background: rgba(255,255,255,.07); color: #fff; } .ds-rail-item.is-active { background: #1b3f70; color: #fff; font-weight: 600; } .ds-rail-item.is-active::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #e3a92b; } .ds-rail-item:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
     },
     {
       "name": "Draw-Stage Stepper",
@@ -983,7 +1033,7 @@
       "refersTo": "draw-stepper",
       "description": "The signature: four stops on every draw, passed ones filled, the current one ringed.",
       "html": "<ol class=\"ds-stepper\"><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Draft</span></li><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Open</span></li><li class=\"current\" aria-current=\"step\"><span class=\"dot\"></span><span class=\"label\">Closed</span></li><li><span class=\"dot\"></span><span class=\"label\">End</span></li></ol>",
-      "css": ".ds-stepper { list-style: none; margin: 0; padding: 0; display: flex; width: 420px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-stepper li { position: relative; flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; } .ds-stepper li::before { content: ''; position: absolute; top: 9px; left: calc(-50% + 12px); right: calc(50% + 12px); height: 2px; border-radius: 2px; background: #dce1e8; } .ds-stepper li:first-child::before { display: none; } .ds-stepper .dot { position: relative; z-index: 1; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px solid #c3ccd8; color: transparent; } .ds-stepper .label { font-size: 0.75rem; font-weight: 600; color: #586477; } .ds-stepper li.done::before, .ds-stepper li.current::before { background: #1a56db; } .ds-stepper li.done .dot { background: #1a56db; border-color: #1a56db; color: #fff; } .ds-stepper li.done .label { color: #344054; } .ds-stepper li.current .dot { border-color: #1a56db; box-shadow: 0 0 0 4px #ebf1fd; } .ds-stepper li.current .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #1a56db; } .ds-stepper li.current .label { color: #101828; } @media (prefers-reduced-motion: no-preference) { .ds-stepper li.current .dot { animation: ds-stop-in 420ms cubic-bezier(0.16,1,0.3,1) both; } @keyframes ds-stop-in { from { box-shadow: 0 0 0 12px rgba(26,86,219,0); } to { box-shadow: 0 0 0 4px #ebf1fd; } } }"
+      "css": ".ds-stepper { list-style: none; margin: 0; padding: 0; display: flex; width: 420px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-stepper li { position: relative; flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; } .ds-stepper li::before { content: ''; position: absolute; top: 9px; left: calc(-50% + 12px); right: calc(50% + 12px); height: 2px; border-radius: 4px; background: #dce1e8; } .ds-stepper li:first-child::before { display: none; } .ds-stepper .dot { position: relative; z-index: 1; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px solid #c3ccd8; color: transparent; } .ds-stepper .label { font-size: 0.75rem; font-weight: 600; color: #586477; } .ds-stepper li.done::before, .ds-stepper li.current::before { background: #1a56db; } .ds-stepper li.done .dot { background: #1a56db; border-color: #1a56db; color: #fff; } .ds-stepper li.done .label { color: #344054; } .ds-stepper li.current .dot { border-color: #1a56db; box-shadow: 0 0 0 4px #ebf1fd; } .ds-stepper li.current .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #1a56db; } .ds-stepper li.current .label { color: #101828; } @media (prefers-reduced-motion: no-preference) { .ds-stepper li.current .dot { animation: ds-stop-in 420ms cubic-bezier(0.16,1,0.3,1) both; } @keyframes ds-stop-in { from { box-shadow: 0 0 0 12px rgba(26,86,219,0); } to { box-shadow: 0 0 0 4px #ebf1fd; } } }"
     },
     {
       "name": "Admin Empty State",
@@ -991,7 +1041,7 @@
       "refersTo": "mac-empty",
       "description": "An empty list: a quiet icon tile, a title, the reason.",
       "html": "<div class=\"ds-empty\"><div class=\"ds-empty-icon\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 16 16\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4.98 4a.5.5 0 0 0-.39.188L1.54 8H6a.5.5 0 0 1 .5.5 1.5 1.5 0 1 0 3 0A.5.5 0 0 1 10 8h4.46l-3.05-3.812A.5.5 0 0 0 11.02 4zm-1.17-.437A1.5 1.5 0 0 1 4.98 3h6.04a1.5 1.5 0 0 1 1.17.563l3.7 4.625a.5.5 0 0 1 .106.374l-.39 3.124A1.5 1.5 0 0 1 14.117 13H1.883a1.5 1.5 0 0 1-1.489-1.314l-.39-3.124a.5.5 0 0 1 .106-.374z\"/></svg></div><p class=\"ds-empty-title\">No registrations yet</p><p class=\"ds-empty-reason\">Add companies to this draw from the registrations screen.</p></div>",
-      "css": ".ds-empty { padding: 48px 24px; text-align: center; background: #fff; border: 1px solid #dce1e8; border-radius: 12px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-empty-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 12px; background: #eef1f5; color: #586477; } .ds-empty-title { margin: 0 0 6px; font-size: 1.05rem; font-weight: 650; color: #101828; } .ds-empty-reason { max-width: 56ch; margin: 0 auto; font-size: 0.875rem; color: #586477; }"
+      "css": ".ds-empty { padding: 48px 24px; text-align: center; background: #fff; border: 1px solid #dce1e8; border-radius: 12px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-empty-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 12px; background: #eef1f5; color: #586477; } .ds-empty-title { margin: 0 0 6px; font-size: 1rem; font-weight: 650; color: #101828; } .ds-empty-reason { max-width: 56ch; margin: 0 auto; font-size: 0.875rem; color: #586477; }"
     }
   ],
   "narrative": {
@@ -1029,12 +1079,17 @@
       },
       {
         "name": "The Bigger For Usahawan Rule",
-        "body": "The portal sets every equivalent role one step larger than admin, and its text-size toggle scales the root to 112% / 126%. The office gets the same toggle at 112% / 124%.",
+        "body": "The portal sets every equivalent role one step larger than admin, and its text-size toggle sets the root to 1.125rem / 1.25rem (112.5% / 125%). The office gets the same toggle at 112% / 124%.",
         "section": "typography"
       },
       {
         "name": "The Tables Become Cards Rule",
-        "body": "Below 768px every .mac-table stacks: each row a bordered 12px card, each cell a label/value line (the value wrapped in .mac-cell) whose label is copied from the column header by script. A cell holding one field is labelled like any value; a cell with a button or more than one control, a blank header or a colspan is skipped. A wide one-form row (td[colspan]) instead shows each field's aria-label above it, label and field sharing a .mac-field box (the label aria-hidden; the box is display: contents above 768px), with the row's button on the fields' baseline. Detail rows stack label over value, full width. The outer card gives up its chrome so cards never nest in cards.",
+        "body": "Below 768px every .mac-table stacks: each row a bordered 12px card, each cell a label/value line (the value wrapped in .mac-cell) whose label is copied from the column header by script. A cell holding one field is labelled like any value; a cell with a button or more than one control, a blank header or a colspan is skipped. A wide one-form row (td[colspan]) instead shows each field's aria-label above it, label and field sharing a .mac-field box (the label aria-hidden; the box is display: contents above 768px), with the row's button on the fields' baseline; a worded button there takes its own full-width line under the fields. Detail rows stack label over value, full width. The outer card gives up its chrome so cards never nest in cards, unless it carries .mac-card-keep: a small table inside a detail card keeps the card, and its rows become sep-divided lines inside it, labelled at the detail-label size (0.8125rem/500).",
+        "section": "layout"
+      },
+      {
+        "name": "The Say What It Does Rule",
+        "body": "Below 768px an icon-only row button shows its own title as a visible word beside the icon (.mac-btn-word, added by script, aria-hidden so the accessible name still comes from the title), and grows to 40px. Older users should not have to guess what a bare tick or bin does. Above 768px the word is hidden.",
         "section": "layout"
       },
       {
@@ -1050,7 +1105,7 @@
       "Do give every focusable element the GOV.UK ring (0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c); plain text links take the yellow highlighter with a black underline instead.",
       "Do show status as a word with its marker, never as colour alone.",
       "Do put the draw-stage stepper on every draw, full on a draw's own page and compact in a table row.",
-      "Do keep portal targets at 48px and text at 1rem or more."
+      "Do keep portal targets at 48px, body text at 1rem, and secondary text (breadcrumb, small buttons, footer, stepper labels) no smaller than 0.875rem."
     ],
     "donts": [
       "Don't use gold for anything except the usahawan's lot, the active-nav marker and the mark.",

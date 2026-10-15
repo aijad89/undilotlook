@@ -31,7 +31,7 @@
                 <i class="bi bi-share"></i>
                 Follow Us Buttons
             </div>
-            <div class="mac-muted" style="font-size:0.78rem;">Drag rows to reorder</div>
+            <div class="mac-muted" style="font-size:0.8125rem;">Drag rows to reorder</div>
         </div>
         <div class="table-responsive">
             <table class="mac-table">
@@ -54,12 +54,12 @@
                             <td style="font-weight:500;">{{ $link->label }}</td>
                             <td>
                                 @if($link->icon_type === 'bootstrap')
-                                    <i class="bi {{ $link->icon_class }}" style="font-size:1.2rem;"></i>
+                                    <i class="bi {{ $link->icon_class }}" style="font-size:1.25rem;"></i>
                                     <span class="mac-muted" style="font-size:0.75rem;margin-left:6px;">{{ $link->icon_class }}</span>
                                 @else
                                     @if($link->icon_image)
                                         <img loading="lazy" src="{{ $link->icon_image_url }}" width="16" height="24"
-                                             style="object-fit:contain;border-radius:2px;" alt="{{ $link->label }}">
+                                             style="object-fit:contain;border-radius:4px;" alt="{{ $link->label }}">
                                         <span class="mac-muted" style="font-size:0.75rem;margin-left:6px;">Custom</span>
                                     @else
                                         <span class="mac-muted">—</span>
@@ -68,7 +68,7 @@
                             </td>
                             <td>
                                 <a href="{{ $link->url }}" target="_blank" rel="noopener"
-                                   style="font-size:0.8rem;color:var(--ui-blue-text);text-decoration:none;word-break:break-all;">
+                                   style="font-size:0.8125rem;color:var(--ui-blue-text);text-decoration:none;word-break:break-all;">
                                     {{ Str::limit($link->url, 50) }}
                                 </a>
                             </td>

@@ -49,7 +49,7 @@
         display:inline-flex; align-items:center; justify-content:center;
         min-width:34px; height:46px; padding:0 6px;
         background:var(--ui-navy-900); color:#fff; border-radius:6px;
-        font-size:1.35rem; font-weight:700; font-variant-numeric:tabular-nums;
+        font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums;
         box-shadow:0 1px 3px rgba(0,0,0,0.18), 0 6px 18px rgba(0,0,0,0.10);
         /* The hairline is the split in the flap, not decoration. */
         background-image:linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 1px));
@@ -74,14 +74,14 @@
     .lot-reveal--envelope { padding-top:78px; }
     .lr-envelope { position:relative; width:230px; height:132px; margin:0 auto; }
     .lr-env-body {
-        position:absolute; inset:0; border-radius:10px;
+        position:absolute; inset:0; border-radius:8px;
         background:var(--ui-surface-2); border:1px solid var(--ui-border);
         box-shadow:0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07);
     }
     .lr-env-flap {
         position:absolute; left:0; right:0; top:0; height:66px; z-index:3;
         background:var(--ui-neutral-tint); border:1px solid var(--ui-border);
-        border-radius:10px 10px 0 0;
+        border-radius:8px 8px 0 0;
         clip-path:polygon(0 0, 100% 0, 50% 100%);
         transform-origin:top center; transition:transform 1.3s cubic-bezier(0.16, 1, 0.3, 1);
     }
@@ -101,7 +101,7 @@
         /* Ends 2.0s after .is-open lands — the second half of the 4s. */
         transition:opacity 0.9s ease 0.6s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;
     }
-    .lr-env-code { font-size:1.45rem; font-weight:700; color:var(--ui-gold-text); letter-spacing:0.02em; }
+    .lr-env-code { font-size:1.5rem; font-weight:700; color:var(--ui-gold-text); letter-spacing:0.02em; }
 
     .lot-reveal.is-open .lr-env-flap { transform:rotateX(-172deg); }
     .lot-reveal.is-open .lr-env-seal { transform:translate(-50%,-50%) scale(0.4); opacity:0; }

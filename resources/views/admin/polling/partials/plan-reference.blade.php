@@ -25,7 +25,7 @@
         <div class="d-flex align-items-center flex-wrap gap-4">
             <div>
                 <div class="mac-label mb-1">In the draw</div>
-                <div style="font-size:1.8rem;font-weight:700;color:var(--ui-text);line-height:1;">
+                <div style="font-size:1.75rem;font-weight:700;color:var(--ui-text);line-height:1;">
                     {{ $drawCount }}
                 </div>
             </div>
@@ -34,14 +34,14 @@
 
             <div>
                 <div class="mac-label mb-1">Plots planned</div>
-                <div id="planRefPlots" style="font-size:1.8rem;font-weight:700;color:var(--ui-text);line-height:1;">0</div>
+                <div id="planRefPlots" style="font-size:1.75rem;font-weight:700;color:var(--ui-text);line-height:1;">0</div>
             </div>
 
             <div style="width:1px;height:44px;background:var(--ui-border);"></div>
 
             <div style="flex:1;min-width:220px;">
                 <div class="mac-label mb-1">Per company</div>
-                <div id="planRefRatio" style="font-size:0.92rem;color:var(--ui-text-2);line-height:1.5;">—</div>
+                <div id="planRefRatio" style="font-size:0.875rem;color:var(--ui-text-2);line-height:1.5;">—</div>
             </div>
         </div>
 
@@ -61,7 +61,7 @@
             <div class="d-flex flex-column gap-2">
                 @foreach($drawByBidang as $bidangName => $codes)
                     <div class="d-flex align-items-baseline flex-wrap gap-2">
-                        <span style="min-width:150px;font-size:0.8rem;font-weight:600;color:var(--ui-text-2);">
+                        <span style="min-width:150px;font-size:0.8125rem;font-weight:600;color:var(--ui-text-2);">
                             {{ $bidangName }}
                             <span class="mac-muted" style="font-weight:400;">({{ collect($codes)->sum('needed') }})</span>
                         </span>

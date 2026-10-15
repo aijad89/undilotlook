@@ -74,6 +74,8 @@
         --ui-on-navy-soft: #c3cedd;
         --ui-on-navy-icon: #93a4bb;
         --ui-on-navy-dim: #8fa1ba;
+        --ui-shade: rgba(16, 24, 40, 0.14);   /* a darker edge on a coloured fill */
+        --ui-scrim: rgba(7, 26, 51, 0.72);    /* behind a modal */
         --ui-neutral-tint: #eef1f5;
         --ui-neutral-text: #475467;
         --ui-violet-tint: #f0edfb;
@@ -129,7 +131,7 @@
 
     * { scrollbar-width: thin; scrollbar-color: #b8c2cf transparent; }
     ::-webkit-scrollbar { width: 10px; height: 10px; }
-    ::-webkit-scrollbar-thumb { background: #c3ccd8; border-radius: 10px; border: 3px solid transparent; background-clip: padding-box; }
+    ::-webkit-scrollbar-thumb { background: #c3ccd8; border-radius: 8px; border: 3px solid transparent; background-clip: padding-box; }
     ::-webkit-scrollbar-thumb:hover { background: #9aa6b6; background-clip: padding-box; border: 3px solid transparent; }
     ::-webkit-scrollbar-track { background: transparent; }
 
@@ -137,7 +139,7 @@
     .ui-status {
         display: inline-flex; align-items: center; gap: 6px;
         padding: 2px 10px 2px 8px; min-height: 24px;
-        border-radius: 999px; font-size: 0.78rem; font-weight: 600; line-height: 1.2;
+        border-radius: 999px; font-size: 0.8125rem; font-weight: 600; line-height: 1.2;
         background: var(--ui-neutral-tint); color: var(--ui-neutral-text); white-space: nowrap;
     }
 
@@ -150,12 +152,12 @@
     .ui-stepper li { position: relative; flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; }
     .ui-stepper li::before {
         content: ""; position: absolute; top: 9px; left: calc(-50% + 12px); right: calc(50% + 12px);
-        height: 2px; background: var(--ui-border); border-radius: 2px;
+        height: 2px; background: var(--ui-border); border-radius: 4px;
     }
     .ui-stepper li:first-child::before { display: none; }
     .ui-stepper .dot {
         position: relative; z-index: 1; width: 20px; height: 20px; border-radius: 50%;
-        display: grid; place-items: center; font-size: 0.7rem;
+        display: grid; place-items: center; font-size: 0.75rem;
         background: var(--ui-surface); border: 2px solid var(--ui-border-strong); color: transparent;
     }
     .ui-stepper .label { font-size: 0.75rem; font-weight: 600; color: var(--ui-muted); line-height: 1.25; overflow-wrap: anywhere; }
@@ -173,11 +175,11 @@
     /* Compact: dots only, for a table cell; the current label sits beside it. */
     .ui-stepper-compact { display: inline-flex; align-items: center; gap: 10px; }
     .ui-stepper-compact .track { display: inline-flex; align-items: center; gap: 4px; }
-    .ui-stepper-compact .pip { width: 18px; height: 6px; border-radius: 3px; background: var(--ui-border); }
+    .ui-stepper-compact .pip { width: 18px; height: 6px; border-radius: 4px; background: var(--ui-border); }
     .ui-stepper-compact .pip.on { background: var(--ui-blue); }
     .ui-stepper-compact .pip.now { background: var(--ui-blue); box-shadow: 0 0 0 3px var(--ui-blue-tint); }
     .ui-stepper-compact.is-cancelled .pip { background: var(--ui-border); box-shadow: none; }
-    .ui-stepper-compact .word { font-size: 0.8rem; font-weight: 600; color: var(--ui-text); white-space: nowrap; }
+    .ui-stepper-compact .word { font-size: 0.8125rem; font-weight: 600; color: var(--ui-text); white-space: nowrap; }
 
     /* The one authored moment: the current stop's ring settles in once. */
     @media (prefers-reduced-motion: no-preference) {

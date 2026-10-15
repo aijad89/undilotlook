@@ -54,17 +54,17 @@
         }
         .ap-sidebar.open { transform: translateX(0); box-shadow: var(--ui-shadow-pop); }
         .ap-sidebar-header { padding: 18px 18px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-        .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8rem; font-weight: 600; color: var(--ui-on-navy-dim); }
+        .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-on-navy-dim); }
         .ap-nav-item {
             display: flex; align-items: center; gap: 12px; min-height: 52px;
             margin: 2px 10px; padding: 10px 12px; border-radius: var(--ui-r);
-            color: var(--ui-on-navy-3); font-size: 1.02rem; font-weight: 500; text-decoration: none;
+            color: var(--ui-on-navy-3); font-size: 1rem; font-weight: 500; text-decoration: none;
         }
         .ap-nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
         .ap-nav-item.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--ui-gold); }
-        .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.1rem; color: var(--ui-on-navy-icon); }
+        .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.125rem; color: var(--ui-on-navy-icon); }
         .ap-nav-item.active .ap-nav-icon { color: var(--ui-gold); }
-        .ap-nav-badge { margin-left: auto; padding: 1px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.72rem; font-weight: 700; }
+        .ap-nav-badge { margin-left: auto; padding: 1px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.75rem; font-weight: 700; }
         .ap-sidebar-spacer { flex: 1; }
         .ap-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(7, 26, 51, 0.5); }
         .ap-overlay.show { display: block; }
@@ -72,8 +72,8 @@
         /* ── Brand ───────────────────────────────── */
         .ap-brand { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; }
         .ap-brand:hover { color: #fff; }
-        .ap-brand-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 9px; background: var(--ui-gold); color: var(--ui-navy-950); }
-        .ap-brand-name { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
+        .ap-brand-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 8px; background: var(--ui-gold); color: var(--ui-navy-950); }
+        .ap-brand-name { font-size: 1.125rem; font-weight: 700; letter-spacing: -0.01em; color: #fff; }
 
         /* ── App bar ─────────────────────────────── */
         .ap-main { min-height: 100vh; display: flex; flex-direction: column; background: var(--ui-ground); }
@@ -84,19 +84,19 @@
             background: var(--ui-navy-900); color: #fff;
         }
         .ap-topbar-left, .ap-topbar-right { display: flex; align-items: center; gap: 6px; min-width: 0; }
-        .ap-topbar-title { font-size: 1.02rem; font-weight: 650; color: #fff; }
+        .ap-topbar-title { font-size: 1rem; font-weight: 650; color: #fff; }
         .ap-topbar .ap-brand { margin-right: 18px; }
         .ap-topnav { display: flex; align-items: center; gap: 4px; }
         .ap-topnav a {
             display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px;
-            border-radius: var(--ui-r); color: var(--ui-on-navy-3); font-weight: 600; font-size: 0.95rem; text-decoration: none;
+            border-radius: var(--ui-r); color: var(--ui-on-navy-3); font-weight: 600; font-size: 1rem; text-decoration: none;
         }
         .ap-topnav a:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
         .ap-topnav a.active { color: #fff; box-shadow: inset 0 -3px 0 var(--ui-gold); border-radius: var(--ui-r) var(--ui-r) 0 0; }
         .ap-icon-btn {
             position: relative; width: 44px; height: 44px; flex-shrink: 0;
             display: grid; place-items: center; border: none; border-radius: var(--ui-r);
-            background: transparent; color: var(--ui-on-navy-3); font-size: 1.15rem; text-decoration: none; cursor: pointer;
+            background: transparent; color: var(--ui-on-navy-3); font-size: 1.125rem; text-decoration: none; cursor: pointer;
             transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
         }
         .ap-icon-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
@@ -104,12 +104,12 @@
         .ap-text-size-btn.active { background: rgba(255, 255, 255, 0.14); color: #fff; }
         .ap-user-menu {
             display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 10px 4px 4px;
-            border: none; border-radius: 999px; background: transparent; color: #fff; font-size: 0.95rem; font-weight: 600;
+            border: none; border-radius: 999px; background: transparent; color: #fff; font-size: 1rem; font-weight: 600;
         }
         .ap-user-menu:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
-        .ap-avatar { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--ui-navy-900); font-size: 0.78rem; font-weight: 700; }
+        .ap-avatar { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--ui-navy-900); font-size: 0.8125rem; font-weight: 700; }
         .ap-dropdown-menu { min-width: 200px; padding: 6px; border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); background: var(--ui-surface); box-shadow: var(--ui-shadow-pop); }
-        .ap-dropdown-menu .dropdown-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: var(--ui-r-sm); color: var(--ui-text); font-size: 0.95rem; }
+        .ap-dropdown-menu .dropdown-item { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 8px 12px; border-radius: var(--ui-r-sm); color: var(--ui-text); font-size: 1rem; }
         .ap-dropdown-menu .dropdown-item:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
         .ap-dropdown-menu .dropdown-item.text-danger { color: var(--ui-bad-text) !important; }
         .ap-dropdown-menu .dropdown-item.text-danger:hover { background: var(--ui-bad-tint); }
@@ -122,8 +122,8 @@
         .ap-footer-wrap { flex-shrink: 0; }
         .ap-footer-panel { display: none; position: relative; padding: 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
         .ap-footer-panel.show { display: block; }
-        .ap-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.05rem; font-weight: 700; }
-        .ap-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); font-size: 1.1rem; }
+        .ap-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1rem; font-weight: 700; }
+        .ap-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); font-size: 1.125rem; }
         .ap-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
         .ap-footer-panel-body { max-height: 240px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
         .ap-footer { padding: 20px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); font-size: 0.875rem; color: var(--ui-muted); }
@@ -132,10 +132,10 @@
         .ap-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; max-width: var(--ap-col); margin: 0 auto; }
         .ap-footer-menu-rows { flex: 1; }
         .ap-footer-menu-row { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-bottom: 4px; }
-        .ap-footer-menu-btn { padding: 6px 0; border: none; background: none; color: var(--ui-text-2); font-size: 0.9rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+        .ap-footer-menu-btn { padding: 6px 0; border: none; background: none; color: var(--ui-text-2); font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
         .ap-footer-menu-btn:hover, .ap-footer-menu-btn.active { color: var(--ui-blue-text); }
         .ap-footer-follow { flex-shrink: 0; text-align: right; }
-        .ap-footer-follow-label { margin-bottom: 6px; font-size: 0.82rem; font-weight: 600; color: var(--ui-muted); }
+        .ap-footer-follow-label { margin-bottom: 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-muted); }
         .ap-footer-follow-icons { display: flex; justify-content: flex-end; gap: 8px; }
         .ap-footer-follow-icons a { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--ui-r); background: var(--ui-neutral-tint); color: var(--ui-text-2); text-decoration: none; }
         .ap-footer-follow-icons a:hover { background: var(--ui-navy-900); color: #fff; }
@@ -157,8 +157,8 @@
         }
 
         /* The portal's text-size toggle: older eyes come first here. */
-        html.text-large, html.text-large body { font-size: 1.12rem !important; }
-        html.text-xlarge, html.text-xlarge body { font-size: 1.26rem !important; }
+        html.text-large, html.text-large body { font-size: 1.125rem !important; }
+        html.text-xlarge, html.text-xlarge body { font-size: 1.25rem !important; }
     </style>
 
     @stack('styles')
@@ -252,7 +252,7 @@
                aria-label="Notifications{{ $unreadNotificationCount ? ", {$unreadNotificationCount} unread" : '' }}">
                 <i class="bi bi-bell"></i>
                 @if($unreadNotificationCount)
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.6rem;">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size:0.75rem;">
                         {{ $unreadNotificationCount > 99 ? '99+' : $unreadNotificationCount }}
                     </span>
                 @endif

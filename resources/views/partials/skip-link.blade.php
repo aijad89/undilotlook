@@ -17,10 +17,10 @@
         top: -100px;
         z-index: 2000;
         padding: 10px 18px;
-        border-radius: 0 0 10px 10px;
+        border-radius: 0 0 8px 8px;
         background: var(--ui-text);
         color: #fff;
-        font-size: 0.85rem;
+        font-size: 0.8125rem;
         font-weight: 600;
         text-decoration: none;
         transition: top 0.15s ease;

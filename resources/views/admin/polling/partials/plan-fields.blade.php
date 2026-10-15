@@ -133,7 +133,7 @@
                         {{ $sizeRemaining === 0 ? 'All allocated ✓' : ($sizeRemaining < 0 ? 'Over by '.abs($sizeRemaining) : $sizeRemaining.' remaining') }}
                     </span>
                 </div>
-                <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.78rem;padding:4px 10px;">
+                <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
                     <i class="bi bi-plus"></i> Add Bidang
                 </button>
             </div>

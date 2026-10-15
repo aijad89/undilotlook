@@ -25,7 +25,7 @@
     @endphp
     <div class="ap-card ap-card-padded mb-3" @if(! $notification->read_at) style="background:var(--ui-blue-tint);border-color:var(--ui-blue-border);" @endif>
         <div class="d-flex justify-content-between align-items-start gap-2">
-            <div style="font-size:1.05rem;font-weight:650;color:var(--ui-text);">{{ $data['title'] ?? 'Notifikasi' }}</div>
+            <div style="font-size:1rem;font-weight:650;color:var(--ui-text);">{{ $data['title'] ?? 'Notifikasi' }}</div>
             <small class="text-muted text-nowrap">{{ $notification->created_at->format('d M Y, h:i A') }}</small>
         </div>
 

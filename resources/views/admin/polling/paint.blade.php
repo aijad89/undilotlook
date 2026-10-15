@@ -13,12 +13,12 @@
     width: 60px; height: 40px; padding: 0;
     border: 1px solid var(--ui-border); border-radius: 6px;
     background: var(--ui-surface); color: var(--ui-muted);
-    font-size: 0.72rem; font-weight: 700;
+    font-size: 0.75rem; font-weight: 700;
     cursor: pointer; user-select: none;
     transition: transform 0.06s;
 }
 .plot-cell:hover, .plot-cell:focus-visible { transform: scale(1.08); border-color: var(--ui-blue); }
-.plot-cell.painted { color: #fff; border-color: rgba(0,0,0,0.12); }
+.plot-cell.painted { color: #fff; border-color: var(--ui-shade); }
 /* Locked, not faded: fading the fill drops the white code below a readable
    contrast. A hatch says "cannot touch" and keeps the code legible. */
 .plot-cell:disabled {
@@ -30,15 +30,15 @@
 .code-chip {
     display: inline-flex; align-items: center; gap: 6px;
     padding: 6px 10px; border-radius: 8px; cursor: pointer;
-    border: 2px solid transparent; font-size: 0.78rem; font-weight: 600;
+    border: 2px solid transparent; font-size: 0.8125rem; font-weight: 600;
     background: var(--ui-surface-2); color: var(--ui-text);
 }
 .code-chip[aria-pressed="true"] { border-color: var(--ui-text); }
-.code-chip .tally { font-weight: 400; font-size: 0.72rem; }
+.code-chip .tally { font-weight: 400; font-size: 0.75rem; }
 .code-chip.met   .tally { color: var(--ui-ok-text); }
 .code-chip.short .tally { color: var(--ui-bad-text); }
 .code-chip.over  .tally { color: var(--ui-warn-text); }
-.swatch { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+.swatch { width: 12px; height: 12px; border-radius: 4px; display: inline-block; }
 </style>
 
 <div class="mac-page">

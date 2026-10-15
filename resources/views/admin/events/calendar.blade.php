@@ -7,13 +7,13 @@
 <style>
     /* ── FullCalendar on the shared tokens ── */
     .fc { --fc-border-color: var(--ui-sep); --fc-today-bg-color: var(--ui-blue-tint); --fc-page-bg-color: var(--ui-surface); --fc-neutral-bg-color: var(--ui-surface-2); --fc-list-event-hover-bg-color: var(--ui-neutral-tint); }
-    .fc .fc-toolbar-title { font-size: 1.1rem; font-weight: 700; color: var(--ui-text); }
+    .fc .fc-toolbar-title { font-size: 1.125rem; font-weight: 700; color: var(--ui-text); }
     .fc .fc-button {
         min-height: 36px;
         background: var(--ui-surface) !important;
         border: 1px solid var(--ui-border-strong) !important;
         color: var(--ui-text-2) !important;
-        font-size: 0.85rem !important;
+        font-size: 0.8125rem !important;
         font-weight: 600 !important;
         border-radius: var(--ui-r) !important;
         box-shadow: none !important;
@@ -28,13 +28,13 @@
         border-color: var(--ui-navy-900) !important;
         color: #fff !important;
     }
-    .fc .fc-daygrid-day-number { color: var(--ui-text-2); font-size: 0.85rem; text-decoration: none; }
+    .fc .fc-daygrid-day-number { color: var(--ui-text-2); font-size: 0.8125rem; text-decoration: none; }
     .fc .fc-day-today .fc-daygrid-day-number { color: var(--ui-blue-text); font-weight: 700; }
     .fc .fc-day-other .fc-daygrid-day-number { color: var(--ui-muted); opacity: 0.6; }
     /* No `border: none !important` here — registration bars below rely on a border to read
        as an outlined band rather than a solid event chip. */
-    .fc-event { border-radius: var(--ui-r-sm) !important; font-size: 0.76rem; font-weight: 600; cursor: pointer; }
-    .fc .fc-col-header-cell-cushion { padding: 8px 4px; color: var(--ui-muted); font-size: 0.8rem; font-weight: 600; text-decoration: none; }
+    .fc-event { border-radius: var(--ui-r-sm) !important; font-size: 0.8125rem; font-weight: 600; cursor: pointer; }
+    .fc .fc-col-header-cell-cushion { padding: 8px 4px; color: var(--ui-muted); font-size: 0.8125rem; font-weight: 600; text-decoration: none; }
     .fc-daygrid-dot-event .fc-event-title { font-weight: 600; }
 
     /* Registration windows are normal (non-background) events, so FullCalendar lays
@@ -60,10 +60,10 @@
     .fc .reg-window.fc-event-end   { border-right: 5px solid {{ $palette['registration_close_cap'] }} !important; }
 
     /* Legend */
-    .cal-legend { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ui-sep); font-size: 0.82rem; color: var(--ui-muted); }
+    .cal-legend { display: flex; gap: 8px 18px; flex-wrap: wrap; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--ui-sep); font-size: 0.8125rem; color: var(--ui-muted); }
     .cal-legend-item { display: flex; align-items: center; gap: 6px; }
     .cal-legend-item .cal-legend-aside { color: var(--ui-muted); opacity: 0.8; }
-    .cal-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+    .cal-dot { width: 10px; height: 10px; border-radius: 4px; flex-shrink: 0; }
 
     /* Popup */
     #cal-popup {
@@ -79,23 +79,23 @@
         display: none;
     }
     #cal-popup.show { display: block; }
-    .pop-title { font-size: 0.95rem; font-weight: 700; color: var(--ui-text); margin-bottom: 7px; padding-right: 20px; }
-    .pop-meta  { font-size: 0.82rem; color: var(--ui-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
-    .pop-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; margin-bottom: 8px; }
+    .pop-title { font-size: 1rem; font-weight: 700; color: var(--ui-text); margin-bottom: 7px; padding-right: 20px; }
+    .pop-meta  { font-size: 0.8125rem; color: var(--ui-muted); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+    .pop-badge { display: inline-block; padding: 2px 9px; border-radius: 999px; font-size: 0.75rem; font-weight: 700; margin-bottom: 8px; }
     .pop-badge.is-open { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
     .pop-badge.is-closed { background: var(--ui-bad-tint); color: var(--ui-bad-text); }
     .pop-badge.is-completed { background: var(--ui-violet-tint); color: var(--ui-violet-text); }
     .pop-badge.is-draft { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
     .pop-actions { margin-top: 10px; display: flex; gap: 7px; flex-wrap: wrap; }
-    .pop-close { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; background: none; border: none; border-radius: var(--ui-r-sm); font-size: 1.1rem; color: var(--ui-muted); cursor: pointer; line-height: 1; }
+    .pop-close { position: absolute; top: 6px; right: 8px; width: 32px; height: 32px; background: none; border: none; border-radius: var(--ui-r-sm); font-size: 1.125rem; color: var(--ui-muted); cursor: pointer; line-height: 1; }
     .pop-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
 
     /* A phone gets the toolbar in rows: title, then the arrows, then the views. */
     @media (max-width: 767.98px) {
         .fc .fc-toolbar.fc-header-toolbar { flex-wrap: wrap; gap: 8px; }
         .fc .fc-toolbar-chunk:nth-child(2) { order: -1; width: 100%; text-align: center; }
-        .fc .fc-toolbar-title { font-size: 1.05rem; }
-        .fc .fc-col-header-cell-cushion { font-size: 0.72rem; }
+        .fc .fc-toolbar-title { font-size: 1rem; }
+        .fc .fc-col-header-cell-cushion { font-size: 0.75rem; }
     }
 </style>
 
@@ -159,7 +159,7 @@
             <div class="cal-legend-item"><div class="cal-dot" style="background:{{ $palette['event_completed'] }};"></div> Ended</div>
             <div class="cal-legend-item"><div class="cal-dot" style="background:{{ $palette['event_draft'] }};"></div> Draft</div>
             <div class="cal-legend-item">
-                <span style="display:inline-flex;height:10px;border-radius:3px;overflow:hidden;flex-shrink:0;">
+                <span style="display:inline-flex;height:10px;border-radius:4px;overflow:hidden;flex-shrink:0;">
                     <span style="width:4px;background:{{ $palette['registration_open_cap'] }};"></span>
                     <span style="width:16px;background:{{ $palette['registration_fill'] }};"></span>
                     <span style="width:4px;background:{{ $palette['registration_close_cap'] }};"></span>
@@ -278,7 +278,7 @@
                     const viewLink = document.createElement('a');
                     viewLink.href      = info.event.url;
                     viewLink.className = 'mac-btn-primary';
-                    viewLink.style.cssText = 'font-size:0.78rem;padding:5px 14px;';
+                    viewLink.style.cssText = 'font-size:0.8125rem;padding:5px 14px;';
                     viewLink.innerHTML = '<i class="bi bi-list-check"></i> Draw list';
                     actionsEl.appendChild(viewLink);
                 }
