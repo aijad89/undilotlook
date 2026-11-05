@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
 @section('title', $event->title.' — '.\App\Models\Setting::get('site_name', 'undilot'))
+@section('page-title', 'Event')
 @section('own-heading', true)
 
 @push('styles')

@@ -83,8 +83,9 @@ vendor/pestphp/pest/bin/pest                      # SQLite dalam-memori
 
 ### Nav layout ialah senarai, bukan markup
 
-`resources/views/layouts/admin.blade.php` dan `layouts/frontend.blade.php`
-masing-masing mengisytiharkan `$nav` / `$apNav` di atas fail. **Tambah modul =
+`resources/views/layouts/admin.blade.php` dan `partials/portal-bar.blade.php`
+(bar peserta, dikongsi portal dan halaman awam) masing-masing mengisytiharkan
+`$nav` / `$apNav`. **Tambah modul =
 satu entri array.**
 
 Jangan kembali kepada mengeja `route()` dalam markup. `daftar` ada 22 dalam satu

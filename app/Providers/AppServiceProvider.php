@@ -255,7 +255,7 @@ class AppServiceProvider extends ServiceProvider
          * admin view displays at all. Scoping the list is what takes an admin page
          * to zero; memoising alone only takes it to one.
          */
-        View::composer(['dashboard', 'layouts.frontend', 'notifications.index'], function ($view) {
+        View::composer(['dashboard', 'partials.portal-bar', 'notifications.index'], function ($view) {
             $view->with('unreadNotificationCount', app('notifications.unread-count'));
         });
     }

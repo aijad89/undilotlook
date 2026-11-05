@@ -1,6 +1,7 @@
 @extends('layouts.public')
 
-@section('title', 'Events — '.\App\Models\Setting::get('site_name', 'undilot'))
+@section('title', 'Upcoming Events — '.\App\Models\Setting::get('site_name', 'undilot'))
+@section('page-title', 'Upcoming Events')
 @section('own-heading', true)
 
 @push('styles')
@@ -77,7 +78,7 @@
 <div class="ev-page">
     <div class="ev-head">
         <div>
-            <h1>Events</h1>
+            <h1>Upcoming Events</h1>
             <p>Craft fairs and their lot draws. Companies in a draw confirm their lot after signing in.</p>
         </div>
         <form method="GET" class="ev-search" role="search">

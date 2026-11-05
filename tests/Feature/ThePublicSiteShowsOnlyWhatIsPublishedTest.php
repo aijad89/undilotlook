@@ -100,3 +100,14 @@ it('shows past events six at a time, and More asks for six more', function () {
     $this->get(route('home'))->assertSee('Old Fair 6')->assertDontSee('Old Fair 7')->assertSee('past=12', false);
     $this->get(route('home', ['past' => 12]))->assertSee('Old Fair 8')->assertDontSee('past=18', false);
 });
+
+it('gives a signed-in participant the portal bar on the public pages too, bell and all', function () {
+    $event = Event::factory()->create(['status' => 'open']);
+    $this->actingAs(\App\Models\User::factory()->create(), 'web');
+
+    foreach ([route('home'), route('events.show', $event), route('dashboard')] as $url) {
+        $this->get($url)->assertOk()
+            ->assertSee(route('notifications.index'))
+            ->assertSee('apTextSizeToggle', false);
+    }
+});
