@@ -102,8 +102,8 @@
 <div class="mac-page">
 
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div class="mac-header">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
             <h2>Event Calendar</h2>
             <div class="mac-breadcrumb">
                 <a href="{{ route('admin.dashboard') }}">Dashboard</a>
@@ -112,6 +112,7 @@
                 <span class="sep" aria-hidden="true">›</span>
                 Calendar
             </div>
+            <p class="mac-muted mb-0">Every event on a month grid. The filters are the same as the list view.</p>
         </div>
         {{-- Keep the active filters when switching views — losing them on every switch
              makes the filter feel broken. --}}

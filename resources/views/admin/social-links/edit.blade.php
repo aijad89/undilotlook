@@ -6,8 +6,8 @@
 
 <div class="mac-page">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div class="mac-header">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
             <h2>Edit Social Link</h2>
             <div class="mac-breadcrumb">
                 <a href="{{ route('admin.dashboard') }}">Dashboard</a>
@@ -16,8 +16,8 @@
                 <span class="sep" aria-hidden="true">›</span>
                 Edit
             </div>
+            <p class="mac-muted mb-0">Changes show in the footer as soon as they are saved.</p>
         </div>
-        <a href="{{ route('admin.social-links.index') }}" class="mac-btn-secondary">← Back</a>
     </div>
 
     @include('partials.admin-alerts')

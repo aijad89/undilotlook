@@ -19,7 +19,7 @@ it('queues one notification per active participant, and says queued rather than 
 
     $this->actingAs(superAdmin(), 'admin')
         ->post(route('admin.announcements.store'), [
-            'type' => 'news', 'title' => 'Pameran dibuka', 'message' => 'Selamat datang.', 'recipient_type' => 'all_users',
+            'type' => 'news', 'title' => 'Fair opens', 'message' => 'Welcome.', 'recipient_type' => 'all_users',
         ])
         ->assertRedirect(route('admin.announcements.index'))
         ->assertSessionHas('success', fn ($m) => str_starts_with($m, 'Queued for 2 recipient(s)'));

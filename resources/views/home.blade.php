@@ -1,11 +1,11 @@
 @extends('layouts.public')
 
-@section('title', 'Acara — '.\App\Models\Setting::get('site_name', 'undilot'))
+@section('title', 'Events — '.\App\Models\Setting::get('site_name', 'undilot'))
 @section('own-heading', true)
 
 @push('styles')
 <style>
-    .ev-page { max-width: 1120px; margin: 0 auto; padding: 40px 24px 16px; }
+    .ev-page { max-width: var(--pub-col); margin: 0 auto; padding: 40px 24px 16px; }
     .ev-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 20px; margin-bottom: 28px; }
     .ev-head h1 { margin: 0 0 6px; font-size: 2.25rem; font-weight: 700; letter-spacing: -0.02em; color: var(--ui-text); }
     .ev-head p { max-width: 60ch; margin: 0; font-size: 1rem; color: var(--ui-muted); }
@@ -14,7 +14,7 @@
     .ev-search input:focus { outline: none; border-color: var(--ui-blue); box-shadow: 0 0 0 3px rgba(26, 86, 219, 0.18); }
     .ev-search button { min-height: 48px; padding: 0 20px; border: none; border-radius: var(--ui-r); background: var(--ui-blue); color: #fff; font-size: 1rem; font-weight: 600; cursor: pointer; }
     .ev-search button:hover { background: var(--ui-blue-hover); }
-    .ev-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); gap: 20px; }
+    .ev-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 320px), 1fr)); gap: 20px; }
     .ev-card { display: flex; flex-direction: column; overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); transition: box-shadow var(--ui-fast) var(--ui-ease); }
     .ev-card:hover { box-shadow: var(--ui-shadow-2); }
     .ev-banner { width: 100%; aspect-ratio: 797 / 235; object-fit: cover; }
@@ -38,12 +38,12 @@
 <div class="ev-page">
     <div class="ev-head">
         <div>
-            <h1>Acara</h1>
-            <p>Pameran kraf dan cabutan lotnya. Syarikat dalam cabutan mengesahkan lot selepas log masuk.</p>
+            <h1>Events</h1>
+            <p>Craft fairs and their lot draws. Companies in a draw confirm their lot after signing in.</p>
         </div>
         <form method="GET" class="ev-search" role="search">
-            <input type="search" name="search" value="{{ request('search') }}" placeholder="Cari acara atau lokasi" aria-label="Cari acara">
-            <button type="submit">Cari</button>
+            <input type="search" name="search" value="{{ request('search') }}" placeholder="Search events or locations" aria-label="Search events">
+            <button type="submit">Search</button>
         </form>
     </div>
 
@@ -53,12 +53,12 @@
         @if($loop->last)</div>@endif
     @empty
         <div class="ev-empty">
-            {{ request('search') ? 'Tiada acara akan datang yang sepadan.' : 'Tiada acara akan datang buat masa ini.' }}
+            {{ request('search') ? 'No upcoming events match your search.' : 'No upcoming events right now.' }}
         </div>
     @endforelse
 
     @if($past->isNotEmpty())
-        <div class="ev-section">Telah berlangsung</div>
+        <div class="ev-section">Past events</div>
         <div class="ev-grid">
             @foreach($past as $event)
                 @include('partials.public-event-card', ['event' => $event])

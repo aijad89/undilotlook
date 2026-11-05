@@ -176,7 +176,7 @@
         </div>
     @endif
     @if($assignedPlot->bidang)
-        <div class="lot-location">Bidang: {{ $assignedPlot->bidang->name }}</div>
+        <div class="lot-location">Craft code: {{ $assignedPlot->bidang->name }}</div>
     @endif
 </div>
 

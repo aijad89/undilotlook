@@ -20,7 +20,7 @@
            large targets. On a desk the nav sits in the bar; on a phone it is a
            drawer, and the bar keeps only what a thumb needs. */
         :root {
-            --ap-col: 1120px;
+            --ap-col: 100vw;
             --topbar-h: 64px;
             /* Old names some views still read inline. */
             --apple-blue: var(--ui-blue);
@@ -79,7 +79,7 @@
         .ap-main { min-height: 100vh; display: flex; flex-direction: column; background: var(--ui-ground); }
         .ap-topbar {
             position: sticky; top: 0; z-index: 900; flex-shrink: 0;
-            height: var(--topbar-h); padding: 0 max(16px, calc((100% - var(--ap-col)) / 2));
+            height: var(--topbar-h); padding: 0 24px;
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             background: var(--ui-navy-900); color: #fff;
         }
@@ -150,6 +150,7 @@
         }
         @media (max-width: 576px) {
             .ap-content { padding: 20px 16px 32px; }
+            .ap-topbar { padding: 0 16px; }
             .ap-footer-bottom { flex-direction: column; }
             .ap-footer-follow { text-align: left; }
             .ap-footer-follow-icons { justify-content: flex-start; }
@@ -242,8 +243,8 @@
 
         <div class="ap-topbar-right">
             {{-- Text size toggle --}}
-            <button class="ap-icon-btn ap-text-size-btn" id="apTextSizeToggle" title="Enlarge text">
-                <i class="bi bi-fonts"></i>
+            <button class="ap-icon-btn ap-text-size-btn" id="apTextSizeToggle" type="button" title="Enlarge text" aria-label="Enlarge text">
+                <span style="font-size:1rem;font-weight:700;letter-spacing:-0.02em;" aria-hidden="true">Aa</span>
             </button>
 
             {{-- $unreadNotificationCount comes from AppServiceProvider's view
@@ -427,6 +428,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (levels[level]) document.documentElement.classList.add(levels[level]);
             textSizeBtn.classList.toggle('active', level > 0);
             textSizeBtn.title = labels[level];
+            textSizeBtn.setAttribute('aria-label', labels[level]);
         };
 
         let currentLevel = parseInt(localStorage.getItem('textSizeLevel') || '0', 10);

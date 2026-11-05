@@ -333,8 +333,8 @@
             </button>
 
             <div class="ms-auto d-flex align-items-center gap-2">
-            <button class="text-size-btn" id="adminTextSizeToggle" type="button" title="Enlarge text">
-                <i class="bi bi-fonts" style="font-size:1rem;"></i>
+            <button class="text-size-btn" id="adminTextSizeToggle" type="button" title="Enlarge text" aria-label="Enlarge text">
+                <span style="font-size:1rem;font-weight:700;letter-spacing:-0.02em;" aria-hidden="true">Aa</span>
             </button>
 
             <div class="dropdown">
@@ -430,6 +430,7 @@ document.addEventListener('DOMContentLoaded', function () {
             if (levels[level]) document.documentElement.classList.add(levels[level]);
             textSizeBtn.classList.toggle('active', level > 0);
             textSizeBtn.title = labels[level];
+            textSizeBtn.setAttribute('aria-label', labels[level]);
         };
 
         let currentLevel = parseInt(localStorage.getItem('textSizeLevel') || '0', 10);

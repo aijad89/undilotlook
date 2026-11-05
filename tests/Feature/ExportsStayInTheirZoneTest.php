@@ -17,7 +17,7 @@ function exportRows($response): array
 }
 
 it('exports every report, one header and one row per record', function () {
-    $event = Event::factory()->create(['status' => 'open', 'title' => 'Pameran']);
+    $event = Event::factory()->create(['status' => 'open', 'title' => 'Craft Fair']);
     $plot = Plot::factory()->create(['event_id' => $event->id, 'plot_code' => 'A-RKP1', 'is_allocated' => true]);
     EventRegistration::factory()->coded('RKP')->create(['event_id' => $event->id, 'plot_id' => $plot->id]);
     $admin = superAdmin();

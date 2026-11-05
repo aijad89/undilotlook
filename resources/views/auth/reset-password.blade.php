@@ -11,9 +11,13 @@
         <div class="col-md-6">
             <div class="card shadow-sm border-0">
                 <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0">Reset Password</h4>
+                    <h2 class="mb-0" style="font-size:1.5rem;">Reset Password</h2>
                 </div>
                 <div class="card-body">
+
+                    <p class="text-muted mb-4">
+                        Choose a new password. Any other device signed in to your account is signed out.
+                    </p>
 
                     {{-- password.store = POST /reset-password, the guest route.
                          This form used to point at password.update — PUT-only and

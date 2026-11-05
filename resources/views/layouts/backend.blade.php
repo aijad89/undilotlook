@@ -16,7 +16,7 @@
         @php
             $loginBg    = \App\Models\Setting::get('admin_login_bg_image');
             $loginTitle = \App\Models\Setting::get('admin_login_title', 'undilot Admin');
-            $loginSub   = \App\Models\Setting::get('admin_login_subtitle', 'Sistem Cabutan Lot');
+            $loginSub   = \App\Models\Setting::get('admin_login_subtitle', 'Lot Draw System');
         @endphp
 
         <!-- Left branding panel -->

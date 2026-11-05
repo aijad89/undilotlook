@@ -128,13 +128,13 @@
         <div class="bidang-sub-container p-3" style="border-top:1px solid var(--ui-sep);background:var(--ui-surface-2);">
             <div class="d-flex justify-content-between align-items-center mb-2">
                 <div class="d-flex align-items-center gap-2">
-                    <small class="fw-semibold" style="color:var(--ui-text-2);">Bidang Allocations</small>
+                    <small class="fw-semibold" style="color:var(--ui-text-2);">Craft Code Allocations</small>
                     <span class="size-remaining-badge mac-badge {{ $sizeRemaining === 0 ? 'mac-badge-green' : ($sizeRemaining < 0 ? 'mac-badge-red' : 'mac-badge-gray') }}">
                         {{ $sizeRemaining === 0 ? 'All allocated ✓' : ($sizeRemaining < 0 ? 'Over by '.abs($sizeRemaining) : $sizeRemaining.' remaining') }}
                     </span>
                 </div>
                 <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
-                    <i class="bi bi-plus"></i> Add Bidang
+                    <i class="bi bi-plus"></i> Add Craft Code
                 </button>
             </div>
             <div class="bidang-rows-container">
@@ -204,6 +204,6 @@
 <div class="alert alert-info mt-3">
     <i class="bi bi-info-circle"></i>
     <strong>Total plots:</strong> <span id="calculatedTotal">0</span> &nbsp;|&nbsp;
-    <strong>Bidang allocated:</strong> <span id="allocationTotal">0</span> / <span id="allocationTotalExpected">0</span>
+    <strong>Craft codes allocated:</strong> <span id="allocationTotal">0</span> / <span id="allocationTotalExpected">0</span>
     <span id="allocationStatus"></span>
 </div>

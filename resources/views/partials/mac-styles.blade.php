@@ -63,8 +63,9 @@
        a view used: search widest, selects next, the buttons at their own size. */
     form.mac-filter-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     form.mac-filter-bar > .row { flex: 1 1 100%; }
-    form.mac-filter-bar > input { flex: 2 1 240px; width: auto; }
-    form.mac-filter-bar > select { flex: 1 1 170px; width: auto; }
+    /* min-width: 0, or a select never shrinks below its longest option (zone names) and spills out on a phone. */
+    form.mac-filter-bar > input { flex: 2 1 240px; width: auto; min-width: 0; }
+    form.mac-filter-bar > select { flex: 1 1 170px; width: auto; min-width: 0; }
     form.mac-filter-bar > button, form.mac-filter-bar > a { flex: 0 0 auto; }
     .mac-input, .mac-select, .mac-form-control {
         width: 100%; height: var(--ui-control-h); box-sizing: border-box;

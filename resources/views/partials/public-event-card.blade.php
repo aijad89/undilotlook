@@ -17,12 +17,12 @@
         @if($event->polling_start_date && $event->polling_deadline)
             <div class="ev-draw">
                 @if($event->polling_status === 'polling')
-                    <strong>Cabutan lot dibuka</strong> sehingga {{ $event->polling_deadline->format('d M, h:i A') }}.
-                    <a href="{{ route('login') }}">Log masuk untuk sahkan lot</a>
+                    <strong>Lot draw open</strong> until {{ $event->polling_deadline->format('d M, h:i A') }}.
+                    <a href="{{ route('login') }}">Sign in to confirm your lot</a>
                 @elseif($event->polling_status === 'draft')
-                    Cabutan lot dibuka {{ $event->polling_start_date->format('d M Y, h:i A') }}.
+                    Lot draw opens {{ $event->polling_start_date->format('d M Y, h:i A') }}.
                 @elseif(in_array($event->polling_status, ['closed', 'completed'], true))
-                    Cabutan lot telah ditutup.
+                    The lot draw has closed.
                 @endif
             </div>
         @endif

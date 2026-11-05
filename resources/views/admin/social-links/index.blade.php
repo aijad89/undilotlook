@@ -6,14 +6,15 @@
 
 <div class="mac-page">
 
-    <div class="d-flex justify-content-between align-items-start mb-4">
-        <div class="mac-header">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
+        <div>
             <h2>Social Links</h2>
             <div class="mac-breadcrumb">
                 <a href="{{ route('admin.dashboard') }}">Dashboard</a>
                 <span class="sep" aria-hidden="true">›</span>
                 Social Links
             </div>
+            <p class="mac-muted mb-0">The icons in the site footer, in the order shown here.</p>
         </div>
         <a href="{{ route('admin.social-links.create') }}" class="mac-btn-primary">
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none">

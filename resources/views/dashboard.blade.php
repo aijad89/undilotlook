@@ -8,19 +8,19 @@
 
 @php
     // The usahawan's words for the four stops.
-    $stopLabels = ['draft' => 'Draf', 'polling' => 'Dibuka', 'closed' => 'Ditutup', 'completed' => 'Selesai', 'cancelled' => 'Dibatalkan'];
+    $stopLabels = ['draft' => 'Draft', 'polling' => 'Open', 'closed' => 'Closed', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
 @endphp
 
 <div class="ap-page">
     <div class="ap-page-header">
         <div>
-            <h2 class="ap-page-title">Selamat datang, {{ $user->name }}</h2>
+            <h2 class="ap-page-title">Welcome, {{ $user->name }}</h2>
             <p class="ap-page-subtitle">
                 @if($entries->isEmpty())
-                    Acara yang anda masuk cabutan akan muncul di sini, bersama lot yang anda
-                    tarik. Belum ada apa-apa buat masa ini.
+                    Events whose draw your company is in appear here, with the lot you
+                    draw. There is nothing here yet.
                 @else
-                    Cabutan lot yang syarikat anda sertai.
+                    The lot draws your company is in.
                 @endif
             </p>
         </div>
@@ -43,11 +43,11 @@
                     </div>
                 </div>
                 @if($hasDrawn)
-                    <span class="ap-badge ap-badge-green">Lot disahkan</span>
+                    <span class="ap-badge ap-badge-green">Lot confirmed</span>
                 @endif
             </div>
 
-            {{-- From Dibuka on: a draft draw is the office's, not yet the usahawan's. --}}
+            {{-- From Open on: a draft draw is the office's, not yet the usahawan's. --}}
             @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => $stopLabels, 'stops' => ['polling', 'closed', 'completed']])
 
             <div class="ap-draw-next">
@@ -55,15 +55,15 @@
                 @unless($hasDrawn && $entry->plot)
                 <span>
                     @if($open)
-                        Cabutan dibuka sehingga {{ $event->polling_deadline->format('d M Y, h:i A') }}.
+                        The draw is open until {{ $event->polling_deadline->format('d M Y, h:i A') }}.
                     @elseif($event->polling_status === 'draft' && $event->polling_start_date)
-                        Cabutan dibuka {{ $event->polling_start_date->format('d M Y, h:i A') }}.
+                        The draw opens {{ $event->polling_start_date->format('d M Y, h:i A') }}.
                     @elseif($event->polling_status === 'draft')
-                        Anda dalam senarai cabutan. Tarikh cabutan lot belum ditetapkan.
+                        You are in the draw. The draw date has not been set yet.
                     @elseif($entry->plot)
-                        Lot anda: <strong>{{ $entry->plot->plot_code }}</strong>
+                        Your lot: <strong>{{ $entry->plot->plot_code }}</strong>
                     @else
-                        Cabutan telah ditutup. Pejabat akan menetapkan lot anda.
+                        The draw has closed. The office will assign your lot.
                     @endif
                 </span>
                 @endunless
@@ -74,7 +74,7 @@
                     </a>
                 @elseif($open)
                     <a href="{{ route('zvote.index', $event) }}" class="ap-btn ap-btn-primary ap-btn-lg">
-                        <i class="bi bi-check-circle" aria-hidden="true"></i> Sahkan lot
+                        <i class="bi bi-check-circle" aria-hidden="true"></i> Confirm Lot
                     </a>
                 @endif
             </div>

@@ -5,13 +5,14 @@
 @section('content')
 @include('partials.mac-styles')
 <div class="mac-page">
-    <div class="mac-header d-flex justify-content-between align-items-center mb-4">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div>
             <h2>Audit Trail</h2>
             <div class="mac-breadcrumb">
                 <a href="{{ route('admin.dashboard') }}">Dashboard</a>
                 <span class="sep" aria-hidden="true">›</span> Audit Trail
             </div>
+            <p class="mac-muted mb-0">Every recorded change, who made it and when, newest first.</p>
         </div>
     </div>
 

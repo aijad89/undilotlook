@@ -160,7 +160,7 @@ it('lists every draw on the dashboard with what is left to do in each', function
         ->assertOk()
         ->assertSeeInOrder(['Open Fair', 'Coming Fair', 'Planning Fair'])
         ->assertSee(route('zvote.index', $open))
-        ->assertSee('Tarikh cabutan lot belum ditetapkan')
+        ->assertSee('The draw date has not been set yet')
         ->assertDontSee('Called Off Fair');
 });
 

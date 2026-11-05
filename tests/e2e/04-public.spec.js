@@ -6,7 +6,7 @@ test('a visitor sees the published events and can reach the sign-in', async ({ p
     await page.goto('/');
 
     await expect(page.locator('.ev-card', { hasText: 'E2E Fair' })).toBeVisible();
-    await page.getByRole('link', { name: 'Sign In' }).click();
+    await page.getByRole('link', { name: 'Sign In', exact: true }).click();
     await expect(page).toHaveURL(/\/login$/);
     expect(errors).toEqual([]);
 });

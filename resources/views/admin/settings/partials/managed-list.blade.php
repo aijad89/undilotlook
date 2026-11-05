@@ -23,7 +23,7 @@
         <textarea id="values-{{ $list }}" name="values" class="mac-form-control" rows="{{ max(3, count($values)) }}"
                   >{{ old('values', implode("\n", $values)) }}</textarea>
 
-        <div class="mt-2 d-flex gap-2 align-items-center">
+        <div class="mt-2 d-flex flex-wrap gap-2 align-items-center">
             <button type="submit" class="mac-btn-secondary">Save {{ strtolower($title) }}</button>
             <span class="mac-muted mac-text-sm">
                 Blank lines are dropped. An empty box is refused rather than emptying the dropdown.

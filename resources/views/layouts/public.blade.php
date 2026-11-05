@@ -15,7 +15,7 @@
         /* The public face: the same navy bar as the portal, so a usahawan who
            signs in steps into the same place; a calm white footer. */
         :root {
-            --pub-col: 1120px;
+            --pub-col: 100vw;
             --pub-blue: var(--ui-blue);
             --pub-blue-hov: var(--ui-blue-hover);
             --pub-bg: var(--ui-ground);

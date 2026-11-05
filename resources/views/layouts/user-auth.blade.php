@@ -16,7 +16,7 @@
         @php
             $loginBg    = \App\Models\Setting::get('user_login_bg_image');
             $loginTitle = \App\Models\Setting::get('user_login_title', 'undilot');
-            $loginSub   = \App\Models\Setting::get('user_login_subtitle', 'Portal Cabutan Lot Usahawan Kraf');
+            $loginSub   = \App\Models\Setting::get('user_login_subtitle', 'Craft Entrepreneur Lot Draw Portal');
         @endphp
 
         <header class="login-panel {{ $loginBg ? 'has-bg' : '' }}"

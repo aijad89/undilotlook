@@ -27,9 +27,9 @@
         <a href="{{ route('admin.polling.index') }}">Lot Draw</a> <span class="sep" aria-hidden="true">›</span> {{ $event->title }}
     </div>
 
-    <div class="mac-header mb-3 d-flex justify-content-between align-items-start flex-wrap gap-2">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div>
-            <h2 class="mb-1">{{ $event->title }}</h2>
+            <h2>{{ $event->title }}</h2>
             @if($event->polling_start_date && $event->polling_deadline)
                 <p class="mac-muted mb-0">
                     <i class="bi bi-calendar-range me-1" aria-hidden="true"></i>

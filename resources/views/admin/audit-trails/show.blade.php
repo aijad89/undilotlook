@@ -7,7 +7,7 @@
 <div class="mac-page">
 
     {{-- Header --}}
-    <div class="mac-header d-flex justify-content-between align-items-start mb-4">
+    <div class="mac-header mb-4 d-flex justify-content-between align-items-start flex-wrap gap-2">
         <div>
             <h2>Audit Detail #{{ $auditTrail->id }}</h2>
             <div class="mac-breadcrumb">
@@ -17,10 +17,8 @@
                 <span class="sep" aria-hidden="true">›</span>
                 Detail
             </div>
+            <p class="mac-muted mb-0">What changed, who changed it and when.</p>
         </div>
-        <a href="{{ route('admin.audit-trails.index') }}" class="mac-btn-secondary">
-            <i class="bi bi-arrow-left"></i> Back
-        </a>
     </div>
 
     <div class="row g-4">

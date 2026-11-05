@@ -268,7 +268,7 @@ it('refuses a plot or a size from another event through this event URL', functio
 /* ── Who sees what ──────────────────────────────────────────────────────── */
 
 it('lets a state admin read an open draw, with only their own zone in it, and write nothing', function () {
-    $event = Event::factory()->create(['status' => 'open', 'title' => 'Pameran Kraf']);
+    $event = Event::factory()->create(['status' => 'open', 'title' => 'Craft Fair']);
     Plot::factory()->create(['event_id' => $event->id]);
 
     $mine = Company::factory()->create(['state' => 'Johor', 'name' => 'Johor Weaver']);

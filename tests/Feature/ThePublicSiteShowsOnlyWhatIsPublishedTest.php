@@ -18,18 +18,18 @@ it('lists published events for anyone, upcoming first, and never a draft or a lo
 
     $this->get(route('home'))
         ->assertOk()
-        ->assertSeeInOrder(['Sooner Fair', 'Later Fair', 'Telah berlangsung', 'Old Fair'])
+        ->assertSeeInOrder(['Sooner Fair', 'Later Fair', 'Past events', 'Old Fair'])
         ->assertDontSee('Draft Fair')
         ->assertDontSeeText('98765');
 });
 
 it('shows the footer pages and social links that are switched on', function () {
-    FooterMenu::create(['title' => 'Hubungi Kami', 'content' => '<p>Tel 03-1234</p>', 'sort_order' => 0, 'is_active' => true]);
+    FooterMenu::create(['title' => 'Contact Us', 'content' => '<p>Tel 03-1234</p>', 'sort_order' => 0, 'is_active' => true]);
     FooterMenu::create(['title' => 'Hidden Page', 'content' => '<p>x</p>', 'sort_order' => 1, 'is_active' => false]);
     SocialLink::create(['label' => 'Facebook', 'url' => 'https://facebook.com/kraftangan', 'icon_type' => 'bootstrap', 'icon_class' => 'bi-facebook', 'sort_order' => 0, 'is_active' => true]);
 
     $this->get(route('home'))
-        ->assertSee('Hubungi Kami')
+        ->assertSee('Contact Us')
         ->assertDontSee('Hidden Page')
         ->assertSee('https://facebook.com/kraftangan');
 });

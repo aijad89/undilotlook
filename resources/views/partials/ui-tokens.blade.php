@@ -12,6 +12,8 @@
     and focus is GOV.UK's yellow-and-black ring.
 --}}
 <style>
+    /* Reserve the scrollbar's width on every page, or centred content jumps sideways between short and long pages. */
+    html { scrollbar-gutter: stable; }
     :root {
         /* Shell */
         --ui-navy-950: #071a33;
