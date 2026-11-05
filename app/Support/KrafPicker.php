@@ -13,12 +13,10 @@ use App\Models\KrafSubBidang;
  * the query half lives here and the view can be included from anywhere without a
  * controller behind it.
  *
- * TWO LEVELS, NOT FOUR. A selection here is a CATEGORY and a sub-category under
- * it, because that is all `company_krafs` holds. The system this came from also
- * stored a classification and a product list per selection, through two pivot
- * tables; neither table exists here and neither is read by the draw.
- * `kraf_pengelasan` and `kraf_produks` survive as the lower levels of the
- * hierarchy itself, managed in Settings, not as things a company picks.
+ * A selection is a CATEGORY, a sub-category under it, one or more of that
+ * sub-category's classifications (`company_kraf_pengelasan`), and any of its
+ * products (`company_kraf_produk`). None of it is read by the draw, which
+ * matches on the craft code set per event.
  *
  * Only reads. Everything that writes stays with the controller that saves the
  * company: which sub-categories may be picked together and which row is primary
@@ -58,7 +56,14 @@ class KrafPicker
         $selectedSubBidangId = $editSelection?->sub_bidang_id;
 
         return [
-            'selections' => $company->krafSelections()->with(['bidang', 'subBidang'])->get(),
+            'selections' => $company->krafSelections()->with(['bidang', 'subBidang', 'pengelasan', 'produks'])->get(),
+
+            // Classifications and products by sub-category, for the tick boxes under the picker.
+            'pengelasanBySub' => \App\Models\KrafPengelasan::orderBy('id')->get(['id', 'sub_bidang_id', 'name'])
+                ->groupBy('sub_bidang_id')->map->pluck('name', 'id'),
+            'produksBySub' => \App\Models\KrafProduk::whereNotNull('sub_bidang_id')->orderBy('id')
+                ->get(['id', 'sub_bidang_id', 'name'])
+                ->groupBy('sub_bidang_id')->map->pluck('name', 'id'),
 
             // The taxonomy half of kraf_bidangs — `code` IS NULL. The coded rows
             // are the lot-draw coding sheet and belong in codes() below, not in

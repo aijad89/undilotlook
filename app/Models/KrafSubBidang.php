@@ -35,4 +35,9 @@ class KrafSubBidang extends Model
     {
         return $this->hasMany(KrafPengelasan::class, 'sub_bidang_id');
     }
+
+    public function produks()
+    {
+        return $this->hasMany(KrafProduk::class, 'sub_bidang_id')->orderBy('id');
+    }
 }

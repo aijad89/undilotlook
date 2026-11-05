@@ -51,4 +51,18 @@ class CompanyKraf extends Model
     {
         return $this->belongsTo(KrafSubBidang::class, 'sub_bidang_id');
     }
+
+    /** The classifications ticked under this selection's sub-category. */
+    public function pengelasan()
+    {
+        return $this->belongsToMany(KrafPengelasan::class, 'company_kraf_pengelasan', 'company_kraf_id', 'pengelasan_id')
+            ->orderBy('kraf_pengelasan.id');
+    }
+
+    /** The products ticked under this selection's sub-category. */
+    public function produks()
+    {
+        return $this->belongsToMany(KrafProduk::class, 'company_kraf_produk', 'company_kraf_id', 'produk_id')
+            ->orderBy('kraf_produks.id');
+    }
 }

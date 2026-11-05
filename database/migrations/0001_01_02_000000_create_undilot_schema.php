@@ -172,8 +172,12 @@ return new class extends Migration
 
         Schema::create('kraf_produks', function (Blueprint $table) {
             $table->id();
-            // Products hang off the CATEGORY, not the classification.
+            // A product sits in a SUB-CATEGORY. `bidang_id` still names its
+            // category, kept in step with the sub-category's. `sub_bidang_id` is
+            // nullable only for products entered before it existed: those are
+            // shown as "not placed yet" and cannot be ticked by a company.
             $table->foreignId('bidang_id')->constrained('kraf_bidangs')->cascadeOnDelete();
+            $table->foreignId('sub_bidang_id')->nullable()->constrained('kraf_sub_bidangs')->cascadeOnDelete();
             $table->string('name');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
@@ -220,6 +224,26 @@ return new class extends Migration
 
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
+        });
+
+        // The classifications a company ticked under one selection's sub-category.
+        // Goes with its selection; a classification still ticked here cannot be
+        // deleted — the database refuses, and Settings refuses first, by name.
+        Schema::create('company_kraf_pengelasan', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_kraf_id')->constrained('company_krafs')->cascadeOnDelete();
+            $table->foreignId('pengelasan_id')->constrained('kraf_pengelasan')->restrictOnDelete();
+            $table->unique(['company_kraf_id', 'pengelasan_id']);
+        });
+
+        // The products a company ticked under one selection's sub-category, as
+        // classifications are. Goes with its selection; a product still ticked
+        // here cannot be deleted in Settings.
+        Schema::create('company_kraf_produk', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('company_kraf_id')->constrained('company_krafs')->cascadeOnDelete();
+            $table->foreignId('produk_id')->constrained('kraf_produks')->restrictOnDelete();
+            $table->unique(['company_kraf_id', 'produk_id']);
         });
 
         /* ── Events ──────────────────────────────────────────────────────── */
@@ -490,6 +514,8 @@ return new class extends Migration
             'bidang_allocations',
             'plot_sizes',
             'events',
+            'company_kraf_produk',
+            'company_kraf_pengelasan',
             'company_krafs',
             'companies',
             'kraf_produks',

@@ -232,9 +232,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::delete('kraf-codes/{code}', [SettingController::class, 'destroyKrafCode'])->name('kraf-codes.destroy');
 
             Route::get('kraf-hierarchy', [SettingController::class, 'krafHierarchy'])->name('kraf-hierarchy');
-            Route::post('kraf-hierarchy', [SettingController::class, 'storeCategory'])->name('kraf-hierarchy.store');
-            Route::delete('kraf-hierarchy/{category}', [SettingController::class, 'destroyCategory'])
-                ->name('kraf-hierarchy.destroy');
             Route::post('kraf-hierarchy/{category}/sub', [SettingController::class, 'storeSubBidang'])
                 ->name('kraf-hierarchy.sub.store');
             Route::delete('kraf-hierarchy/sub/{subBidang}', [SettingController::class, 'destroySubBidang'])
@@ -243,8 +240,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 ->name('kraf-hierarchy.pengelasan.store');
             Route::delete('kraf-hierarchy/pengelasan/{pengelasan}', [SettingController::class, 'destroyPengelasan'])
                 ->name('kraf-hierarchy.pengelasan.destroy');
-            Route::post('kraf-hierarchy/{category}/produk', [SettingController::class, 'storeProduk'])
+            Route::post('kraf-hierarchy/sub/{subBidang}/produk', [SettingController::class, 'storeProduk'])
                 ->name('kraf-hierarchy.produk.store');
+            Route::delete('kraf-hierarchy/sub/{subBidang}/produk', [SettingController::class, 'destroyAllProduks'])
+                ->name('kraf-hierarchy.produk.destroy-all');
             Route::delete('kraf-hierarchy/produk/{produk}', [SettingController::class, 'destroyProduk'])
                 ->name('kraf-hierarchy.produk.destroy');
         });

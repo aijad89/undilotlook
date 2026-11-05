@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\CompanyKraf;
 use App\Models\KrafBidang;
+use App\Models\KrafPengelasan;
+use App\Models\KrafProduk;
 use App\Models\KrafSubBidang;
 use App\Models\User;
 use App\Support\AdminZones;
@@ -257,6 +259,10 @@ class CompanyController extends Controller
             'sub_bidang_id' => ['required', 'array', 'min:1'],
             'sub_bidang_id.*' => ['required', 'integer'],
             'is_primary' => ['nullable', 'boolean'],
+            'pengelasan_id' => ['nullable', 'array'],
+            'pengelasan_id.*' => ['integer'],
+            'produk_id' => ['nullable', 'array'],
+            'produk_id.*' => ['integer'],
         ]);
 
         $category = KrafBidang::findOrFail($data['bidang_id']);
@@ -266,7 +272,7 @@ class CompanyController extends Controller
             ->pluck('id');
 
         if ($subIds->isEmpty()) {
-            return back()->with('error', 'Pick a sub-category that belongs to that craft category.');
+            return $this->backTo('craft-categories')->with('error', 'Pick a sub-category that belongs to that craft category.');
         }
 
         // One at a time unless the category says otherwise, so a stray second
@@ -275,9 +281,16 @@ class CompanyController extends Controller
             $subIds = $subIds->take(1);
         }
 
+        // Classifications and products ticked, both optional, grouped under the
+        // sub-category each belongs to — so one ticked under another sub-category,
+        // or a product not placed in any, matches none and is simply not taken.
+        $ticked = KrafPengelasan::whereIn('id', $data['pengelasan_id'] ?? [])->get()->groupBy('sub_bidang_id');
+
+        $tickedProduks = KrafProduk::whereIn('id', $data['produk_id'] ?? [])->get()->groupBy('sub_bidang_id');
+
         $makePrimary = $request->boolean('is_primary') || $company->krafSelections()->doesntExist();
 
-        DB::transaction(function () use ($company, $category, $subIds, $makePrimary) {
+        DB::transaction(function () use ($company, $category, $subIds, $makePrimary, $ticked, $tickedProduks) {
             if ($makePrimary) {
                 // Through the model, not a mass update: a query-builder write
                 // fires no events and would leave the audit trail silent.
@@ -286,16 +299,18 @@ class CompanyController extends Controller
             }
 
             foreach ($subIds as $index => $subId) {
-                CompanyKraf::create([
+                $selection = CompanyKraf::create([
                     'company_id' => $company->id,
                     'bidang_id' => $category->id,
                     'sub_bidang_id' => $subId,
                     'is_primary' => $makePrimary && $index === 0,
                 ]);
+                $selection->pengelasan()->attach($ticked->get($subId, collect())->pluck('id'));
+                $selection->produks()->attach($tickedProduks->get($subId, collect())->pluck('id'));
             }
         });
 
-        return back()->with('success', 'Craft selection added.');
+        return $this->backTo('craft-categories')->with('success', 'Craft selection added.');
     }
 
     public function destroyKraf(Request $request, Company $company, CompanyKraf $selection)
@@ -304,9 +319,10 @@ class CompanyController extends Controller
 
         abort_unless($selection->company_id === $company->id, 404);
 
+        // Its ticked classifications and products go with it, by cascade.
         $selection->delete();
 
-        return back()->with('success', 'Craft selection removed.');
+        return $this->backTo('craft-categories')->with('success', 'Craft selection removed.');
     }
 
     /**

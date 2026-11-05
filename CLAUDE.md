@@ -215,6 +215,14 @@ kategori tidak boleh dipadankan oleh mana-mana pendaftaran; `daftar` menerimanya
 Padam baris kraf **ditolak** selagi ada apa-apa menunjuk kepadanya (setiap FK
 hidup diperiksa), supaya cascade tidak mengambil apa-apa tanpa jejak audit.
 
+Kategori kraf **tetap** — disemai, tidak ditambah atau dipadam di skrin. Di bawah
+sub-kategori ada **klasifikasi** dan **produk**, kedua-duanya pilihan, dan
+syarikat menandanya per pilihan (`company_kraf_pengelasan`,
+`company_kraf_produk`). `kraf_produks` membawa `sub_bidang_id` **dan**
+`bidang_id`: `bidang_id` dikekalkan selari kerana undilot (DB dev yang sama)
+masih membacanya, dan produk dengan `sub_bidang_id` NULL ialah baris lama yang
+"belum diletakkan" — tidak boleh ditanda oleh syarikat.
+
 ### Pemilikan ialah `company_id`, bukan `user_id`
 
 `User::registrations()` ialah `hasManyThrough` melalui `Company`. Lajur

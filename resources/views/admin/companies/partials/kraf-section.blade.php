@@ -1,8 +1,9 @@
 {{--
     The craft-category picker for one company.
 
-    TWO LEVELS, AND THEY ARE BOTH FROM THE HIERARCHY. A selection is a CATEGORY
-    (`kraf_bidangs` where `code` IS NULL) and a sub-category under it. The craft
+    ALL FROM THE HIERARCHY. A selection is a CATEGORY
+    (`kraf_bidangs` where `code` IS NULL), a sub-category under it, and any of
+    that sub-category's classifications and products, ticked. The craft
     CODE a draw matches on is NOT picked here — it is set per event on the draw
     list, because a company can be in two events under two codes.
 
@@ -14,8 +15,12 @@
       $company  — the company being edited
       $picker   — App\Support\KrafPicker::data($company)
 --}}
-<div class="mac-card mac-card-padded mb-3">
+<div class="mac-card mac-card-padded mb-3" id="craft-categories" style="scroll-margin-top: 80px">
     <h3 class="mac-card-title">Craft categories</h3>
+
+    @if(session('anchor') === 'craft-categories')
+        @include('partials.admin-alerts')
+    @endif
     <p class="mac-muted mac-text-sm">
         What this company makes. The first one added is the primary.
     </p>
@@ -31,7 +36,8 @@
                     <tr>
                         <th>Category</th>
                         <th>Sub-category</th>
-                        <th>Code</th>
+                        <th>Classification</th>
+                        <th>Products</th>
                         <th class="text-end"></th>
                     </tr>
                 </thead>
@@ -45,10 +51,8 @@
                                 @endif
                             </td>
                             <td>{{ $selection->subBidang?->name ?? '—' }}</td>
-                            <td class="mac-text-sm mac-muted">
-                                {{-- The one place the hierarchy and the coding sheet meet. --}}
-                                {{ $selection->subBidang?->codeBidang?->code ?? '—' }}
-                            </td>
+                            <td class="mac-text-sm">{{ $selection->pengelasan->pluck('name')->join(', ') ?: '—' }}</td>
+                            <td class="mac-text-sm">{{ $selection->produks->pluck('name')->join(', ') ?: '—' }}</td>
                             <td class="text-end">
                                 <form method="POST"
                                       action="{{ route('admin.companies.kraf.destroy', [$company, $selection]) }}">
@@ -93,6 +97,16 @@
                 <button type="submit" class="mac-btn-primary w-100">Add</button>
             </div>
 
+            <fieldset class="col-12" id="kraf-pengelasan" hidden>
+                <legend class="mac-label">Classification <span class="mac-muted">— optional</span></legend>
+                <div class="kraf-ticks"></div>
+            </fieldset>
+
+            <fieldset class="col-12" id="kraf-produk" hidden>
+                <legend class="mac-label">Products <span class="mac-muted">— optional</span></legend>
+                <div class="kraf-ticks"></div>
+            </fieldset>
+
             <div class="col-12">
                 <div class="form-check">
                     <input type="checkbox" class="form-check-input" id="is_primary" name="is_primary" value="1">
@@ -133,7 +147,60 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         Object.entries(subs).forEach(([id, name]) => sub.add(new Option(name, id)));
+        drawTicks();
     });
+
+    /*
+     * Tick boxes for the classifications and the products of every sub-category
+     * picked, grouped under its name when there is more than one. The controller
+     * takes only the ones under each sub-category; both lists are optional.
+     */
+    const groups = [
+        { box: document.getElementById('kraf-pengelasan'), bySub: @json($picker['pengelasanBySub']), name: 'pengelasan_id[]', prefix: 'pengelasan-' },
+        { box: document.getElementById('kraf-produk'), bySub: @json($picker['produksBySub']), name: 'produk_id[]', prefix: 'produk-' },
+    ];
+
+    function drawTicks() {
+        groups.forEach(drawGroup);
+    }
+
+    function drawGroup({ box, bySub, name: fieldName, prefix }) {
+        const picked = [...sub.selectedOptions].filter(o => o.value);
+        const list = box.querySelector('.kraf-ticks');
+        list.innerHTML = '';
+
+        picked.forEach(option => {
+            const items = bySub[option.value] || {};
+            if (! Object.keys(items).length) return;
+
+            const group = document.createElement('div');
+            group.className = 'mb-2';
+            if (picked.length > 1) {
+                const title = document.createElement('div');
+                title.className = 'mac-text-sm fw-semibold';
+                title.textContent = option.text;
+                group.append(title);
+            }
+            Object.entries(items).forEach(([id, name]) => {
+                const row = document.createElement('div');
+                row.className = 'form-check';
+                const input = Object.assign(document.createElement('input'), {
+                    type: 'checkbox', className: 'form-check-input', name: fieldName,
+                    value: id, id: prefix + id,
+                });
+                const label = Object.assign(document.createElement('label'), {
+                    className: 'form-check-label mac-text-sm', htmlFor: input.id, textContent: name,
+                });
+                row.append(input, label);
+                group.append(row);
+            });
+            list.append(group);
+        });
+
+        box.hidden = ! list.children.length;
+    }
+
+    sub.addEventListener('change', drawTicks);
 });
 </script>
 @endpush

@@ -11,6 +11,7 @@ use App\Support\AdminZones;
 use App\Support\EntrepreneurCategories;
 use App\Support\PlotSizes;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -202,24 +203,11 @@ class SettingController extends Controller
     {
         return view('admin.settings.kraf-hierarchy', [
             'categories' => KrafBidang::categories()
-                ->with(['subBidangs.pengelasan', 'subBidangs.codeBidang', 'produks'])
+                // Products with no sub-category predate products sitting in one: "not placed yet".
+                ->with(['subBidangs.pengelasan', 'subBidangs.produks', 'produks' => fn ($q) => $q->whereNull('sub_bidang_id')])
                 ->orderBy('name')
                 ->get(),
-            'codes' => KrafBidang::codes()->active()->orderBy('bil')->get(['id', 'code', 'name']),
         ]);
-    }
-
-    public function storeCategory(Request $request)
-    {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255', Rule::unique('kraf_bidangs', 'name')->whereNull('code')],
-        ]);
-
-        // `code` stays null. That is what makes this a category rather than a
-        // coding-sheet row, and it is the only thing that does.
-        KrafBidang::create(['name' => $data['name']]);
-
-        return back()->with('success', 'Craft category added.');
     }
 
     public function storeSubBidang(Request $request, KrafBidang $category)
@@ -228,61 +216,64 @@ class SettingController extends Controller
 
         $data = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            // Optional, and it stays optional: setting a company's craft category
-            // must never require a code to exist first.
-            'kraf_bidang_code_id' => ['nullable', Rule::exists('kraf_bidangs', 'id')->whereNotNull('code')],
+            // Classifications and products may come on the same row, comma-separated,
+            // or be added under the sub-category after. Both optional. No craft code:
+            // that is set per event on the draw list.
+            'classification' => ['nullable', 'string', 'max:2000'],
+            'products' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $category->subBidangs()->create($data);
+        DB::transaction(function () use ($category, $data) {
+            $sub = $category->subBidangs()->create(Arr::only($data, 'name'));
+            $sub->pengelasan()->createMany(
+                $this->splitNames($data['classification'] ?? '')->map(fn ($name) => ['name' => $name])
+            );
+            $this->createProduks($sub, $this->splitNames($data['products'] ?? ''));
+        });
 
-        return back()->with('success', 'Sub-category added.');
+        return $this->backTo("category-{$category->id}")->with('success', 'Sub-category added.');
     }
 
     public function storePengelasan(Request $request, KrafSubBidang $subBidang)
     {
-        $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
+        $data = $request->validate(['name' => ['required', 'string', 'max:2000']]);
 
-        $subBidang->pengelasan()->create($data);
+        // Names already under this sub-category are skipped, not doubled.
+        $have = $subBidang->pengelasan()->pluck('name')->map(fn ($n) => mb_strtolower($n));
+        $names = $this->splitNames($data['name'])
+            ->reject(fn ($name) => $have->contains(mb_strtolower($name)));
 
-        return back()->with('success', 'Classification added.');
+        $subBidang->pengelasan()->createMany($names->map(fn ($name) => ['name' => $name]));
+
+        return $this->backTo("category-{$subBidang->bidang_id}")->with('success', $names->isEmpty() ? 'Already there.' : 'Classification added.');
     }
 
-    public function storeProduk(Request $request, KrafBidang $category)
+    /** "A, B ,, a" → ["A", "B"]: split on commas, trimmed, blanks and repeats dropped. */
+    private function splitNames(string $input)
     {
-        $this->abortUnlessCategory($category);
-
-        $data = $request->validate(['name' => ['required', 'string', 'max:255']]);
-
-        $category->produks()->create($data);
-
-        return back()->with('success', 'Product added.');
+        return collect(explode(',', $input))
+            ->map(fn ($name) => trim($name))
+            ->filter()
+            ->filter(fn ($name) => mb_strlen($name) <= 255)
+            ->unique(fn ($name) => mb_strtolower($name))
+            ->values();
     }
 
     /**
-     * Delete one row of the hierarchy.
+     * Delete a sub-category. Anything outside the hierarchy that points at it —
+     * a company, a plot, a plan — refuses the delete; the counts come from the
+     * tables themselves rather than from the migration, since a cascade is a
+     * property of the live database.
      *
-     * A category reaches six tables by cascade and a sub-category five, so both
-     * are counted first and refused while anything points at them. The counts
-     * come from the tables themselves rather than from the migration — a cascade
-     * is a property of the live database.
+     * Its own classifications and products are NOT a reason to refuse: they go
+     * with it by cascade. One a company ticked is covered above — ticks only
+     * exist on a company selection, and any selection refuses the delete.
+     *
+     * Categories themselves are fixed: seeded, never added or deleted here.
      */
-    public function destroyCategory(KrafBidang $category)
-    {
-        $this->abortUnlessCategory($category);
-
-        if ($used = $this->krafBidangUsage($category)) {
-            return back()->with('error', "Cannot delete {$category->name}: {$used} still point at it.");
-        }
-
-        $category->delete();
-
-        return back()->with('success', 'Craft category deleted.');
-    }
-
     public function destroySubBidang(KrafSubBidang $subBidang)
     {
         $counts = collect([
-            'classifications' => DB::table('kraf_pengelasan')->where('sub_bidang_id', $subBidang->id)->count(),
             'company selections' => DB::table('company_krafs')->where('sub_bidang_id', $subBidang->id)->count(),
             'plots' => DB::table('plots')->where('sub_bidang_id', $subBidang->id)->count(),
             'plan allocations' => DB::table('bidang_allocations')->where('sub_bidang_id', $subBidang->id)->count(),
@@ -290,7 +281,7 @@ class SettingController extends Controller
         ])->filter();
 
         if ($counts->isNotEmpty()) {
-            return back()->with('error', sprintf(
+            return $this->backTo("category-{$subBidang->bidang_id}")->with('error', sprintf(
                 'Cannot delete %s: %s still point at it.',
                 $subBidang->name,
                 $counts->map(fn ($n, $what) => "{$n} {$what}")->join(', ', ' and ')
@@ -299,21 +290,69 @@ class SettingController extends Controller
 
         $subBidang->delete();
 
-        return back()->with('success', 'Sub-category deleted.');
+        return $this->backTo("category-{$subBidang->bidang_id}")->with('success', 'Sub-category deleted.');
     }
 
     public function destroyPengelasan(KrafPengelasan $pengelasan)
     {
+        // Ticked by a company: the database would refuse too, but without a reason.
+        if ($used = DB::table('company_kraf_pengelasan')->where('pengelasan_id', $pengelasan->id)->count()) {
+            return $this->backTo("category-{$pengelasan->subBidang->bidang_id}")->with('error', "Cannot delete {$pengelasan->name}: {$used} company selections still use it.");
+        }
+
         $pengelasan->delete();
 
-        return back()->with('success', 'Classification deleted.');
+        return $this->backTo("category-{$pengelasan->subBidang->bidang_id}")->with('success', 'Classification deleted.');
+    }
+
+    public function storeProduk(Request $request, KrafSubBidang $subBidang)
+    {
+        $data = $request->validate(['name' => ['required', 'string', 'max:2000']]);
+
+        // Comma-separated, like classifications; names already in the sub-category are skipped.
+        $have = $subBidang->produks()->pluck('name')->map(fn ($n) => mb_strtolower($n));
+        $names = $this->splitNames($data['name'])
+            ->reject(fn ($name) => $have->contains(mb_strtolower($name)));
+
+        $this->createProduks($subBidang, $names);
+
+        return $this->backTo("category-{$subBidang->bidang_id}")
+            ->with('success', $names->isEmpty() ? 'Already there.' : 'Product added.');
+    }
+
+    /** Products in a sub-category, with `bidang_id` kept in step with the sub-category's. */
+    private function createProduks(KrafSubBidang $subBidang, $names): void
+    {
+        $subBidang->produks()->createMany(
+            $names->map(fn ($name) => ['name' => $name, 'bidang_id' => $subBidang->bidang_id])
+        );
+    }
+
+    /** Every product of one sub-category, or none: refused while a company has ticked any. */
+    public function destroyAllProduks(KrafSubBidang $subBidang)
+    {
+        $ids = $subBidang->produks()->pluck('id');
+        if ($used = DB::table('company_kraf_produk')->whereIn('produk_id', $ids)->distinct()->count('produk_id')) {
+            return $this->backTo("category-{$subBidang->bidang_id}")
+                ->with('error', "Cannot delete the products of {$subBidang->name}: {$used} of them are still used by companies.");
+        }
+
+        $subBidang->produks()->get()->each->delete();
+
+        return $this->backTo("category-{$subBidang->bidang_id}")->with('success', 'All products deleted.');
     }
 
     public function destroyProduk(KrafProduk $produk)
     {
+        // Ticked by a company: the database would refuse too, but without a reason.
+        if ($used = DB::table('company_kraf_produk')->where('produk_id', $produk->id)->count()) {
+            return $this->backTo("category-{$produk->bidang_id}")
+                ->with('error', "Cannot delete {$produk->name}: {$used} company selections still use it.");
+        }
+
         $produk->delete();
 
-        return back()->with('success', 'Product deleted.');
+        return $this->backTo("category-{$produk->bidang_id}")->with('success', 'Product deleted.');
     }
 
     /**

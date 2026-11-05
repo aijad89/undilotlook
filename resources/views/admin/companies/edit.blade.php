@@ -6,7 +6,9 @@
 @include('partials.mac-styles')
 
 <div class="mac-page">
-    @include('partials.admin-alerts')
+    @unless(session('anchor'))
+        @include('partials.admin-alerts')
+    @endunless
 
     <div class="mac-breadcrumb mb-2">
         <a href="{{ route('admin.companies.index') }}">Companies</a> <span class="sep" aria-hidden="true">›</span> {{ $company->name }}

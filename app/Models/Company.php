@@ -158,8 +158,7 @@ class Company extends Model
         return [
             'cascade_deleted' => [
                 'event_registrations' => $mine('event_registrations'),
-                'company_krafs' => $mine('company_krafs'),
-            ],
+                'company_krafs' => $mine('company_krafs'),            ],
 
             'links_cleared' => [
                 'plots.company_id' => $mine('plots'),
