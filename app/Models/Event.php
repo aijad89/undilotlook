@@ -162,6 +162,24 @@ class Event extends Model
             ->where('registration_close_at', '>=', now());
     }
 
+    /**
+     * Where a published event stands for a visitor: ended, now, open, soon or
+     * closed. The public list and the event page both read this, so they never
+     * disagree. The event's own dates win over the draw — a fair that is on, or
+     * over, is that first — and an open draw whose deadline has passed is
+     * closed, even before the scheduler has said so.
+     */
+    public function publicStage(): string
+    {
+        return match (true) {
+            $this->end_date->isPast() => 'ended',
+            $this->start_date->isPast() => 'now',
+            $this->polling_status === 'polling' && ! $this->polling_deadline?->isPast() => 'open',
+            in_array($this->polling_status, ['polling', 'closed', 'completed', 'cancelled'], true) => 'closed',
+            default => 'soon',
+        };
+    }
+
     public function getBannerUrlAttribute(): ?string
     {
         return $this->banner ? Storage::url($this->banner) : null;

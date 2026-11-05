@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 /* ── Public ──────────────────────────────────────────────────────────────── */
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
+Route::get('/events/{event}', [HomeController::class, 'show'])->name('events.show');
 
 /* ── Participant portal ──────────────────────────────────────────────────── */
 

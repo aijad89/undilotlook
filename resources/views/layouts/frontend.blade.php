@@ -20,7 +20,6 @@
            large targets. On a desk the nav sits in the bar; on a phone it is a
            drawer, and the bar keeps only what a thumb needs. */
         :root {
-            --ap-col: 100vw;
             --topbar-h: 64px;
             /* Old names some views still read inline. */
             --apple-blue: var(--ui-blue);
@@ -79,7 +78,7 @@
         .ap-main { min-height: 100vh; display: flex; flex-direction: column; background: var(--ui-ground); }
         .ap-topbar {
             position: sticky; top: 0; z-index: 900; flex-shrink: 0;
-            height: var(--topbar-h); padding: 0 24px;
+            height: var(--topbar-h); padding: 0 max(var(--ui-page-pad), calc((100% - var(--ui-page-w)) / 2));
             display: flex; align-items: center; justify-content: space-between; gap: 12px;
             background: var(--ui-navy-900); color: #fff;
         }
@@ -116,20 +115,20 @@
         .ap-dropdown-menu hr { margin: 4px 0; border-color: var(--ui-sep); }
 
         /* ── Reading column ──────────────────────── */
-        .ap-content { flex: 1; width: 100%; max-width: calc(var(--ap-col) + 48px); margin: 0 auto; padding: 32px 24px 40px; }
+        .ap-content { flex: 1; width: 100%; max-width: var(--ui-page-max); margin: 0 auto; padding: 32px var(--ui-page-pad) 40px; }
 
         /* ── Footer ──────────────────────────────── */
-        .ap-footer-wrap { flex-shrink: 0; }
-        .ap-footer-panel { display: none; position: relative; padding: 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
+        .ap-footer-wrap { flex-shrink: 0; margin-top: 80px; }
+        .ap-footer-panel { display: none; position: relative; padding: 24px max(var(--ui-page-pad), calc((100% - var(--ui-page-w)) / 2)); background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
         .ap-footer-panel.show { display: block; }
         .ap-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1rem; font-weight: 700; }
         .ap-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); font-size: 1.125rem; }
         .ap-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
         .ap-footer-panel-body { max-height: 240px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
-        .ap-footer { padding: 20px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); font-size: 0.875rem; color: var(--ui-muted); }
-        .ap-footer-copy { max-width: var(--ap-col); margin: 0 auto 12px; }
+        .ap-footer { padding: 40px var(--ui-page-pad); background: var(--ui-surface); border-top: 1px solid var(--ui-border); font-size: 0.875rem; color: var(--ui-muted); }
+        .ap-footer-copy { max-width: var(--ui-page-w); margin: 0 auto 12px; }
         .ap-footer-brand { font-weight: 700; color: var(--ui-text); }
-        .ap-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; max-width: var(--ap-col); margin: 0 auto; }
+        .ap-footer-bottom { display: flex; align-items: flex-start; justify-content: space-between; gap: 24px; max-width: var(--ui-page-w); margin: 0 auto; }
         .ap-footer-menu-rows { flex: 1; }
         .ap-footer-menu-row { display: flex; flex-wrap: wrap; gap: 4px 20px; margin-bottom: 4px; }
         .ap-footer-menu-btn { padding: 6px 0; border: none; background: none; color: var(--ui-text-2); font-size: 0.875rem; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -149,8 +148,7 @@
             .ap-topnav, .ap-topbar .ap-brand { display: none; }
         }
         @media (max-width: 576px) {
-            .ap-content { padding: 20px 16px 32px; }
-            .ap-topbar { padding: 0 16px; }
+            .ap-content { padding-top: 20px; padding-bottom: 32px; }
             .ap-footer-bottom { flex-direction: column; }
             .ap-footer-follow { text-align: left; }
             .ap-footer-follow-icons { justify-content: flex-start; }
@@ -190,6 +188,8 @@
          * not a profile system. Entries arrive as the phases land.
          */
         $apNav = [
+            // The public list, so the bar matches the one on that page.
+            ['label' => 'Events', 'icon' => 'calendar-event-fill', 'route' => 'home', 'key' => 'events'],
             [
                 'label' => 'Dashboard',
                 'icon'  => 'house-door-fill',

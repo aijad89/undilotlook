@@ -15,7 +15,6 @@
         /* The public face: the same navy bar as the portal, so a usahawan who
            signs in steps into the same place; a calm white footer. */
         :root {
-            --pub-col: 100vw;
             --pub-blue: var(--ui-blue);
             --pub-blue-hov: var(--ui-blue-hover);
             --pub-bg: var(--ui-ground);
@@ -33,7 +32,7 @@
 
         /* ── Bar ─────────────────────────────────── */
         .pub-nav { position: sticky; top: 0; z-index: 1000; height: 64px; background: var(--ui-navy-900); }
-        .pub-nav-inner { display: flex; align-items: center; gap: 8px; max-width: var(--pub-col); height: 100%; margin: 0 auto; padding: 0 24px; }
+        .pub-nav-inner { display: flex; align-items: center; gap: 8px; max-width: var(--ui-page-max); height: 100%; margin: 0 auto; padding: 0 var(--ui-page-pad); }
         .pub-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; color: #fff; text-decoration: none; }
         .pub-brand:hover { color: #fff; }
         .pub-brand-icon, .pub-footer-icon { width: 34px; height: 34px; flex-shrink: 0; display: grid; place-items: center; border-radius: 8px; background: var(--ui-gold); color: var(--ui-navy-950); }
@@ -63,16 +62,16 @@
         .pub-dropdown hr { margin: 4px 0; border-color: var(--ui-sep); }
 
         /* ── Footer ──────────────────────────────── */
-        .pub-footer-wrap { width: 100%; margin-top: 48px; flex-shrink: 0; }
-        .pub-footer-panel { display: none; padding: 28px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
+        .pub-footer-wrap { width: 100%; margin-top: 80px; flex-shrink: 0; }
+        .pub-footer-panel { display: none; padding: 28px 0; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
         .pub-footer-panel.show { display: block; }
-        .pub-footer-panel-inner { max-width: calc(var(--pub-col) - 48px); margin: 0 auto; }
+        .pub-footer-panel-inner { max-width: var(--ui-page-max); margin: 0 auto; padding: 0 var(--ui-page-pad); }
         .pub-footer-panel-title { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; font-size: 1.125rem; font-weight: 700; }
         .pub-footer-panel-close { width: 40px; height: 40px; border: none; border-radius: var(--ui-r); background: none; color: var(--ui-muted); }
         .pub-footer-panel-close:hover { background: var(--ui-neutral-tint); color: var(--ui-text); }
         .pub-footer-panel-body { max-width: 72ch; max-height: 260px; overflow-y: auto; color: var(--ui-text-2); line-height: 1.7; }
-        .pub-footer { padding: 28px 24px 24px; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
-        .pub-footer-inner { max-width: calc(var(--pub-col) - 48px); margin: 0 auto; }
+        .pub-footer { padding: 40px 0; background: var(--ui-surface); border-top: 1px solid var(--ui-border); }
+        .pub-footer-inner { max-width: var(--ui-page-max); margin: 0 auto; padding: 0 var(--ui-page-pad); }
         .pub-footer-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
         .pub-footer-brand { display: flex; align-items: center; gap: 10px; color: var(--ui-text); font-weight: 700; text-decoration: none; }
         .pub-footer-copy { font-size: 0.875rem; color: var(--ui-muted); }
@@ -88,7 +87,6 @@
         .pub-footer-follow-icons a:hover { background: var(--ui-navy-900); color: #fff; }
 
         @media (max-width: 640px) {
-            .pub-nav-inner { padding: 0 14px; }
             .pub-nav-links { margin-left: 8px; }
             .pub-brand-name { display: none; }
             .pub-footer-bottom { flex-direction: column; }
@@ -112,7 +110,7 @@
         </a>
 
         <div class="pub-nav-links">
-            <a href="{{ route('home') }}" class="{{ request()->routeIs('home') ? 'active' : '' }}">Events</a>
+            <a href="{{ route('home') }}" class="{{ request()->routeIs('home', 'events.show') ? 'active' : '' }}">Events</a>
             @auth
                 <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">Dashboard</a>
             @endauth

@@ -15,6 +15,13 @@
     /* Reserve the scrollbar's width on every page, or centred content jumps sideways between short and long pages. */
     html { scrollbar-gutter: stable; }
     :root {
+        /* Every page's column, after Melon Ticket: 1000px down the middle, with the
+           bars' logo and the footer lined up on it. 16px either side until the window
+           is wide enough not to need it. A column is
+           max-width: var(--ui-page-max); margin-inline: auto; padding-inline: var(--ui-page-pad). */
+        --ui-page-w: 1000px;
+        --ui-page-pad: 16px;
+        --ui-page-max: calc(var(--ui-page-w) + 2 * var(--ui-page-pad));
         /* Shell */
         --ui-navy-950: #071a33;
         --ui-navy-900: #0b2240;
@@ -188,4 +195,6 @@
         .ui-stepper li.current .dot { animation: ui-stop-in var(--ui-slow) var(--ui-ease) both; }
         @keyframes ui-stop-in { from { box-shadow: 0 0 0 12px rgba(26, 86, 219, 0); } to { box-shadow: 0 0 0 4px var(--ui-blue-tint); } }
     }
+    /* The column needs no side padding once the window is wider than it plus 16px a side. */
+    @media (min-width: 1032px) { :root { --ui-page-pad: 0px; } }
 </style>

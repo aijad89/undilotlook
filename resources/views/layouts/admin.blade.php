@@ -128,6 +128,8 @@
 
         /* ── Content frame ───────────────────────── */
         #content-main > .mac-page, .mac-page { max-width: none; }
+        /* The same 1000px column as every other page; p-4 is its padding here. */
+        .adm-page { max-width: calc(var(--ui-page-w) + 48px); margin: 0 auto; }
 
         @media (max-width: 767.98px) {
             #sidebar { margin-left: calc(-1 * var(--adm-sidebar-w)); box-shadow: none; }
@@ -365,7 +367,7 @@
              already owns #main-content on the wrapper div at line 570. --}}
         <main id="content-main" class="content-wrapper" style="min-height: calc(100vh - 52px);">
             <h1 class="visually-hidden">@yield('title', 'Admin Dashboard')</h1>
-            <div class="p-4">
+            <div class="p-4 adm-page">
                 @yield('content')
             </div>
         </main>

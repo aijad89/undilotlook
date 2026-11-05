@@ -25,10 +25,28 @@ class HomeController extends Controller
 
         [$past, $upcoming] = $events->partition(fn (Event $e) => $e->end_date->isPast());
 
+        // Past events come six at a time; "More" asks for six more by URL, so it
+        // needs no script and a reload keeps the place.
+        $pastStep = 6;
+        $pastShown = min(max((int) $request->input('past', $pastStep), $pastStep), 600);
+
         return view('home', [
             'upcoming' => $upcoming->sortBy('start_date')->values(),
-            'past' => $past->sortByDesc('start_date')->take(12)->values(),
+            'past' => $past->sortByDesc('start_date')->values(),
+            'pastShown' => $pastShown,
+            'pastStep' => $pastStep,
         ]);
+    }
+
+    /**
+     * One published event, for anyone. A draft is not public, so it is a 404 —
+     * the same as an id that does not exist.
+     */
+    public function show(Event $event)
+    {
+        abort_if($event->status === 'draft', 404);
+
+        return view('events.show', ['event' => $event]);
     }
 
     /**
