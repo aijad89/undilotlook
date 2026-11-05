@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const groupedBidangs = @json($groupedBidangs);
 
-    // Settings › Dropdown Lists › Plot Sizes. A new row offers the current list
+    // Setting › Dropdown Lists › Plot Sizes. A new row offers the current list
     // only — a size a saved allocation still carries is rendered by plan-fields
     // on that row, and is not something to start a fresh one on.
     const plotSizes = @json(\App\Support\PlotSizes::all());

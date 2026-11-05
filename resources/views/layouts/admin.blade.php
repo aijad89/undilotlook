@@ -61,8 +61,6 @@
         #sidebar .brand-name { display: block; font-size: 1rem; font-weight: 700; color: #fff; letter-spacing: -0.01em; line-height: 1.2; }
         #sidebar .brand-sub { display: block; font-size: 0.8125rem; color: var(--ui-on-navy-2); line-height: 1.3; }
 
-        #sidebar .nav-section { padding: 20px 22px 6px; font-size: 0.75rem; font-weight: 600; color: var(--ui-on-navy-dim); letter-spacing: 0.02em; }
-
         #sidebar .nav-link, #sidebar .nav-item a {
             position: relative; display: flex; align-items: center; gap: 12px;
             margin: 2px 10px; padding: 9px 12px; min-height: 40px; border-radius: var(--ui-r);
@@ -84,11 +82,14 @@
         #sidebar .submenu li a { margin: 1px 10px; padding: 8px 12px 8px 42px !important; min-height: 36px; font-size: 0.8125rem; color: var(--ui-on-navy-soft); }
         #sidebar .submenu li a.active { background: rgba(255, 255, 255, 0.08); color: #fff; font-weight: 600; }
         #sidebar .submenu li a.active::before { display: none; }
-        #sidebar .nav-item.with-sub > a .chevron-icon { margin-left: auto; font-size: 0.75rem; color: var(--ui-on-navy-dim); transition: transform 0.2s var(--ui-ease); }
-        #sidebar .nav-item.with-sub.show > a .chevron-icon { transform: rotate(180deg); }
-        #sidebar .nav-item.with-sub > a.active { background: rgba(255, 255, 255, 0.05); }
+        #sidebar .nav-item.with-sub > .nav-link .chevron-icon { margin-left: auto; font-size: 0.75rem; color: var(--ui-on-navy-dim); transition: transform 0.2s var(--ui-ease); }
+        #sidebar .nav-item.with-sub.show > .nav-link .chevron-icon { transform: rotate(180deg); }
+        #sidebar .nav-item.with-sub > .nav-link.active { background: rgba(255, 255, 255, 0.05); }
         #sidebar .sidebar-badge { margin-left: auto; padding: 2px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.75rem; font-weight: 700; line-height: 1.3; }
-        #sidebar button.nav-link { width: calc(100% - 20px) !important; color: var(--ui-on-navy-soft); cursor: pointer; }
+        #sidebar button.nav-link { width: calc(100% - 20px) !important; border: 0; background: transparent; font-family: inherit; text-align: left; color: var(--ui-on-navy-soft); cursor: pointer; }
+        /* A group button reads like the links around it; only Sign Out is quieter. */
+        #sidebar .with-sub > button.nav-link { color: var(--ui-on-navy-3); font-size: 0.875rem; font-weight: 500; }
+        #sidebar .with-sub > button.nav-link.active, #sidebar .with-sub > button.nav-link:hover { color: #fff; }
         #sidebar button.nav-link:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
 
         /* ── Top bar ─────────────────────────────── */
@@ -184,15 +185,36 @@
              * screenful where a reader can see it, and it makes adding a module one
              * line instead of fifteen.
              *
-             * Each item:
-             *   label     what the link says
+             * Each item is either a LINK or a GROUP:
+             *   label     what it says
              *   icon      Bootstrap Icons name, without the `bi-`
-             *   route     the route name to link to
-             *   match     route patterns that light this item up (defaults to `route`)
+             *   route     (link) the route name to link to
+             *   match     (link) route patterns, or a closure, that light it up;
+             *             defaults to `route`
              *   when      a closure taking the signed-in admin; absent means everyone
-             *   section   a heading rendered ABOVE this item
-             *   children  a submenu of [label, route, match?] rows
+             *   children  (group) links as above, each with its own optional `when`;
+             *             a group with no visible child is not shown
+             *
+             * A group opens by itself when it holds the current page, and its
+             * button says so to a screen reader (aria-expanded).
              */
+
+            // The admin lists come in two groups; create/edit light the right one up.
+            $adminGroupIs = function (string $group) {
+                if (request()->routeIs('admin.admins.'.$group)) {
+                    return true;
+                }
+                if (request()->routeIs('admin.admins.create', 'admin.admins.store')) {
+                    return (request('group') === 'hq' ? 'hq' : 'state') === $group;
+                }
+                $target = request()->route('admin');
+                if ($target instanceof \App\Models\Admin) {
+                    return ($target->isStateAdmin() ? 'state' : 'hq') === $group;
+                }
+
+                return false;
+            };
+
             $nav = [
                 [
                     'label' => 'Dashboard',
@@ -200,30 +222,26 @@
                     'route' => 'admin.dashboard',
                 ],
                 [
-                    'section' => 'The draw',
-                    'label'   => 'Events',
-                    'icon'    => 'calendar-event',
-                    'route'   => 'admin.events.index',
-                    // The draw list lives under an event, so it lights this up too.
-                    'match'   => ['admin.events.*'],
+                    'label'    => 'User',
+                    'icon'     => 'people',
+                    'children' => [
+                        ['label' => 'Companies', 'route' => 'admin.companies.index', 'match' => ['admin.companies.*']],
+                        // HQ and super accounts. Super only: hq may not touch a peer or a super.
+                        ['label' => 'HQ Admins', 'route' => 'admin.admins.hq', 'match' => fn () => $adminGroupIs('hq'),
+                         'when' => fn ($admin) => $admin->isSuperAdmin()],
+                        ['label' => 'State Admins', 'route' => 'admin.admins.state', 'match' => fn () => $adminGroupIs('state'),
+                         'when' => fn ($admin) => $admin->can('manage-admins')],
+                    ],
                 ],
                 [
-                    'label' => 'Lot Draw',
-                    'icon'  => 'grid-3x3-gap',
-                    'route' => 'admin.polling.index',
-                    'match' => ['admin.polling.*'],
-                ],
-                [
-                    'label' => 'Companies',
-                    'icon'  => 'building',
-                    'route' => 'admin.companies.index',
-                    'match' => ['admin.companies.*'],
-                ],
-                [
-                    'label' => 'Reports',
-                    'icon'  => 'download',
-                    'route' => 'admin.reports.index',
-                    'match' => ['admin.reports.*'],
+                    'label'    => 'The Event',
+                    'icon'     => 'calendar-event',
+                    'children' => [
+                        // The draw list lives under an event, so it lights Events up too.
+                        ['label' => 'Events', 'route' => 'admin.events.index', 'match' => ['admin.events.*']],
+                        ['label' => 'Lot Draw', 'route' => 'admin.polling.index', 'match' => ['admin.polling.*']],
+                        ['label' => 'Reports', 'route' => 'admin.reports.index', 'match' => ['admin.reports.*']],
+                    ],
                 ],
                 [
                     'label' => 'Announcements',
@@ -232,80 +250,77 @@
                     'match' => ['admin.announcements.*'],
                 ],
                 [
-                    'section'  => 'Settings',
-                    'label'    => 'Dropdown Lists',
+                    // National lists, the public site and the audit trail: a state
+                    // admin editing any of it would be editing thirteen other zones.
+                    'label'    => 'Setting',
                     'icon'     => 'sliders',
-                    'route'    => 'admin.settings.lists',
-                    'match'    => ['admin.settings.*'],
-                    // National lists. A state admin editing one would be editing
-                    // thirteen other zones' vocabulary.
                     'when'     => fn ($admin) => $admin->hasGlobalAccess(),
                     'children' => [
-                        ['label' => 'Zones & sizes', 'route' => 'admin.settings.lists'],
+                        ['label' => 'Dropdown Lists', 'route' => 'admin.settings.lists'],
                         ['label' => 'Craft Category Code', 'route' => 'admin.settings.kraf-codes'],
                         ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy'],
+                        ['label' => 'Footer Pages', 'route' => 'admin.footer-menus.index', 'match' => ['admin.footer-menus.*']],
+                        ['label' => 'Social Links', 'route' => 'admin.social-links.index', 'match' => ['admin.social-links.*']],
+                        ['label' => 'Audit Trail', 'route' => 'admin.audit-trails.index', 'match' => ['admin.audit-trails.*']],
                     ],
-                ],
-                [
-                    'label'    => 'Public Site',
-                    'icon'     => 'globe',
-                    'route'    => 'admin.footer-menus.index',
-                    'match'    => ['admin.footer-menus.*', 'admin.social-links.*'],
-                    'when'     => fn ($admin) => $admin->canManageSiteContent(),
-                    'children' => [
-                        ['label' => 'Footer pages', 'route' => 'admin.footer-menus.index', 'match' => 'admin.footer-menus.*'],
-                        ['label' => 'Social links', 'route' => 'admin.social-links.index', 'match' => 'admin.social-links.*'],
-                    ],
-                ],
-                [
-                    'label' => 'Audit Trail',
-                    'icon'  => 'journal-text',
-                    'route' => 'admin.audit-trails.index',
-                    'match' => ['admin.audit-trails.*'],
-                    'when'  => fn ($admin) => $admin->hasGlobalAccess(),
                 ],
             ];
 
-            $visible = array_values(array_filter(
-                $nav,
-                fn ($item) => ! isset($item['when']) || $item['when']($authAdmin)
-            ));
+            $shows = fn ($item) => ! isset($item['when']) || $item['when']($authAdmin);
 
-            $isActive = function (array $item) {
-                foreach ((array) ($item['match'] ?? $item['route'] ?? []) as $pattern) {
-                    if (request()->routeIs($pattern)) {
-                        return true;
+            $visible = [];
+            foreach ($nav as $item) {
+                if (! $shows($item)) {
+                    continue;
+                }
+                if (isset($item['children'])) {
+                    $item['children'] = array_values(array_filter($item['children'], $shows));
+                    if ($item['children'] === []) {
+                        continue;
                     }
                 }
+                $visible[] = $item;
+            }
 
-                return false;
+            $isActive = function (array $item) use (&$isActive) {
+                if (isset($item['children'])) {
+                    foreach ($item['children'] as $child) {
+                        if ($isActive($child)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                }
+
+                $match = $item['match'] ?? $item['route'];
+
+                return $match instanceof \Closure ? $match() : request()->routeIs(...(array) $match);
             };
         @endphp
 
         <ul class="nav flex-column mt-1">
-            @foreach($visible as $item)
-                @if(! empty($item['section']))
-                    <li class="nav-section">{{ $item['section'] }}</li>
-                @endif
-
+            @foreach($visible as $i => $item)
                 @php $active = $isActive($item); @endphp
 
                 @if(empty($item['children']))
                     <li class="nav-item">
-                        <a class="nav-link {{ $active ? 'active' : '' }}" href="{{ route($item['route']) }}">
-                            <i class="bi bi-{{ $item['icon'] }}"></i> {{ $item['label'] }}
+                        <a class="nav-link {{ $active ? 'active' : '' }}" href="{{ route($item['route']) }}" @if($active) aria-current="page" @endif>
+                            <i class="bi bi-{{ $item['icon'] }}" aria-hidden="true"></i> {{ $item['label'] }}
                         </a>
                     </li>
                 @else
                     <li class="nav-item with-sub {{ $active ? 'show' : '' }}">
-                        <a class="nav-link {{ $active ? 'active' : '' }}" href="#">
-                            <i class="bi bi-{{ $item['icon'] }}"></i> {{ $item['label'] }}
-                            <i class="bi bi-chevron-down ms-auto chevron-icon"></i>
-                        </a>
-                        <ul class="submenu">
+                        <button type="button" class="nav-link {{ $active ? 'active' : '' }}"
+                                aria-expanded="{{ $active ? 'true' : 'false' }}" aria-controls="nav-group-{{ $i }}">
+                            <i class="bi bi-{{ $item['icon'] }}" aria-hidden="true"></i> {{ $item['label'] }}
+                            <i class="bi bi-chevron-down ms-auto chevron-icon" aria-hidden="true"></i>
+                        </button>
+                        <ul class="submenu" id="nav-group-{{ $i }}">
                             @foreach($item['children'] as $child)
+                                @php $childActive = $isActive($child); @endphp
                                 <li>
-                                    <a class="{{ $isActive($child) ? 'active' : '' }}" href="{{ route($child['route']) }}">
+                                    <a class="{{ $childActive ? 'active' : '' }}" href="{{ route($child['route']) }}" @if($childActive) aria-current="page" @endif>
                                         {{ $child['label'] }}
                                     </a>
                                 </li>
@@ -396,10 +411,10 @@ document.addEventListener('DOMContentLoaded', function () {
         body.classList.remove('sidebar-mobile-open');
     });
 
-    document.querySelectorAll('#sidebar .with-sub > a').forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            this.closest('.with-sub').classList.toggle('show');
+    document.querySelectorAll('#sidebar .with-sub > button').forEach(button => {
+        button.addEventListener('click', function () {
+            const open = this.closest('.with-sub').classList.toggle('show');
+            this.setAttribute('aria-expanded', open ? 'true' : 'false');
         });
     });
 

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Admin\AnnouncementController;
 use App\Http\Controllers\Admin\AuditTrailController;
 use App\Http\Controllers\Admin\CompanyController;
@@ -169,7 +170,21 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('companies/{company}/kraf/{selection}', [CompanyController::class, 'destroyKraf'])
             ->name('companies.kraf.destroy');
 
-        /* Settings — national lists, so super and HQ only. */
+        /*
+         * Admin accounts, listed in two groups: hq (HQ and super accounts, super
+         * only) and state. Super and hq reach the screens; who may touch whom is
+         * decided inside AdminController — hq works on state admins only.
+         */
+        Route::middleware('can:manage-admins')->group(function () {
+            Route::get('admins/hq', [AdminController::class, 'index'])->defaults('group', 'hq')->name('admins.hq');
+            Route::get('admins/state', [AdminController::class, 'index'])->defaults('group', 'state')->name('admins.state');
+            Route::get('admins/create', [AdminController::class, 'create'])->name('admins.create');
+            Route::post('admins', [AdminController::class, 'store'])->name('admins.store');
+            Route::get('admins/{admin}/edit', [AdminController::class, 'edit'])->name('admins.edit');
+            Route::put('admins/{admin}', [AdminController::class, 'update'])->name('admins.update');
+            Route::delete('admins/{admin}', [AdminController::class, 'destroy'])->name('admins.destroy');
+        });
+
         /* Announcements: every admin reads what reached them; super/hq send. */
         Route::get('announcements', [AnnouncementController::class, 'index'])->name('announcements.index');
         Route::middleware('can:send-announcements')->group(function () {
@@ -201,6 +216,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
             Route::get('audit-trails/{auditTrail}', [AuditTrailController::class, 'show'])->name('audit-trails.show');
         });
 
+        /* Settings — national lists, so super and HQ only. */
         Route::middleware('can:manage-settings')->prefix('settings')->name('settings.')->group(function () {
             Route::get('lists', [SettingController::class, 'lists'])->name('lists');
             Route::put('lists/{list}', [SettingController::class, 'updateList'])->name('lists.update');

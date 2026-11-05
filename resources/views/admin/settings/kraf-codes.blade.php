@@ -10,7 +10,7 @@
 
     <div class="mac-header mb-4">
         <h2>Craft Category Code</h2>
-        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Dropdown Lists <span class="sep" aria-hidden="true">›</span> Craft Category Code</div>
+        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Setting <span class="sep" aria-hidden="true">›</span> Craft Category Code</div>
         <p class="mac-muted mb-0">
             The printed coding sheet. A draw entry carries one of these codes as a
             STRING, and a plot is categorised by the row itself — that is what the

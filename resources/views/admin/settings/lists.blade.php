@@ -10,7 +10,7 @@
 
     <div class="mac-header mb-4">
         <h2>Dropdown Lists</h2>
-        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Dropdown Lists</div>
+        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Setting <span class="sep" aria-hidden="true">›</span> Dropdown Lists</div>
         <p class="mac-muted mb-0">
             The short lists the forms pick from. Each is stored as one settings row,
             so adding a value takes effect immediately and without a deploy.

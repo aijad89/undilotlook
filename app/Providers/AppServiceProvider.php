@@ -236,6 +236,16 @@ class AppServiceProvider extends ServiceProvider
             return $admin->hasGlobalAccess();
         });
 
+        /*
+         * The admin-accounts screens. Reaching them is super and hq; WHO each may
+         * act on and WHICH role each may hand out are decided per request inside
+         * AdminController, by authorizeTarget() and Admin::assignableRolesFor() —
+         * hq works on state admins only.
+         */
+        Gate::define('manage-admins', function (Admin $admin) {
+            return $admin->hasGlobalAccess();
+        });
+
         /* The audit trail. hq included, Admin rows and all — see AuditTrailController. */
         Gate::define('read-audit-trail', function (Admin $admin) {
             return $admin->hasGlobalAccess();

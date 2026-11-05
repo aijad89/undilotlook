@@ -79,7 +79,7 @@
     // to stay unique across the form.
     $allocationsBySize = collect($allocationsToRender)->groupBy('plot_size_index', true);
 
-    // The sizes this form offers: Settings › Dropdown Lists, plus any size an
+    // The sizes this form offers: Setting › Dropdown Lists, plus any size an
     // allocation already carries. The size has to match the spelling on the
     // registrations in the draw for the reference card to pair the two up, so it is
     // a list rather than a free field — but a plan already laid out in a size

@@ -166,6 +166,13 @@ Peraturan `Rule::in(array_keys(Admin::ROLES))` tidak peduli siapa bertanya —
 tidak berbahaya selagi skrin itu super-sahaja, dan membenarkan hq mencetak akaun
 super bagi dirinya sendiri sebaik skrin itu diluaskan.
 
+Skrin akaun admin ialah `Admin\AdminController`, dalam dua senarai di bawah **User** pada sidebar: **HQ Admins** (hq + super,
+super sahaja) dan **State Admins** (super dan hq). Gate `manage-admins` membuka
+skrin; di dalamnya **dua soalan berasingan**, dan kedua-duanya perlu:
+`authorizeTarget()` (hq hanya menyentuh admin negeri — bukan super, bukan rakan
+hq) dan `authorizeRole()` (`assignableRolesFor()`). Menyekat super sahaja tidak
+cukup: hq masih boleh menurunkan pangkat hq lain.
+
 ### Skop negeri melalui `EventVisibility`, bukan middleware
 
 Tiada alias middleware yang kelihatan seperti pengawal negeri. Pengawal pada

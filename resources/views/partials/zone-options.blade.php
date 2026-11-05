@@ -13,7 +13,7 @@
     filtered at all, because that option did not exist. 102 of 284 companies were
     unreachable this way.
 
-    The list is `App\Support\AdminZones`, editable at Settings › Dropdown Lists ›
+    The list is `App\Support\AdminZones`, editable at Setting › Dropdown Lists ›
     Administrative Zones. It is the same value in `admins.state`,
     `companies.state` and `events.state` — labelled **Admin State** on an admin
     and **Registration State** on a company, the same fact for two audiences.

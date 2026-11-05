@@ -10,7 +10,7 @@
 
     <div class="mac-header mb-4">
         <h2>Craft Hierarchy</h2>
-        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Dropdown Lists <span class="sep" aria-hidden="true">›</span> Craft Hierarchy</div>
+        <div class="mac-breadcrumb"><a href="{{ route('admin.dashboard') }}">Dashboard</a> <span class="sep" aria-hidden="true">›</span> Setting <span class="sep" aria-hidden="true">›</span> Craft Hierarchy</div>
         <p class="mac-muted mb-0">
             What a company picks from: a category, a sub-category under it, and the
             levels below. This is the half of <code>kraf_bidangs</code> with no code —

@@ -18,6 +18,9 @@ const ADMIN_PAGES = [
     '/admin/polling/create',
     '/admin/companies',
     '/admin/companies/create',
+    '/admin/admins/hq',
+    '/admin/admins/state',
+    '/admin/admins/create',
     '/admin/reports',
     '/admin/announcements',
     '/admin/announcements/create',
@@ -46,11 +49,18 @@ test('every admin screen opens for a super admin, with no browser errors', async
 test('a state admin sees no national screens in the sidebar and is refused them by URL', async ({ page }) => {
     await signInAs(page, 'e2e-admin@e2e.test');
 
-    for (const label of ['Dropdown Lists', 'Audit Trail', 'Public Site']) {
-        await expect(page.getByRole('link', { name: label })).toHaveCount(0);
+    // By text, not by link role: 'Setting' is a group button, so a link count
+    // of zero would pass whether or not it showed. The first loop proves the
+    // locator finds what IS there, so the second cannot pass vacuously.
+    const sidebar = page.locator('#sidebar');
+    for (const label of ['User', 'Companies', 'The Event', 'Events', 'Lot Draw', 'Reports', 'Announcements']) {
+        await expect(sidebar.getByText(label, { exact: true }), label).toHaveCount(1);
+    }
+    for (const label of ['Setting', 'Dropdown Lists', 'Audit Trail', 'Footer Pages', 'HQ Admins', 'State Admins']) {
+        await expect(sidebar.getByText(label, { exact: true }), label).toHaveCount(0);
     }
 
-    for (const url of ['/admin/settings/lists', '/admin/audit-trails', '/admin/footer-menus', '/admin/polling/create']) {
+    for (const url of ['/admin/settings/lists', '/admin/audit-trails', '/admin/footer-menus', '/admin/polling/create', '/admin/admins/hq', '/admin/admins/state']) {
         expect((await page.goto(url)).status(), url).toBe(403);
     }
 });
