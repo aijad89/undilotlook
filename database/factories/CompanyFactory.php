@@ -31,6 +31,7 @@ class CompanyFactory extends Factory
             'name' => fake()->company(),
             'state' => 'Johor',
             'entrepreneur_category' => 'Micro, Small & Medium (MSM)',
+            'kraf_code' => null,
             'is_active' => true,
         ];
     }

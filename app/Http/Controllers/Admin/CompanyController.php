@@ -155,6 +155,7 @@ class CompanyController extends Controller
             'company' => $company,
             'zones' => $this->zonesFor($request->user('admin')),
             'picker' => KrafPicker::data($company),
+            'codes' => KrafPicker::codes(),
         ]);
     }
 
@@ -323,6 +324,25 @@ class CompanyController extends Controller
         $selection->delete();
 
         return $this->backTo('craft-categories')->with('success', 'Craft selection removed.');
+    }
+
+    /**
+     * The company's usual craft code — admin only, never shown to the participant.
+     * Not in Company::$fillable, so nothing the participant posts can reach it.
+     * Only an active code on the coding sheet, or blank to clear.
+     */
+    public function updateKrafCode(Request $request, Company $company)
+    {
+        $this->authorizeScope($request, $company);
+
+        $data = $request->validate([
+            'kraf_code' => ['nullable', Rule::in(KrafPicker::codes()->pluck('code')->all())],
+        ]);
+
+        $company->kraf_code = $data['kraf_code'] ?? null;
+        $company->save();
+
+        return $this->backTo('craft-code')->with('success', $company->kraf_code ? 'Craft code saved.' : 'Craft code cleared.');
     }
 
     /**

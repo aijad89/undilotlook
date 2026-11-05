@@ -63,7 +63,7 @@ class EntRegistrationController extends Controller
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('state', $admin->state))
             ->whereDoesntHave('eventRegistrations', fn ($q) => $q->where('event_id', $event->id))
             ->orderBy('name')
-            ->get(['id', 'name', 'state']);
+            ->get(['id', 'name', 'state', 'kraf_code']);
 
         return view('admin.events.registrations.index', [
             'event' => $event,
@@ -108,12 +108,16 @@ class EntRegistrationController extends Controller
                 // A company cannot be in the same draw twice — there is a unique
                 // index saying so. firstOrCreate makes a double submit harmless
                 // rather than a 500.
+                // A code picked here applies to every company added; left blank,
+                // each company brings its own usual code (set on its page), if any.
+                $code = $data['code'] ?? $company->kraf_code;
+
                 $registration = EventRegistration::firstOrCreate(
                     ['event_id' => $event->id, 'company_id' => $company->id],
                     [
                         'user_id' => $company->user_id,
-                        'code' => $data['code'] ?? null,
-                        'code_updated_at' => isset($data['code']) ? now() : null,
+                        'code' => $code,
+                        'code_updated_at' => $code ? now() : null,
                         'plot_size' => $data['plot_size'] ?? '3x3',
                     ]
                 );

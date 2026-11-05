@@ -204,6 +204,12 @@ return new class extends Migration
             // government agency be given a plot outside any craft category.
             $table->string('entrepreneur_category')->nullable();
 
+            // The company's usual craft code (TBP, RKP…), set by an admin and never
+            // shown to the participant. A string like event_registrations.code, and
+            // only a SUGGESTION: the draw list copies it in when the company is
+            // added, and the code that counts stays the one on the draw list.
+            $table->string('kraf_code')->nullable();
+
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

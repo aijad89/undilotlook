@@ -46,7 +46,7 @@
                         <select id="company_id" name="company_id[]" class="mac-select" multiple size="6" required>
                             @foreach($candidates as $candidate)
                                 <option value="{{ $candidate->id }}">
-                                    {{ $candidate->name }}@if($candidate->state) — {{ $candidate->state }}@endif
+                                    {{ $candidate->name }}@if($candidate->state) — {{ $candidate->state }}@endif @if($candidate->kraf_code) [{{ $candidate->kraf_code }}]@endif
                                 </option>
                             @endforeach
                         </select>
@@ -56,7 +56,8 @@
                     <div class="col-md-3">
                         <label class="mac-label" for="code">Craft code</label>
                         <select id="code" name="code" class="mac-select">
-                            <option value="">— Set later —</option>
+                            {{-- Blank: each company gets the code on its own page, shown in [ ] above. --}}
+                            <option value="">— Each company's own code —</option>
                             @foreach($codes as $code)
                                 <option value="{{ $code->code }}">{{ $code->code }} — {{ $code->name }}</option>
                             @endforeach

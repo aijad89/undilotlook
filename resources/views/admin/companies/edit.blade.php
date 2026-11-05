@@ -28,5 +28,6 @@
     {{-- Outside the form above, deliberately: the picker posts to its own route,
          and a form inside a form is not a thing a browser will send. --}}
     @include('admin.companies.partials.kraf-section')
+    @include('admin.companies.partials.kraf-code-card')
 </div>
 @endsection

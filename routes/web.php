@@ -169,6 +169,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('companies/{company}/kraf', [CompanyController::class, 'storeKraf'])->name('companies.kraf.store');
         Route::delete('companies/{company}/kraf/{selection}', [CompanyController::class, 'destroyKraf'])
             ->name('companies.kraf.destroy');
+        Route::put('companies/{company}/kraf-code', [CompanyController::class, 'updateKrafCode'])->name('companies.kraf-code.update');
 
         /*
          * Admin accounts, listed in two groups: hq (HQ and super accounts, super
