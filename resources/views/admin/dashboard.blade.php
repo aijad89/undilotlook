@@ -150,7 +150,7 @@
     .dash-info { background: var(--ui-blue-tint); } .dash-info > .bi:first-child { color: var(--ui-blue-text); }
     .dash-ok   { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
 
-    .dash-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; align-items: start; }
+    .dash-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; }
     @media (max-width: 860px) { .dash-grid { grid-template-columns: minmax(0, 1fr); } }
 
     .dash-event { padding: 12px 0; border-top: 1px solid var(--ui-sep); }

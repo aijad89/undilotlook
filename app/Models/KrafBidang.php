@@ -16,8 +16,8 @@ use Illuminate\Database\Eloquent\Model;
  * shows both lists at once; a delete that forgets removes a row from the list
  * nobody was looking at.
  *
- * The two halves meet at `kraf_sub_bidangs.kraf_bidang_code_id`, which is
- * optional, and nowhere else.
+ * The two halves do not meet. A code comes from a separate certification, not
+ * from the hierarchy; a company carries its own in `companies.kraf_code`.
  */
 class KrafBidang extends Model
 {

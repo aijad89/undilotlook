@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Model;
  * `bidang_id` is the `code` IS NULL half of kraf_bidangs, the same half
  * `kraf_sub_bidangs.bidang_id` points at — so the two columns here describe one
  * path down the hierarchy. The craft CODE that the draw matches on is NOT here:
- * it is reached through `kraf_sub_bidangs.kraf_bidang_code_id`, and what the
- * draw actually compares is the string in `event_registrations.code`.
+ * it is the company's own `companies.kraf_code`, and what the draw actually
+ * compares is the string in `event_registrations.code`.
  *
  * Nothing cascades out of this row — it is a leaf — so there is no deletion
  * summary to write, only the trait's ordinary created/updated/deleted rows.

@@ -4,6 +4,7 @@ use App\Models\CompanyKraf;
 use App\Models\KrafBidang;
 use App\Models\KrafPengelasan;
 use App\Models\KrafSubBidang;
+use App\Models\Plot;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -14,7 +15,8 @@ use Illuminate\Support\Facades\DB;
 it('refuses to delete a code or a sub-category that is still in use', function () {
     $category = KrafBidang::factory()->create();
     $code = KrafBidang::factory()->code('TBPS')->create();
-    $sub = KrafSubBidang::factory()->codedAs($code)->create(['bidang_id' => $category->id]);
+    $sub = KrafSubBidang::factory()->create(['bidang_id' => $category->id]);
+    Plot::factory()->coded($code)->create();
     CompanyKraf::factory()->create(['bidang_id' => $category->id, 'sub_bidang_id' => $sub->id]);
 
     $admin = superAdmin();
@@ -71,14 +73,12 @@ it('adds a sub-category with or without classifications, and with no craft code'
     $code = KrafBidang::factory()->code('TBP')->create();
     $admin = superAdmin();
 
-    // A code sent anyway is not taken.
     $this->actingAs($admin, 'admin')->post(route('admin.settings.kraf-hierarchy.sub.store', $category), [
-        'name' => 'Batik', 'classification' => 'Batik Tulis', 'kraf_bidang_code_id' => $code->id,
+        'name' => 'Batik', 'classification' => 'Batik Tulis',
     ])->assertSessionHas('success');
 
     $sub = KrafSubBidang::where('name', 'Batik')->sole();
-    expect($sub->kraf_bidang_code_id)->toBeNull()
-        ->and($sub->pengelasan()->pluck('name')->all())->toBe(['Batik Tulis']);
+    expect($sub->pengelasan()->pluck('name')->all())->toBe(['Batik Tulis']);
 
     $this->actingAs($admin, 'admin')->post(route('admin.settings.kraf-hierarchy.sub.store', $category), [
         'name' => 'Songket', 'classification' => '',

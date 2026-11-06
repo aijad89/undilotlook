@@ -43,15 +43,6 @@ it('keeps a selection on the hierarchy half, never on a coding-sheet row', funct
         ->and($selection->subBidang->bidang_id)->toBe($selection->bidang_id);
 });
 
-it('reaches a craft code from a sub-category only through kraf_bidang_code_id', function () {
-    $code = KrafBidang::factory()->code('RKP')->create();
-    $sub = KrafSubBidang::factory()->codedAs($code)->create();
-
-    expect($sub->codeBidang->code)->toBe('RKP')
-        // The sub-category's own parent is still a category, not the code row.
-        ->and($sub->bidang->code)->toBeNull();
-});
-
-it('leaves a sub-category unmapped by default, because a code need not exist first', function () {
-    expect(KrafSubBidang::factory()->create()->kraf_bidang_code_id)->toBeNull();
+it('hangs a sub-category under a category, never under a code row', function () {
+    expect(KrafSubBidang::factory()->create()->bidang->code)->toBeNull();
 });

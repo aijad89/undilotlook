@@ -124,8 +124,8 @@ return new class extends Migration
          *                        coding sheet, which a plot is categorised by and
          *                        a draw entry is matched against.
          *
-         * They are two lists, two screens, two jobs. They meet at
-         * `kraf_sub_bidangs.kraf_bidang_code_id`, which is optional.
+         * They are two lists, two screens, two jobs, and they do not meet: a
+         * company's code is its own field (`companies.kraf_code`).
          *
          * Every query against one of them must say which. A listing that forgets
          * shows both, and a delete that forgets removes a row from the list
@@ -157,7 +157,6 @@ return new class extends Migration
             // The optional link to the coded half of `kraf_bidangs`. Optional is
             // the point: setting a company's craft category must never require a
             // code to exist first.
-            $table->foreignId('kraf_bidang_code_id')->nullable()->constrained('kraf_bidangs')->nullOnDelete();
 
             $table->string('name');
             $table->timestamps();
@@ -222,9 +221,8 @@ return new class extends Migration
 
             // `bidang_id` is the CATEGORY half of kraf_bidangs (`code` IS NULL) —
             // the same half `kraf_sub_bidangs.bidang_id` points at, which is what
-            // makes the pair below consistent. A selection's craft CODE is reached
-            // through `kraf_sub_bidangs.kraf_bidang_code_id`, never from this
-            // column. Both are NOT NULL.
+            // makes the pair below consistent. A company's craft CODE is not part of
+            // its selections — it is `companies.kraf_code`. Both are NOT NULL.
             $table->foreignId('bidang_id')->constrained('kraf_bidangs')->cascadeOnDelete();
             $table->foreignId('sub_bidang_id')->constrained('kraf_sub_bidangs')->cascadeOnDelete();
 

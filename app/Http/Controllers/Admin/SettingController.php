@@ -372,7 +372,6 @@ class SettingController extends Controller
             'plots' => DB::table('plots')->where('bidang_id', $bidang->id)->count(),
             'plan allocations' => DB::table('bidang_allocations')->where('bidang_id', $bidang->id)->count(),
             'preset allocations' => DB::table('preset_allocations')->where('bidang_id', $bidang->id)->count(),
-            'coded sub-categories' => DB::table('kraf_sub_bidangs')->where('kraf_bidang_code_id', $bidang->id)->count(),
         ])->filter();
 
         return $counts->map(fn ($n, $what) => "{$n} {$what}")->join(', ', ' and ');

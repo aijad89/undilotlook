@@ -28,14 +28,14 @@ disalin.
 
 | | |
 |---|---|
-| Laluan | `f:\herd\undilot` |
-| URL | `http://undilot.test` (Herd) |
-| DB | `undilot` pada `127.0.0.1` |
+| Laluan | `f:\herd\undilotlook` |
+| URL | `http://undilotlook.test` (Herd) |
+| DB | `undilotlook` pada `127.0.0.1` — sendiri, tidak dikongsi dengan undilot |
 | PHP CLI | `/c/Users/ALOY/.config/herd/bin/php84.bat` |
 | MySQL CLI | `/c/Program Files/MySQL/MySQL Server 9.5/bin/mysql.exe` |
 | Admin pertama | dari `.env` — `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` |
-| Log masuk pantas | `http://undilot.test/auto` — sebarang akaun, tanpa kata laluan, plus butang *Work the queue* |
-| DB suite pelayar | `undilot_e2e`, dicipta dan ditetapkan semula oleh `tests/e2e/serve.js` |
+| Log masuk pantas | `http://undilotlook.test/auto` — sebarang akaun, tanpa kata laluan, plus butang *Work the queue* |
+| DB suite pelayar | `undilotlook_e2e`, dicipta dan ditetapkan semula oleh `tests/e2e/serve.js` |
 | Git | `https://github.com/aijad89/undilot` (peribadi), cawangan `main` |
 
 `artisan tinker <fail>` **tergantung** pada mesin ini. Guna klien MySQL untuk
@@ -202,7 +202,9 @@ dengan `when` yang bertanya soalan yang sama.
 | `NULL` | kategori kraf (TEKSTIL, HASIL RIMBA…) | Craft Hierarchy |
 | berisi | kod kraf (TBPS, RKP…) dari helaian pengekodan | Craft Category Code |
 
-Keduanya bertemu pada `kraf_sub_bidangs.kraf_bidang_code_id`, yang **pilihan**.
+Keduanya **tidak berkait**. Kod kraf datang daripada pensijilan lain, bukan
+daripada hierarki; syarikat membawa kodnya sendiri dalam `companies.kraf_code`,
+yang mencadangkan kod pada senarai cabutan.
 
 **Setiap query mesti menyatakan yang mana** — `KrafBidang::categories()` atau
 `::codes()`. Senarai yang terlupa memaparkan kedua-duanya; padam yang terlupa
@@ -219,7 +221,7 @@ Kategori kraf **tetap** — disemai, tidak ditambah atau dipadam di skrin. Di ba
 sub-kategori ada **klasifikasi** dan **produk**, kedua-duanya pilihan, dan
 syarikat menandanya per pilihan (`company_kraf_pengelasan`,
 `company_kraf_produk`). `kraf_produks` membawa `sub_bidang_id` **dan**
-`bidang_id`: `bidang_id` dikekalkan selari kerana undilot (DB dev yang sama)
+`bidang_id`: `bidang_id` dikekalkan selari kerana kod lama
 masih membacanya, dan produk dengan `sub_bidang_id` NULL ialah baris lama yang
 "belum diletakkan" — tidak boleh ditanda oleh syarikat.
 
@@ -366,13 +368,13 @@ Empat perkara menggigit setiap kali:
 
 ```
 vendor/pestphp/pest/bin/pest              # SQLite dalam-memori
-npx playwright test                        # MySQL undilot_e2e, melalui tests/e2e/serve.js
+npx playwright test                        # MySQL undilotlook_e2e, melalui tests/e2e/serve.js
 ```
 
 ### Suite pelayar memiliki persekitarannya sendiri
 
 `tests/e2e/serve.js` menulis `.env.e2e` (dari `.env` + `tests/e2e/env.js`),
-menetapkan semula `undilot_e2e`, dan menghidupkan pelayan **serta** pekerja queue.
+menetapkan semula `undilotlook_e2e`, dan menghidupkan pelayan **serta** pekerja queue.
 Jangan jalankan suite terhadap pelayan yang dihidupkan dengan tangan.
 
 `.env.e2e` itu **fail**, bukan pemboleh ubah proses, dengan sebab yang diukur:

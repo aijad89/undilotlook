@@ -11,7 +11,7 @@ const E2E_ENV = {
     APP_ENV: 'e2e',
     APP_DEBUG: 'true',
     DB_CONNECTION: 'mysql',
-    DB_DATABASE: 'undilot_e2e',
+    DB_DATABASE: 'undilotlook_e2e',
     SESSION_DRIVER: 'database',
     QUEUE_CONNECTION: 'database',
     CACHE_STORE: 'database',
