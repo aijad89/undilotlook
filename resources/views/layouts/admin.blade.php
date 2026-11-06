@@ -215,6 +215,9 @@
                 return false;
             };
 
+            $globalOnly = fn ($admin) => $admin->hasGlobalAccess();
+
+
             $nav = [
                 [
                     'label' => 'Dashboard',
@@ -240,7 +243,6 @@
                         // The draw list lives under an event, so it lights Events up too.
                         ['label' => 'Events', 'route' => 'admin.events.index', 'match' => ['admin.events.*']],
                         ['label' => 'Lot Draw', 'route' => 'admin.polling.index', 'match' => ['admin.polling.*']],
-                        ['label' => 'Reports', 'route' => 'admin.reports.index', 'match' => ['admin.reports.*']],
                     ],
                 ],
                 [
@@ -250,18 +252,20 @@
                     'match' => ['admin.announcements.*'],
                 ],
                 [
-                    // National lists, the public site and the audit trail: a state
-                    // admin editing any of it would be editing thirteen other zones.
+                    // Reports are for every role (each export filters to the admin's
+                    // zone). The rest is national lists, the public site and the audit
+                    // trail: a state admin editing any of it would be editing thirteen
+                    // other zones, so those are super/HQ only.
                     'label'    => 'Setting',
                     'icon'     => 'sliders',
-                    'when'     => fn ($admin) => $admin->hasGlobalAccess(),
                     'children' => [
-                        ['label' => 'Dropdown Lists', 'route' => 'admin.settings.lists'],
-                        ['label' => 'Craft Category Code', 'route' => 'admin.settings.kraf-codes'],
-                        ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy'],
-                        ['label' => 'Footer Pages', 'route' => 'admin.footer-menus.index', 'match' => ['admin.footer-menus.*']],
-                        ['label' => 'Social Links', 'route' => 'admin.social-links.index', 'match' => ['admin.social-links.*']],
-                        ['label' => 'Audit Trail', 'route' => 'admin.audit-trails.index', 'match' => ['admin.audit-trails.*']],
+                        ['label' => 'Reports', 'route' => 'admin.reports.index', 'match' => ['admin.reports.*']],
+                        ['label' => 'Dropdown Lists', 'route' => 'admin.settings.lists', 'when' => $globalOnly],
+                        ['label' => 'Craft Category Code', 'route' => 'admin.settings.kraf-codes', 'when' => $globalOnly],
+                        ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy', 'when' => $globalOnly],
+                        ['label' => 'Footer Pages', 'route' => 'admin.footer-menus.index', 'match' => ['admin.footer-menus.*'], 'when' => $globalOnly],
+                        ['label' => 'Social Links', 'route' => 'admin.social-links.index', 'match' => ['admin.social-links.*'], 'when' => $globalOnly],
+                        ['label' => 'Audit Trail', 'route' => 'admin.audit-trails.index', 'match' => ['admin.audit-trails.*'], 'when' => $globalOnly],
                     ],
                 ],
             ];

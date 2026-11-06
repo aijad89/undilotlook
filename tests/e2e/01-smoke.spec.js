@@ -49,14 +49,14 @@ test('every admin screen opens for a super admin, with no browser errors', async
 test('a state admin sees no national screens in the sidebar and is refused them by URL', async ({ page }) => {
     await signInAs(page, 'e2e-admin@e2e.test');
 
-    // By text, not by link role: 'Setting' is a group button, so a link count
-    // of zero would pass whether or not it showed. The first loop proves the
+    // By text, not by link role: a group is a button, so a link count of zero
+    // would pass whether or not it showed. The first loop proves the
     // locator finds what IS there, so the second cannot pass vacuously.
     const sidebar = page.locator('#sidebar');
-    for (const label of ['User', 'Companies', 'The Event', 'Events', 'Lot Draw', 'Reports', 'Announcements']) {
+    for (const label of ['User', 'Companies', 'The Event', 'Events', 'Lot Draw', 'Announcements', 'Setting', 'Reports']) {
         await expect(sidebar.getByText(label, { exact: true }), label).toHaveCount(1);
     }
-    for (const label of ['Setting', 'Dropdown Lists', 'Audit Trail', 'Footer Pages', 'HQ Admins', 'State Admins']) {
+    for (const label of ['Dropdown Lists', 'Audit Trail', 'Footer Pages', 'HQ Admins', 'State Admins']) {
         await expect(sidebar.getByText(label, { exact: true }), label).toHaveCount(0);
     }
 

@@ -28,9 +28,9 @@ it('gives a super admin every item, admins in two lists', function () {
     expect(sidebarLabels(sidebarOf(superAdmin())))->toBe([
         'Dashboard',
         'User', 'Companies', 'HQ Admins', 'State Admins',
-        'The Event', 'Events', 'Lot Draw', 'Reports',
+        'The Event', 'Events', 'Lot Draw',
         'Announcements',
-        'Setting', 'Dropdown Lists', 'Craft Category Code', 'Craft Hierarchy', 'Footer Pages', 'Social Links', 'Audit Trail',
+        'Setting', 'Reports', 'Dropdown Lists', 'Craft Category Code', 'Craft Hierarchy', 'Footer Pages', 'Social Links', 'Audit Trail',
         'Sign Out',
     ]);
 });
@@ -42,12 +42,13 @@ it('gives an hq admin the state admins but not the hq list', function () {
         ->not->toContain('HQ Admins');
 });
 
-it('gives a state admin no admin lists and no settings', function () {
+it('gives a state admin no admin lists, and only Reports under Setting', function () {
     expect(sidebarLabels(sidebarOf(stateAdmin())))->toBe([
         'Dashboard',
         'User', 'Companies',
-        'The Event', 'Events', 'Lot Draw', 'Reports',
+        'The Event', 'Events', 'Lot Draw',
         'Announcements',
+        'Setting', 'Reports',
         'Sign Out',
     ]);
 });
