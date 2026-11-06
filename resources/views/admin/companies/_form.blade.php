@@ -99,6 +99,12 @@
         </div>
 
         <div class="col-md-6">
+            <label class="mac-label" for="community_id">Community ID</label>
+            <input type="text" id="community_id" name="community_id" class="mac-form-control"
+                   value="{{ $owner('community_id', 'community_id') }}" maxlength="50">
+        </div>
+
+        <div class="col-md-6">
             <label class="mac-label" for="password">
                 {{ $editing ? 'Reset password' : 'Password' }}
             </label>

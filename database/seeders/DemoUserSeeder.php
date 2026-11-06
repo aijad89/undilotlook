@@ -51,6 +51,7 @@ class DemoUserSeeder extends Seeder
                 'password' => Str::random(40),
                 'phone' => '01'.random_int(10000000, 99999999),
                 'ic_number' => null,
+                'community_id' => sprintf('KOM-%04d', $i + 1),
                 'is_active' => true,
             ]);
 
@@ -61,6 +62,7 @@ class DemoUserSeeder extends Seeder
                 'is_active' => true,
             ]);
             $company->kraf_code = $code; // not fillable: admin only
+            $company->plot_size = $code === 'RKH' ? '3x6' : '3x3';
             $company->save();
 
             if ($subs->isNotEmpty() && ! $company->krafSelections()->exists()) {

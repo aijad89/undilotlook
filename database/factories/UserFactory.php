@@ -34,6 +34,7 @@ class UserFactory extends Factory
             'phone' => fake()->numerify('01#-#######'),
             // Dashed, as the Companies screen stores it.
             'ic_number' => fake()->unique()->numerify('######-##-####'),
+            'community_id' => null,
             'is_active' => true,
             'last_seen_at' => null,
             'remember_token' => Str::random(10),

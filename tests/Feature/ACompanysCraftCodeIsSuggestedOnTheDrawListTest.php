@@ -82,3 +82,38 @@ it('never shows the code to the participant', function () {
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertOk()->assertDontSee('ZZQX');
 });
+
+it('saves a booth size beside the code, and refuses one not on the list', function () {
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $admin = stateAdmin('Johor');
+
+    $this->actingAs($admin, 'admin')
+        ->put(route('admin.companies.kraf-code.update', $company), ['plot_size' => '3x6'])
+        ->assertSessionHas('success');
+    expect($company->fresh()->plot_size)->toBe('3x6');
+
+    $this->actingAs($admin, 'admin')
+        ->put(route('admin.companies.kraf-code.update', $company), ['plot_size' => '99x99'])
+        ->assertSessionHasErrors('plot_size');
+    expect($company->fresh()->plot_size)->toBe('3x6');
+});
+
+it('fills each company\'s own booth size in on the draw list, else 3x3, unless one is picked there', function () {
+    $event = Event::factory()->create();
+    $big = Company::factory()->create(['state' => 'Johor', 'plot_size' => '3x6']);
+    $plain = Company::factory()->create(['state' => 'Johor']);
+    $admin = stateAdmin('Johor');
+
+    $this->actingAs($admin, 'admin')->post(route('admin.events.registrations.store', $event), [
+        'company_id' => [$big->id, $plain->id],
+    ]);
+
+    $sizes = EventRegistration::pluck('plot_size', 'company_id');
+    expect($sizes[$big->id])->toBe('3x6')->and($sizes[$plain->id])->toBe('3x3');
+
+    $other = Event::factory()->create();
+    $this->actingAs($admin, 'admin')->post(route('admin.events.registrations.store', $other), [
+        'company_id' => [$big->id], 'plot_size' => '3x9',
+    ]);
+    expect(EventRegistration::where('event_id', $other->id)->sole()->plot_size)->toBe('3x9');
+});

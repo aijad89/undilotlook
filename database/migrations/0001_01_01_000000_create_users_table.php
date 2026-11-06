@@ -24,6 +24,10 @@ return new class extends Migration
             // identifier and not a secret.
             $table->string('ic_number')->nullable();
 
+            // The office's community ID for this participant. Free text and not
+            // unique: the office has not said whether IDs are ever shared.
+            $table->string('community_id', 50)->nullable();
+
             // Accounts are created by an admin, never self-registered, so there is
             // no verification step and no `email_verified_at`. Switching an account
             // off is what `is_active` is for, and EnforceUserIsActive turns that

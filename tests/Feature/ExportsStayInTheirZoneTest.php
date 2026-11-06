@@ -59,5 +59,5 @@ it('neutralises a value Excel would run as a formula', function () {
 
     $rows = exportRows($this->actingAs(superAdmin(), 'admin')->get(route('admin.reports.companies')));
 
-    expect($rows[1][0])->toStartWith("'=");
+    expect($rows[1][array_search('Company', $rows[0])])->toStartWith("'=");
 });

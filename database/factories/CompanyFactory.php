@@ -32,6 +32,7 @@ class CompanyFactory extends Factory
             'state' => 'Johor',
             'entrepreneur_category' => 'Micro, Small & Medium (MSM)',
             'kraf_code' => null,
+            'plot_size' => null,
             'is_active' => true,
         ];
     }

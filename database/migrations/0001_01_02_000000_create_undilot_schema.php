@@ -209,6 +209,11 @@ return new class extends Migration
             // added, and the code that counts stays the one on the draw list.
             $table->string('kraf_code')->nullable();
 
+            // The company's usual booth size (3x3, 3x6…), the same kind of
+            // suggestion: copied to event_registrations.plot_size when the
+            // company is added to a draw list, where it can still be changed.
+            $table->string('plot_size')->nullable();
+
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 

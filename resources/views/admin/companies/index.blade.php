@@ -14,14 +14,20 @@
             <p class="mac-muted mb-0">One company, one account. Both are made on the same form.</p>
         </div>
 
-        <a href="{{ route('admin.companies.create') }}" class="mac-btn-primary">
-            <i class="bi bi-plus-lg me-1"></i> New Company
-        </a>
+        <div class="d-flex flex-wrap gap-2">
+            {{-- Downloads the rows this table is showing: same search, zone and "missing" filter. --}}
+            <a href="{{ route('admin.reports.companies', request()->only('search', 'state', 'missing')) }}" class="mac-btn-secondary">
+                <i class="bi bi-download me-1"></i> Export
+            </a>
+            <a href="{{ route('admin.companies.create') }}" class="mac-btn-primary">
+                <i class="bi bi-plus-lg me-1"></i> New Company
+            </a>
+        </div>
     </div>
 
     <form method="GET" class="mac-filter-bar mb-3">
         <input type="search" name="search" value="{{ request('search') }}"
-               class="mac-input" placeholder="Company, owner or email" aria-label="Search companies">
+               class="mac-input" placeholder="Company, owner, email, IC or community ID" aria-label="Search companies">
 
         @if($canFilterZone)
             <select name="state" class="mac-select" aria-label="Filter by zone">
@@ -48,38 +54,47 @@
             <table class="mac-table">
                 <thead>
                     <tr>
+                        <th class="text-end">No.</th>
+                        <th>Name</th>
+                        <th>IC</th>
+                        <th>Community ID</th>
                         <th>Company</th>
-                        <th>Account</th>
+                        <th>Craft category</th>
+                        <th>Sub-category</th>
                         <th>Zone</th>
-                        <th>Status</th>
-                        <th class="text-end">Draws</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($companies as $company)
                         <tr>
+                            <td class="text-end mac-muted">{{ $companies->firstItem() + $loop->index }}</td>
+                            <td>{{ $company->user->name }}</td>
+                            <td class="text-nowrap">{{ $company->user->ic_number ?? '—' }}</td>
+                            <td class="text-nowrap">{{ $company->user->community_id ?? '—' }}</td>
                             <td>
                                 <strong>{{ $company->name }}</strong>
-                                @if($company->entrepreneur_category)
-                                    <div class="mac-text-sm mac-muted">{{ $company->entrepreneur_category }}</div>
-                                @endif
-                            </td>
-                            <td class="mac-text-sm">
-                                {{ $company->user->name }}
-                                <div class="mac-muted">{{ $company->user->email }}</div>
-                            </td>
-                            <td class="mac-text-sm">{{ $company->state ?? '—' }}</td>
-                            <td>
-                                <span class="mac-badge {{ $company->is_active ? 'mac-badge-green' : 'mac-badge-gray' }}">
-                                    {{ $company->is_active ? 'On the books' : 'Switched off' }}
-                                </span>
-                                @unless($company->user->is_active)
-                                    <div class="mac-text-sm mac-muted mt-1">Account cannot sign in</div>
+                                @unless($company->is_active)
+                                    <div><span class="mac-badge mac-badge-gray">Switched off</span></div>
                                 @endunless
                             </td>
-                            <td class="text-end">{{ $company->event_registrations_count }}</td>
-                            <td class="text-end">
+                            {{-- One line per selection, so each sub-category sits beside its category. --}}
+                            <td class="mac-text-sm">
+                                @forelse($company->krafSelections as $selection)
+                                    <div>{{ $selection->bidang?->name }}</div>
+                                @empty
+                                    —
+                                @endforelse
+                            </td>
+                            <td class="mac-text-sm">
+                                @forelse($company->krafSelections as $selection)
+                                    <div>{{ $selection->subBidang?->name }}</div>
+                                @empty
+                                    —
+                                @endforelse
+                            </td>
+                            <td class="mac-text-sm">{{ $company->state ?? '—' }}</td>
+                            <td class="text-end text-nowrap">
                                 <a href="{{ route('admin.companies.edit', $company) }}"
                                    class="mac-action-btn" title="Edit">
                                     <i class="bi bi-pencil"></i>
@@ -98,7 +113,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6">
+                            <td colspan="9">
                                 <div class="mac-empty">
                                     <div class="mac-empty-icon"><i class="bi bi-building"></i></div>
                                     <p class="mac-empty-text">

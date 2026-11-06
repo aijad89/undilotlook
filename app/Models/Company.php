@@ -46,6 +46,26 @@ class Company extends Model
     }
 
     /**
+     * The Companies list's filters: search, zone, and the dashboard's "missing"
+     * links. Shared by the list and its Export, so the file is always the rows
+     * on screen. A state admin's own-zone SCOPE is not here; each caller adds it.
+     */
+    public function scopeListFilters($query, \Illuminate\Http\Request $request)
+    {
+        return $query
+            ->when($request->input('search'), fn ($q, $search) => $q->where(
+                fn ($w) => $w->where('name', 'like', "%{$search}%")
+                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
+                        ->orWhere('email', 'like', "%{$search}%")
+                        ->orWhere('ic_number', 'like', "%{$search}%")
+                        ->orWhere('community_id', 'like', "%{$search}%"))
+            ))
+            ->when($request->input('state'), fn ($q, $zone) => $q->where('state', $zone))
+            ->when($request->input('missing') === 'category', fn ($q) => $q->whereDoesntHave('krafSelections'))
+            ->when($request->input('missing') === 'code', fn ($q) => $q->whereNull('kraf_code'));
+    }
+
+    /**
      * The draw lists this company is on.
      *
      * NAMED `eventRegistrations()`, NOT `registrations()`. A relation called by
@@ -58,6 +78,38 @@ class Company extends Model
     public function eventRegistrations()
     {
         return $this->hasMany(EventRegistration::class);
+    }
+
+    /**
+     * Set the company's booth size and carry it to its draw lists, so the two
+     * stay in step whichever screen it was changed on.
+     *
+     * Only draw lists whose lot draw has NOT started (`polling_status` draft),
+     * and only rows holding no lot: once a draw is open, a size change would
+     * move a company onto plots of another size mid-draw. Those rows keep the
+     * size they were drawn in.
+     *
+     * Row by row through the model, not a mass update, so `Auditable` records
+     * each change. Clearing the company's size (null) leaves the rows alone —
+     * a draw-list row always needs a size.
+     */
+    public function syncBoothSize(?string $size): void
+    {
+        DB::transaction(function () use ($size) {
+            $this->plot_size = $size; // not fillable: admin only
+            $this->save();
+
+            if ($size === null) {
+                return;
+            }
+
+            $this->eventRegistrations()
+                ->whereNull('plot_id')
+                ->where('plot_size', '!=', $size)
+                ->whereHas('event', fn ($e) => $e->where('polling_status', 'draft'))
+                ->get()
+                ->each->update(['plot_size' => $size]);
+        });
     }
 
     /**

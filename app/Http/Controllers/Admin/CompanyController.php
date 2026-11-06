@@ -13,6 +13,7 @@ use App\Models\User;
 use App\Support\AdminZones;
 use App\Support\EntrepreneurCategories;
 use App\Support\KrafPicker;
+use App\Support\PlotSizes;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -48,17 +49,8 @@ class CompanyController extends Controller
         $admin = $request->user('admin');
 
         $companies = Company::query()
-            ->with('user')
-            ->withCount('eventRegistrations')
-            ->when($request->input('search'), fn ($q, $search) => $q->where(
-                fn ($w) => $w->where('name', 'like', "%{$search}%")
-                    ->orWhereHas('user', fn ($u) => $u->where('name', 'like', "%{$search}%")
-                        ->orWhere('email', 'like', "%{$search}%"))
-            ))
-            ->when($request->input('state'), fn ($q, $state) => $q->where('state', $state))
-            // The dashboard's "needs attention" links land here.
-            ->when($request->input('missing') === 'category', fn ($q) => $q->whereDoesntHave('krafSelections'))
-            ->when($request->input('missing') === 'code', fn ($q) => $q->whereNull('kraf_code'))
+            ->with(['user', 'krafSelections.bidang', 'krafSelections.subBidang'])
+            ->listFilters($request)
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('state', $admin->state))
             ->orderBy('name')
             ->paginate(20)
@@ -114,6 +106,7 @@ class CompanyController extends Controller
             'email' => ['required', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['nullable', 'string', 'max:30'],
             'ic_number' => ['nullable', 'string', 'regex:/^\d{6}-\d{2}-\d{4}$/', 'unique:users,ic_number'],
+            'community_id' => ['nullable', 'string', 'max:50'],
             // Optional. Blank means the office is not handing a password over in
             // person and the owner will set one through the reset flow.
             'password' => ['nullable', 'confirmed', Password::defaults()],
@@ -128,6 +121,7 @@ class CompanyController extends Controller
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 'ic_number' => $data['ic_number'] ?? null,
+                'community_id' => $data['community_id'] ?? null,
                 'is_active' => $request->boolean('account_active', true),
                 // A random password when none was typed, NOT a default one: a
                 // fallback password in tracked code is a password in git history
@@ -159,6 +153,7 @@ class CompanyController extends Controller
             'zones' => $this->zonesFor($request->user('admin')),
             'picker' => KrafPicker::data($company),
             'codes' => KrafPicker::codes(),
+            'plotSizes' => PlotSizes::all(),
         ]);
     }
 
@@ -182,6 +177,7 @@ class CompanyController extends Controller
                 'nullable', 'string', 'regex:/^\d{6}-\d{2}-\d{4}$/',
                 Rule::unique('users', 'ic_number')->ignore($user->id),
             ],
+            'community_id' => ['nullable', 'string', 'max:50'],
             // Left blank on every ordinary save. Filled only when the office is
             // resetting the password for someone who cannot do it themselves.
             'password' => ['nullable', 'confirmed', Password::defaults()],
@@ -193,6 +189,7 @@ class CompanyController extends Controller
                 'email' => $data['email'],
                 'phone' => $data['phone'] ?? null,
                 'ic_number' => $data['ic_number'] ?? null,
+                'community_id' => $data['community_id'] ?? null,
                 // Two switches, two facts. A company switched off is off the
                 // books; an account switched off cannot sign in, and
                 // EnforceUserIsActive ends the session of anyone already in.
@@ -340,12 +337,15 @@ class CompanyController extends Controller
 
         $data = $request->validate([
             'kraf_code' => ['nullable', Rule::in(KrafPicker::codes()->pluck('code')->all())],
+            'plot_size' => ['nullable', Rule::in(PlotSizes::all())],
         ]);
 
+        // Neither is fillable: both are admin-only. The booth size also moves the
+        // company's draw-list rows in events whose draw has not started.
         $company->kraf_code = $data['kraf_code'] ?? null;
-        $company->save();
+        $company->syncBoothSize($data['plot_size'] ?? null);
 
-        return $this->backTo('craft-code')->with('success', $company->kraf_code ? 'Craft code saved.' : 'Craft code cleared.');
+        return $this->backTo('craft-code')->with('success', 'Craft code and booth size saved.');
     }
 
     /**

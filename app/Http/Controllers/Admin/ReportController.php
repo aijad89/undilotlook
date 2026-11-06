@@ -58,25 +58,35 @@ class ReportController extends Controller
     {
         $admin = $request->user('admin');
 
-        $query = Company::with(['user', 'krafSelections.bidang'])
+        $query = Company::with(['user', 'krafSelections.bidang', 'krafSelections.subBidang'])
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('state', $admin->state))
-            ->when($request->input('state'), fn ($q, $zone) => $q->where('state', $zone))
+            ->listFilters($request)
             ->when($request->input('bidang_id'), fn ($q, $id) => $q->whereHas('krafSelections', fn ($k) => $k->where('bidang_id', $id)))
             ->when($request->filled('active'), fn ($q) => $q->where('is_active', $request->input('active') === '1'))
             ->orderBy('name');
 
+        // The Companies table's columns first, then the extra contact columns.
+        $n = 0;
+
         return $this->csv('companies', [
-            'Company', 'Owner', 'Zone', 'Craft category', 'Entrepreneur category', 'Active', 'Email', 'Phone',
-        ], $query, fn ($c) => [
-            $c->name,
-            $c->user->name,
-            $c->state,
-            $this->category($c),
-            $c->entrepreneur_category,
-            $c->is_active ? 'Yes' : 'No',
-            $c->user->email,
-            $c->user->phone,
-        ]);
+            'No.', 'Name', 'IC', 'Community ID', 'Company', 'Craft category', 'Sub-category', 'Zone',
+            'Entrepreneur category', 'Active', 'Email', 'Phone',
+        ], $query, function ($c) use (&$n) {
+            return [
+                ++$n,
+                $c->user->name,
+                $c->user->ic_number,
+                $c->user->community_id,
+                $c->name,
+                $c->krafSelections->map(fn ($k) => $k->bidang?->name)->join('; '),
+                $c->krafSelections->map(fn ($k) => $k->subBidang?->name)->join('; '),
+                $c->state,
+                $c->entrepreneur_category,
+                $c->is_active ? 'Yes' : 'No',
+                $c->user->email,
+                $c->user->phone,
+            ];
+        });
     }
 
     /** One row per event: how full its draw is, and how far it has got. */

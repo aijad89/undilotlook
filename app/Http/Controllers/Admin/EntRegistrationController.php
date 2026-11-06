@@ -63,7 +63,7 @@ class EntRegistrationController extends Controller
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('state', $admin->state))
             ->whereDoesntHave('eventRegistrations', fn ($q) => $q->where('event_id', $event->id))
             ->orderBy('name')
-            ->get(['id', 'name', 'state', 'kraf_code']);
+            ->get(['id', 'name', 'state', 'kraf_code', 'plot_size']);
 
         return view('admin.events.registrations.index', [
             'event' => $event,
@@ -118,11 +118,17 @@ class EntRegistrationController extends Controller
                         'user_id' => $company->user_id,
                         'code' => $code,
                         'code_updated_at' => $code ? now() : null,
-                        'plot_size' => $data['plot_size'] ?? '3x3',
+                        // Same for the booth size; 3x3 when neither says.
+                        'plot_size' => $data['plot_size'] ?? $company->plot_size ?? '3x3',
                     ]
                 );
 
                 $added += $registration->wasRecentlyCreated ? 1 : 0;
+
+                // A size picked for the batch becomes the company's own too.
+                if ($registration->wasRecentlyCreated && isset($data['plot_size'])) {
+                    $company->syncBoothSize($data['plot_size']);
+                }
             }
         });
 
@@ -146,7 +152,11 @@ class EntRegistrationController extends Controller
             $data['code_updated_at'] = now();
         }
 
-        $registration->update($data);
+        DB::transaction(function () use ($registration, $data) {
+            $registration->update($data);
+            // The company's booth size follows, and with it its other draw lists.
+            $registration->company->syncBoothSize($data['plot_size']);
+        });
 
         return back()->with('code_success', 'Saved.');
     }
@@ -228,7 +238,15 @@ class EntRegistrationController extends Controller
             ? ['code' => $data['code'], 'code_updated_at' => now()]
             : ['plot_size' => $data['plot_size']];
 
-        DB::transaction(fn () => $rows->each->update($changes));
+        DB::transaction(function () use ($rows, $changes, $data) {
+            $rows->each->update($changes);
+
+            // A size set here becomes each company's own, and moves its other draw lists.
+            if ($data['action'] === 'set_size') {
+                $rows->load('company')->pluck('company')->unique('id')
+                    ->each->syncBoothSize($data['plot_size']);
+            }
+        });
 
         return back()->with('success', "{$rows->count()} updated.");
     }

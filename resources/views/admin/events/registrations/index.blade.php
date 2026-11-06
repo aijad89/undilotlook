@@ -46,7 +46,7 @@
                         <select id="company_id" name="company_id[]" class="mac-select" multiple size="6" required>
                             @foreach($candidates as $candidate)
                                 <option value="{{ $candidate->id }}">
-                                    {{ $candidate->name }}@if($candidate->state) — {{ $candidate->state }}@endif @if($candidate->kraf_code) [{{ $candidate->kraf_code }}]@endif
+                                    {{ $candidate->name }}@if($candidate->state) — {{ $candidate->state }}@endif @if($candidate->kraf_code || $candidate->plot_size) [{{ collect([$candidate->kraf_code, $candidate->plot_size])->filter()->join(' · ') }}]@endif
                                 </option>
                             @endforeach
                         </select>
@@ -67,8 +67,10 @@
                     <div class="col-md-2">
                         <label class="mac-label" for="plot_size">Booth size</label>
                         <select id="plot_size" name="plot_size" class="mac-select">
+                            {{-- Blank: each company gets the size on its own page, else 3x3. --}}
+                            <option value="">— Each company's own size —</option>
                             @foreach($plotSizes as $size)
-                                <option value="{{ $size }}" @selected($size === '3x3')>{{ $size }}</option>
+                                <option value="{{ $size }}">{{ $size }}</option>
                             @endforeach
                         </select>
                     </div>

@@ -94,7 +94,7 @@ class DemoSeeder extends Seeder
         foreach (Company::whereNotNull('kraf_code')->get() as $company) {
             EventRegistration::firstOrCreate(
                 ['event_id' => $fair->id, 'company_id' => $company->id],
-                ['user_id' => $company->user_id, 'code' => $company->kraf_code, 'plot_size' => '3x3'],
+                ['user_id' => $company->user_id, 'code' => $company->kraf_code, 'plot_size' => $company->plot_size ?? '3x3'],
             );
         }
 

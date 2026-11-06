@@ -26,6 +26,7 @@ class User extends Authenticatable
         'password',
         'phone',
         'ic_number',
+        'community_id',
         'is_active',
     ];
 
