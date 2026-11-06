@@ -33,3 +33,24 @@ it('refuses outside local and testing, even with the route registered', function
         ->assertNotFound();
     $this->assertGuest('admin');
 });
+
+it('offers the quick sign-in on both logins and the home page only where /auto exists', function () {
+    $pages = [route('admin.login'), route('login'), route('home')];
+
+    foreach ($pages as $page) {
+        $this->get($page)->assertSee('Quick sign in')->assertSee('href="'.route('dev.auto').'"', false);
+    }
+
+    // A server never registers /auto; take it out and the button goes with it.
+    $routes = new \Illuminate\Routing\RouteCollection;
+    foreach (app('router')->getRoutes() as $route) {
+        if (! str_starts_with((string) $route->getName(), 'dev.auto')) {
+            $routes->add($route);
+        }
+    }
+    app('router')->setRoutes($routes);
+
+    foreach ($pages as $page) {
+        $this->get($page)->assertOk()->assertDontSee('Quick sign in');
+    }
+});

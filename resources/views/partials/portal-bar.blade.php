@@ -72,6 +72,10 @@
     .ap-text-size-btn.active { background: rgba(255, 255, 255, 0.14); color: #fff; }
     .ap-signin { display: inline-flex; align-items: center; min-height: 42px; margin-left: 4px; padding: 0 18px; border: 1px solid #fff; border-radius: var(--ui-r); background: #fff; color: var(--ui-navy-900); font-size: 1rem; font-weight: 600; text-decoration: none; white-space: nowrap; }
     .ap-signin:hover { background: var(--ui-blue-tint); color: var(--ui-navy-900); }
+    .ap-signin-dev { background: transparent; color: #fff; }
+    .ap-signin-dev:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+    /* A dev shortcut; on a phone it would push Sign In off the bar. */
+    @media (max-width: 575.98px) { .ap-signin-dev { display: none; } }
     .ap-user-menu {
         display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 4px 10px 4px 4px;
         border: none; border-radius: 999px; background: transparent; color: #fff; font-size: 1rem; font-weight: 600;
@@ -203,6 +207,10 @@
                 </ul>
             </div>
         @else
+            {{-- Only where /auto is registered (local, testing, e2e) — never on a server. --}}
+            @if(Route::has('dev.auto'))
+                <a href="{{ route('dev.auto') }}" class="ap-signin ap-signin-dev">Quick sign in</a>
+            @endif
             <a href="{{ route('login') }}" class="ap-signin">Sign In</a>
         @endauth
     </div>

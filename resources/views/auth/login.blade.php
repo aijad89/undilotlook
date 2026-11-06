@@ -67,5 +67,12 @@
             <button type="submit" class="btn btn-primary btn-lg">Sign In</button>
         </div>
     </form>
+
+    {{-- Only where /auto is registered (local, testing, e2e) — never on a server. --}}
+    @if(Route::has('dev.auto'))
+        <div class="d-grid mt-2">
+            <a href="{{ route('dev.auto') }}" class="btn btn-outline-secondary">Quick sign in (dev only)</a>
+        </div>
+    @endif
 </div>
 @endsection
