@@ -49,7 +49,6 @@ class EventFactory extends Factory
             'total_plots' => null,
 
             'use_preset' => false,
-            'draw_animation' => 'splitflap',
             'max_participants' => 100,
             'banner' => null,
             'colour' => null,

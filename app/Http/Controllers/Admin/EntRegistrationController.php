@@ -45,7 +45,7 @@ class EntRegistrationController extends Controller
             fn ($q) => $q->whereHas('company', fn ($c) => $c->where('state', $admin->state))
         );
 
-        $registrations = $scoped($event->registrations()->with('company.user'))
+        $registrations = $scoped($event->registrations()->with(['company.user', 'plot']))
             ->when($request->input('code'), fn ($q, $code) => $q->where('code', $code))
             ->when($request->input('search'), fn ($q, $search) => $q->whereHas(
                 'company', fn ($c) => $c->where('name', 'like', "%{$search}%")

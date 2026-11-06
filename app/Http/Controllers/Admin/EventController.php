@@ -215,7 +215,7 @@ class EventController extends Controller
      * is also what a zone rename rewrites. Not geography: `location` is where the
      * event actually is, and it is free text.
      *
-     * `polling_status`, `use_preset`, `draw_animation` and `total_plots` are
+     * `polling_status`, `use_preset` and `total_plots` are
      * deliberately absent. They belong to the draw, which has its own screen and
      * computes `total_plots` from the plan rather than taking it from a form.
      *

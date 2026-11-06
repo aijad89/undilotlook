@@ -263,6 +263,7 @@
                         ['label' => 'Dropdown Lists', 'route' => 'admin.settings.lists', 'when' => $globalOnly],
                         ['label' => 'Craft Category Code', 'route' => 'admin.settings.kraf-codes', 'when' => $globalOnly],
                         ['label' => 'Craft Hierarchy', 'route' => 'admin.settings.kraf-hierarchy', 'when' => $globalOnly],
+                        ['label' => 'Lot Draw', 'route' => 'admin.settings.lot-draw', 'when' => $globalOnly],
                         ['label' => 'Footer Pages', 'route' => 'admin.footer-menus.index', 'match' => ['admin.footer-menus.*'], 'when' => $globalOnly],
                         ['label' => 'Social Links', 'route' => 'admin.social-links.index', 'match' => ['admin.social-links.*'], 'when' => $globalOnly],
                         ['label' => 'Audit Trail', 'route' => 'admin.audit-trails.index', 'match' => ['admin.audit-trails.*'], 'when' => $globalOnly],

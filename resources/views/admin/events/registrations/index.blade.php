@@ -186,8 +186,8 @@
                                 </td>
 
                                 <td>
-                                    @if($registration->plot_id)
-                                        <span class="mac-badge mac-badge-green">Holds a lot</span>
+                                    @if($registration->plot)
+                                        <span class="mac-badge mac-badge-green text-nowrap">{{ $registration->plot->plot_code }}</span>
                                     @else
                                         <span class="mac-muted mac-text-sm">—</span>
                                     @endif

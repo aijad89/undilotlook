@@ -291,7 +291,6 @@ return new class extends Migration
             $table->integer('total_plots')->nullable();
 
             $table->boolean('use_preset')->default(false);
-            $table->string('draw_animation', 20)->default('splitflap');
             $table->unsignedInteger('max_participants');
 
             $table->string('banner')->nullable();

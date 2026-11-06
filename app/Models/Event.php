@@ -42,7 +42,6 @@ class Event extends Model
         'auto_polling_open',
         'auto_polling_close',
         'use_preset',
-        'draw_animation',
         'max_participants',
         'banner',
         'colour',
@@ -110,11 +109,19 @@ class Event extends Model
         'envelope' => 'Sealed envelope',
     ];
 
-    public function drawAnimation(): string
+    /** The settings key the reveal is stored under — one choice for every event. */
+    public const DRAW_ANIMATION_SETTING = 'draw_animation';
+
+    /**
+     * The reveal every event uses, chosen in Setting › Lot Draw. A missing or
+     * unknown value falls back to the split-flap board rather than breaking
+     * the Confirm page.
+     */
+    public static function lotReveal(): string
     {
-        return array_key_exists($this->draw_animation, self::DRAW_ANIMATIONS)
-            ? $this->draw_animation
-            : 'splitflap';
+        $chosen = Setting::get(self::DRAW_ANIMATION_SETTING);
+
+        return array_key_exists((string) $chosen, self::DRAW_ANIMATIONS) ? $chosen : 'splitflap';
     }
 
     public function registrations()

@@ -144,7 +144,6 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('{event}/generate-plots', [PollingController::class, 'generatePlots'])->name('generate-plots');
                 Route::post('{event}/status', [PollingController::class, 'changeStatus'])->name('change-status');
                 Route::post('{event}/process', [PollingController::class, 'processResults'])->name('process');
-                Route::post('{event}/draw-animation', [PollingController::class, 'updateDrawAnimation'])->name('draw-animation');
                 Route::post('{event}/preset', [PollingController::class, 'presetAssign'])->name('preset-assign');
                 Route::post('{event}/plots/{plot}/unassign', [PollingController::class, 'unassignPlot'])->name('unassign-plot');
                 Route::get('{event}/paint', [PlotPainterController::class, 'edit'])->name('paint');
@@ -220,6 +219,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         /* Settings — national lists, so super and HQ only. */
         Route::middleware('can:manage-settings')->prefix('settings')->name('settings.')->group(function () {
             Route::get('lists', [SettingController::class, 'lists'])->name('lists');
+
+            Route::get('lot-draw', [SettingController::class, 'lotDraw'])->name('lot-draw');
+            Route::put('lot-draw', [SettingController::class, 'updateLotDraw'])->name('lot-draw.update');
             Route::put('lists/{list}', [SettingController::class, 'updateList'])->name('lists.update');
 
             Route::post('zones', [SettingController::class, 'storeZone'])->name('zones.store');

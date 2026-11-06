@@ -294,3 +294,12 @@ it('refuses to delete a company that holds a lot, in words an admin can read', f
 
     expect($company->fresh())->not->toBeNull();
 });
+
+it('shows each row the lot number it holds', function () {
+    $event = Event::factory()->create();
+    $plot = \App\Models\Plot::factory()->create(['event_id' => $event->id, 'plot_code' => 'A-TBP1']);
+    EventRegistration::factory()->create(['event_id' => $event->id, 'plot_id' => $plot->id]);
+
+    $this->actingAs(superAdmin(), 'admin')->get(route('admin.events.registrations.index', $event))
+        ->assertOk()->assertSee('A-TBP1');
+});

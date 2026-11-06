@@ -301,18 +301,6 @@
                     </div>
                 @endif
 
-                <div class="mac-card mac-card-padded mb-3">
-                    <h3 class="mac-card-title">Lot reveal</h3>
-                    <form method="POST" action="{{ route('admin.polling.draw-animation', $event) }}" class="d-flex gap-2 align-items-end">
-                        @csrf
-                        <select name="draw_animation" class="mac-select" style="max-width:240px" aria-label="Lot reveal">
-                            @foreach(\App\Models\Event::DRAW_ANIMATIONS as $key => $label)
-                                <option value="{{ $key }}" @selected($event->draw_animation === $key)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <button type="submit" class="mac-btn-secondary">Save</button>
-                    </form>
-                </div>
 
                 @if(in_array($stage, ['draft', 'cancelled'], true) && ! $planLocked)
                     <div class="mac-card mac-card-padded">

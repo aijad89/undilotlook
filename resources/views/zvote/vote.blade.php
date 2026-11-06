@@ -98,7 +98,7 @@
             @if(session('just_drawn') && isset($assignedPlot) && $assignedPlot)
                 @include('zvote.partials.lot-reveal', [
                     'lotCode' => $assignedPlot->plot_code,
-                    'style'   => $event->drawAnimation(),
+                    'style'   => \App\Models\Event::lotReveal(),
                 ])
             @endif
 

@@ -30,7 +30,7 @@ it('gives a super admin every item, admins in two lists', function () {
         'User', 'Companies', 'HQ Admins', 'State Admins',
         'The Event', 'Events', 'Lot Draw',
         'Announcements',
-        'Setting', 'Reports', 'Dropdown Lists', 'Craft Category Code', 'Craft Hierarchy', 'Footer Pages', 'Social Links', 'Audit Trail',
+        'Setting', 'Reports', 'Dropdown Lists', 'Craft Category Code', 'Craft Hierarchy', 'Lot Draw', 'Footer Pages', 'Social Links', 'Audit Trail',
         'Sign Out',
     ]);
 });

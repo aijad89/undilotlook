@@ -1,9 +1,8 @@
 {{--
     The event form, shared by create and edit.
 
-    WHAT IS DELIBERATELY NOT HERE. `polling_status`, `use_preset`,
-    `draw_animation` and `total_plots` belong to the draw, which has its own
-    screen; `total_plots` is computed from the plan and would be a lie if typed.
+    WHAT IS DELIBERATELY NOT HERE. `polling_status`, `use_preset` and
+    `total_plots` belong to the draw, which has its own screen; `total_plots` is computed from the plan and would be a lie if typed.
     `colour` is the calendar tint: CalendarPalette::EVENT_COLOURS.
 
     Expects:

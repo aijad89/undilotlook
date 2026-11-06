@@ -439,17 +439,6 @@ class PollingController extends Controller
             ->with('success', "{$result['allocated']} lot(s) assigned. Every company in the draw now has a lot.");
     }
 
-    /** Which reveal a participant sees on Confirm. Presentation only. */
-    public function updateDrawAnimation(Request $request, Event $event)
-    {
-        $validated = $request->validate([
-            'draw_animation' => ['required', Rule::in(array_keys(Event::DRAW_ANIMATIONS))],
-        ]);
-
-        $event->update($validated);
-
-        return back()->with('success', 'Lot reveal set to "'.Event::DRAW_ANIMATIONS[$validated['draw_animation']].'".');
-    }
 
     /** Set a lot aside for one company before the draw. */
     public function presetAssign(Request $request, Event $event)

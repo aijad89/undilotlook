@@ -3,10 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Event;
 use App\Models\KrafBidang;
 use App\Models\KrafPengelasan;
 use App\Models\KrafProduk;
 use App\Models\KrafSubBidang;
+use App\Models\Setting;
 use App\Support\AdminZones;
 use App\Support\EntrepreneurCategories;
 use App\Support\PlotSizes;
@@ -53,6 +55,24 @@ class SettingController extends Controller
             'entrepreneurCategories' => EntrepreneurCategories::all(),
             'canEditZones' => $request->user('admin')->isSuperAdmin(),
         ]);
+    }
+
+    /** Setting › Lot Draw: how a participant sees their lot, for every event. */
+    public function lotDraw()
+    {
+        return view('admin.settings.lot-draw', ['reveal' => Event::lotReveal()]);
+    }
+
+    /** Presentation only — the lot itself is decided before any reveal plays. */
+    public function updateLotDraw(Request $request)
+    {
+        $data = $request->validate([
+            'draw_animation' => ['required', Rule::in(array_keys(Event::DRAW_ANIMATIONS))],
+        ]);
+
+        Setting::set(Event::DRAW_ANIMATION_SETTING, $data['draw_animation']);
+
+        return back()->with('success', 'Lot reveal set to "'.Event::DRAW_ANIMATIONS[$data['draw_animation']].'" for every event.');
     }
 
     /**
