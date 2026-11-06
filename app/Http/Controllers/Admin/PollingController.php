@@ -224,6 +224,16 @@ class PollingController extends Controller
         $event->setRelation('plots', $event->plots->sortBy('plot_code', SORT_NATURAL)->values());
 
         if (! $admin->hasGlobalAccess()) {
+            // A set-aside lot is a surprise to the zone too, until it is confirmed.
+            Plot::maskPresets($event->plots);
+            Plot::maskPresets($event->registrations->pluck('plot'));
+            $event->registrations->each(function ($r) {
+                if ($r->plot && ! $r->plot->is_allocated) {
+                    $r->plot_id = null;
+                    $r->setRelation('plot', null);
+                }
+            });
+
             $event->setRelation('registrations', $event->registrations
                 ->filter(fn ($r) => $r->company?->state === $admin->state)->values());
 
@@ -575,6 +585,7 @@ class PollingController extends Controller
         // A state admin still sees the true counts, but not WHO holds another
         // zone's lot — redacted rather than dropped, or the counts would lie.
         if (! $admin->hasGlobalAccess()) {
+            Plot::maskPresets($plots);
             $plots->each(function ($p) use ($admin) {
                 if ($p->is_allocated && $p->company?->state !== $admin->state) {
                     $p->setRelation('company', null);

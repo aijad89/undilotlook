@@ -50,6 +50,41 @@ class Plot extends Model
         return $place.'-'.($tag ?: 'PLOT').$n;
     }
 
+    /**
+     * Set-aside lots that are still the office's surprise: the company has not
+     * confirmed yet and the draw has not closed. Only super and HQ see them.
+     */
+    public function scopeSecretPresets($query)
+    {
+        return $query->where('plots.allocation_type', 'preset')
+            ->whereHas('event', fn ($e) => $e->whereNotIn('polling_status', ['closed', 'completed']))
+            ->whereNotExists(fn ($p) => $p->from('polls')
+                ->whereColumn('polls.event_id', 'plots.event_id')
+                ->whereColumn('polls.user_id', 'plots.allocated_to'));
+    }
+
+    /**
+     * How a zone admin sees these plots: a secret preset looks free, any other
+     * preset looks drawn. In memory only — a masked plot is never saved.
+     */
+    public static function maskPresets(iterable $plots): void
+    {
+        $plots = collect($plots)->filter(fn ($p) => $p?->allocation_type === 'preset');
+        if ($plots->isEmpty()) {
+            return;
+        }
+
+        $secret = static::secretPresets()->whereIn('plots.id', $plots->pluck('id'))->pluck('plots.id')->flip();
+
+        foreach ($plots as $plot) {
+            if (isset($secret[$plot->id])) {
+                $plot->forceFill(['is_allocated' => false, 'is_locked' => false, 'company_id' => null, 'allocated_to' => null, 'allocated_at' => null])
+                    ->setRelation('company', null);
+            }
+            $plot->allocation_type = 'algorithm';
+        }
+    }
+
     public function event()
     {
         return $this->belongsTo(Event::class);

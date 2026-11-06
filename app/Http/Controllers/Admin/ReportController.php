@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Event;
 use App\Models\EventRegistration;
 use App\Models\KrafBidang;
+use App\Models\Plot;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -36,7 +37,10 @@ class ReportController extends Controller
     public function registrations(Request $request): StreamedResponse
     {
         $query = $this->scoped($request, EventRegistration::query())
-            ->with(['event', 'company.krafSelections.bidang', 'plot'])
+            ->with(['event', 'company.krafSelections.bidang',
+                // A set-aside lot is a surprise to the zone until it is confirmed.
+                'plot' => fn ($p) => $p->unless($request->user('admin')->hasGlobalAccess(), fn ($q) => $q->whereNot(fn ($w) => $w->secretPresets())),
+            ])
             ->when($request->input('event_id'), fn ($q, $id) => $q->where('event_id', $id))
             ->orderBy('event_id')->orderBy('id');
 
@@ -98,7 +102,8 @@ class ReportController extends Controller
         $query = Event::query()
             ->withCount([
                 'registrations as in_draw' => $mine,
-                'registrations as seated' => fn ($q) => $mine($q->whereNotNull('plot_id')),
+                'registrations as seated' => fn ($q) => $mine($q->whereNotNull('plot_id'))
+                    ->unless($admin->hasGlobalAccess(), fn ($q) => $q->whereDoesntHave('plot', fn ($p) => $p->secretPresets())),
                 'plots',
             ])
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('status', '!=', 'draft'))
@@ -127,6 +132,8 @@ class ReportController extends Controller
     {
         $query = $this->scoped($request, EventRegistration::query())
             ->whereNotNull('plot_id')
+            // A set-aside lot is a surprise to the zone until it is confirmed.
+            ->unless($global = $request->user('admin')->hasGlobalAccess(), fn ($q) => $q->whereDoesntHave('plot', fn ($p) => $p->secretPresets()))
             ->with(['event', 'company', 'plot.plotSize'])
             ->when($request->input('event_id'), fn ($q, $id) => $q->where('event_id', $id))
             ->orderBy('event_id')->orderBy('id');
@@ -141,7 +148,7 @@ class ReportController extends Controller
             $r->company->name,
             $r->company->state,
             $r->code,
-            $r->plot->allocation_type === 'preset' ? 'Preset' : 'Drawn',
+            $global && $r->plot->allocation_type === 'preset' ? 'Preset' : 'Drawn',
             $r->plot->allocated_at?->format('d/m/Y H:i'),
         ]);
     }

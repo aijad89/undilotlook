@@ -66,7 +66,9 @@ class DashboardController extends Controller
                 'registrations as coded' => fn ($q) => $inZone($q)->whereNotNull('code')->where('code', '!=', ''),
                 'registrations as confirmed' => fn ($q) => $inZone($q)->where('confirmed_participation', true),
                 'plots as plots_total',
-                'plots as plots_taken' => fn ($q) => $q->where('is_allocated', true),
+                // A set-aside lot is a surprise to the zone until it is confirmed.
+                'plots as plots_taken' => fn ($q) => $q->where('is_allocated', true)
+                    ->unless($global, fn ($q) => $q->whereNot(fn ($w) => $w->secretPresets())),
             ])
             ->orderByRaw('start_date is null, start_date')
             ->limit(self::EVENTS_SHOWN)

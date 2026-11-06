@@ -56,6 +56,12 @@ class EntRegistrationController extends Controller
             ->paginate(25)
             ->withQueryString();
 
+        // A set-aside lot stays a surprise to the zone until it is confirmed.
+        if (! $admin->hasGlobalAccess()) {
+            \App\Models\Plot::maskPresets($registrations->pluck('plot'));
+            $registrations->each(fn ($r) => $r->plot && ! $r->plot->is_allocated && $r->setRelation('plot', null));
+        }
+
         // Companies that could still be added: in this admin's zone, on the
         // books, and not already in this draw.
         $candidates = Company::query()
@@ -175,7 +181,10 @@ class EntRegistrationController extends Controller
         $this->authorizeScope($request, $registration);
 
         if ($registration->plot_id) {
-            return back()->with('error', 'That company holds a lot. Withdraw the lot before removing it from the list.');
+            // Worded the same for a set-aside lot, which a zone admin must not learn of.
+            return back()->with('error', $request->user('admin')->hasGlobalAccess()
+                ? 'That company holds a lot. Withdraw the lot before removing it from the list.'
+                : 'Only HQ can remove that company from the list now.');
         }
 
         $this->rememberForUndo([$registration]);
@@ -230,7 +239,9 @@ class EntRegistrationController extends Controller
             return back()->with('success', trim(sprintf(
                 '%d removed from the draw list.%s',
                 $removable->count(),
-                $holding->isEmpty() ? '' : " {$holding->count()} kept: they hold lots."
+                $holding->isEmpty() ? '' : ($admin->hasGlobalAccess()
+                    ? " {$holding->count()} kept: they hold lots."
+                    : " {$holding->count()} kept: only HQ can remove them now.")
             )));
         }
 
