@@ -29,9 +29,16 @@
             </select>
         @endif
 
+        @if(in_array(request('missing'), ['category', 'code'], true))
+            <input type="hidden" name="missing" value="{{ request('missing') }}">
+            <span class="mac-badge mac-badge-orange">
+                {{ request('missing') === 'category' ? 'No craft category' : 'No craft code' }}
+            </span>
+        @endif
+
         <button type="submit" class="mac-filter-btn">Filter</button>
 
-        @if(request()->hasAny(['search', 'state']))
+        @if(request()->hasAny(['search', 'state', 'missing']))
             <a href="{{ route('admin.companies.index') }}" class="mac-clear-btn">Clear</a>
         @endif
     </form>

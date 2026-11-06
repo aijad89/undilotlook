@@ -56,6 +56,9 @@ class CompanyController extends Controller
                         ->orWhere('email', 'like', "%{$search}%"))
             ))
             ->when($request->input('state'), fn ($q, $state) => $q->where('state', $state))
+            // The dashboard's "needs attention" links land here.
+            ->when($request->input('missing') === 'category', fn ($q) => $q->whereDoesntHave('krafSelections'))
+            ->when($request->input('missing') === 'code', fn ($q) => $q->whereNull('kraf_code'))
             ->unless($admin->hasGlobalAccess(), fn ($q) => $q->where('state', $admin->state))
             ->orderBy('name')
             ->paginate(20)
