@@ -12,10 +12,9 @@ use Illuminate\Database\Seeder;
  * the admin login; and the craft coding sheet with its five categories, because
  * no company can be given a craft, and no draw a code, without them.
  *
- * BELOW THE LINE: demo and test data, which must never run on a live box. There
- * is none yet. When there is, it goes behind the `isProduction()` guard below
- * and is named so somebody can still plant it on purpose with
- * `db:seed --class=…`.
+ * BELOW THE LINE: demo data (DemoSeeder), which must never run on a live box.
+ * It sits behind the `isProduction()` guard below, and can still be planted on
+ * purpose with `db:seed --class=DemoSeeder`.
  *
  * THE GUARD USES isProduction(), the same line AppServiceProvider uses to decide
  * whether Eloquent runs in strict mode. One definition of "this is the real box",
@@ -42,6 +41,8 @@ class DatabaseSeeder extends Seeder
             return;
         }
 
-        // Demo and test data goes here, behind the guard.
+        // Demo data, behind the guard: sample craft hierarchy, 14 state admins
+        // + HQ, 14 participants with companies, two events.
+        $this->call(DemoSeeder::class);
     }
 }

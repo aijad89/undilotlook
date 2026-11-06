@@ -15,13 +15,13 @@ use Illuminate\Support\Facades\DB;
  *
  * Re-runnable: codes are matched on `code` and updated in place, so this can be
  * run again when the list changes without duplicating anything or disturbing the
- * ids that company_krafs.sub_bidang_id points at.
+ * ids that plots and lot plans point at.
  *
  * Codes not on the list are DEACTIVATED, never deleted. A code is the thing an
  * old record is explained by, and is_active is already the column meaning "do
  * not offer this any more" — the registrations dropdown and the polling form
- * both honour it. Deleting would also break the sub_bidang_id FK for the sake of
- * two rows.
+ * both honour it. Deleting would also be refused while a plot or a lot plan
+ * still points at the code.
  *
  * Two readings of the source worth recording, since the CSV is a merged-cell
  * spreadsheet and neither is obvious from the raw rows:
@@ -37,6 +37,10 @@ use Illuminate\Support\Facades\DB;
  *
  * HASIL LOGAM keeps its name although the list writes LOGAM: it is the name the
  * office already reads on every screen, and a rename is a decision for them.
+ *
+ * `name`, `pecahan_bidang` and `pecahan_sub_bidang` are the sheet's own
+ * description of each code, kept as text. They are NOT links into the craft
+ * hierarchy: the codes come from a separate certification.
  *
  * THE FIVE CATEGORIES ARE SEEDED TOO, as the other half of kraf_bidangs (code IS
  * NULL). A company's craft selection is made from them, so an install without

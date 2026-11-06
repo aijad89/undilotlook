@@ -11,7 +11,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 /**
- * The browser suite's starting state, planted into `undilot_e2e` by
+ * The browser suite's starting state, planted into `undilotlook_e2e` by
  * tests/e2e/serve.js and nowhere else.
  *
  * Every account gets a random password: the suite signs in through /auto, so
