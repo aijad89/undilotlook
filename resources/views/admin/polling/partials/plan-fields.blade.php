@@ -11,15 +11,15 @@
       $event          — the Event being edited, or null while creating
       $groupedBidangs — from PollingController::groupedBidangs()
 
-    A row here is a LOCATION — where the plots are and how many it holds. The
-    booth size sits on the allocation instead, because one hall holds more than
-    one size: RKP is allocated at both 3x6 and 3x3 on the same list, and a
-    single size per location could not say so.
+    A card here is a LOCATION, with one line per booth size it holds — "B: 20 ×
+    3x3, 10 × 3x6". One hall holds more than one size, and a single size per
+    location could not say so; a second card with the same name was the only way
+    round it, and that one cannot be reopened faithfully.
 
-    plot_sizes is still keyed by (location, size) — that pair is what a plot
-    carries, and a registration's booth size is matched against it — so
-    savePlan() resolves the pairs this form names back into rows, reusing the
-    ones that survive.
+    Each line is one plot_sizes row, a (location, size) pair — what a plot
+    carries, and what a registration's booth size is matched against. An
+    allocation under the card picks one of the card's sizes; what no allocation
+    claims at a size is the open pool at that size.
 
     An allocation belongs to one location, not to the event, so it is nested
     under its location rather than listed flat. The link travels in a hidden
@@ -29,31 +29,24 @@
     $event = $event ?? null;
 
     // One shape for all three sources — old input after a bounce, what is on
-    // file when editing, and a single starter row when neither applies — so the
-    // row below is written once instead of once per case.
-    // A location's `size` is the size of its plots no allocation claims. They
-    // are the open pool, and a lot is drawn only at the registration's own booth
-    // size — so a spare plot with no size can never be won by anyone. On file it
-    // is read back off the (location, size) row holding more than its allocations.
-    $allocatedOn = collect($event?->bidangAllocations ?? [])->groupBy('plot_size_id')->map->sum('plots_count');
-
+    // file when editing, and a single starter card when neither applies — so the
+    // card below is written once instead of once per case.
+    // 'sizes' keeps its keys: they are the plot_sizes[i][sizes][j] numbering.
     $locationsToRender = old('plot_sizes')
         ? collect(old('plot_sizes'))->map(fn ($s) => [
             'location' => $s['location'] ?? '',
-            'quantity' => $s['quantity'] ?? 1,
-            'size' => $s['size'] ?? '',
+            'sizes' => $s['sizes'] ?? [['size' => '', 'quantity' => 1]],
         ])->values()
         : ($event?->plotSizes
             ->groupBy(fn ($s) => (string) $s->location)
             ->map(fn ($rows, $loc) => [
                 'location' => $loc,
-                'quantity' => $rows->sum('quantity'),
-                'size' => (string) $rows->first(fn ($r) => $r->quantity > ($allocatedOn[$r->id] ?? 0))?->size,
+                'sizes' => $rows->map(fn ($r) => ['size' => (string) $r->size, 'quantity' => $r->quantity])->values()->all(),
             ])
             ->values() ?? collect());
 
     if ($locationsToRender->isEmpty()) {
-        $locationsToRender = collect([['location' => 'A', 'quantity' => 30, 'size' => '']]);
+        $locationsToRender = collect([['location' => 'A', 'sizes' => [['size' => '', 'quantity' => 30]]]]);
     }
 
     $locationKeys = $locationsToRender->map(fn ($l) => (string) $l['location'])->all();
@@ -86,7 +79,7 @@
     // since dropped from Settings must not lose it on the next save.
     $sizeOptions = collect(\App\Support\PlotSizes::all())
         ->merge(collect($allocationsToRender)->pluck('size'))
-        ->merge($locationsToRender->pluck('size'))
+        ->merge($locationsToRender->pluck('sizes')->flatten(1)->pluck('size'))
         ->map(fn ($s) => trim((string) $s))
         ->filter()
         ->unique()
@@ -97,41 +90,52 @@
 @foreach($locationsToRender as $psIndex => $loc)
     @php
         $allocsForSize = $allocationsBySize[$psIndex] ?? collect();
-        $sizeQty       = (int) ($loc['quantity'] ?? 0);
-        $sizeAllocated = $allocsForSize->sum(fn ($a) => (int) ($a['plots_count'] ?? 0));
-        $sizeRemaining = $sizeQty - $sizeAllocated;
+        $cardSizes     = collect($loc['sizes'])->pluck('size')->map(fn ($s) => trim((string) $s))->filter()->unique()->values();
     @endphp
     <div class="plot-size-row mb-3" data-size-idx="{{ $psIndex }}" style="border:1px solid var(--ui-border);border-radius:12px;overflow:hidden;">
         <div class="p-3 px-4" style="background:var(--ui-surface-2);">
             <div class="row g-2 align-items-end">
-                <div class="col-md-5">
+                <div class="col">
                     <label class="mac-label">Location <span class="text-danger">*</span></label>
                     <input type="text" name="plot_sizes[{{ $psIndex }}][location]" class="mac-form-control plot-location" value="{{ $loc['location'] }}" placeholder="e.g., A" required>
                 </div>
-                <div class="col-md-3">
-                    <label class="mac-label">Quantity <span class="text-danger">*</span></label>
-                    <input type="number" name="plot_sizes[{{ $psIndex }}][quantity]" class="mac-form-control plot-quantity" value="{{ $loc['quantity'] }}" placeholder="e.g., 30" required min="1">
-                </div>
-                <div class="col-md-3">
-                    <label class="mac-label" title="The plots no allocation below claims. They are the open pool, drawn by anyone whose code has run out — at this size.">Size of the rest</label>
-                    <select name="plot_sizes[{{ $psIndex }}][size]" class="mac-select plot-leftover-size" required>
-                        @foreach($sizeOptions as $option)
-                            <option value="{{ $option }}" @selected($loc['size'] === $option)>{{ $option }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-1 d-flex align-items-end">
+                <div class="col-auto d-flex align-items-end">
                     <button type="button" class="mac-action-btn-danger mac-action-btn-field remove-size" aria-label="Remove this location" title="Remove location" @if($locationsToRender->count() <= 1) disabled @endif><i class="bi bi-trash" aria-hidden="true"></i></button>
+                </div>
+            </div>
+
+            {{-- One line per booth size this location holds. --}}
+            <div class="mt-3">
+                <label class="mac-label mb-1">Booth sizes here <span class="text-danger">*</span></label>
+                <div class="size-lines">
+                    @foreach($loc['sizes'] as $lineIdx => $line)
+                        <div class="size-line d-flex align-items-center gap-2 mb-2">
+                            <select name="plot_sizes[{{ $psIndex }}][sizes][{{ $lineIdx }}][size]" class="mac-select line-size" required aria-label="Booth size" style="max-width:140px;">
+                                @foreach($sizeOptions as $option)
+                                    <option value="{{ $option }}" @selected(trim((string) ($line['size'] ?? '')) === $option)>{{ $option }}</option>
+                                @endforeach
+                            </select>
+                            <span class="mac-muted">×</span>
+                            <input type="number" name="plot_sizes[{{ $psIndex }}][sizes][{{ $lineIdx }}][quantity]" class="mac-form-control line-quantity" value="{{ $line['quantity'] ?? 1 }}" required min="1" aria-label="Plots of this size" style="max-width:110px;">
+                            <span class="mac-muted mac-text-sm">plots</span>
+                            <button type="button" class="mac-action-btn mac-action-btn-danger remove-line" aria-label="Remove this size" title="Remove this size" @if(count($loc['sizes']) <= 1) disabled @endif><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <button type="button" class="add-line-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
+                        <i class="bi bi-plus"></i> Add size
+                    </button>
+                    <span class="mac-muted mac-text-sm">Total: <strong class="location-total">0</strong> plots</span>
                 </div>
             </div>
         </div>
         <div class="bidang-sub-container p-3" style="border-top:1px solid var(--ui-sep);background:var(--ui-surface-2);">
             <div class="d-flex justify-content-between align-items-center mb-2">
-                <div class="d-flex align-items-center gap-2">
+                <div class="d-flex align-items-center gap-2 flex-wrap">
                     <small class="fw-semibold" style="color:var(--ui-text-2);">Craft Code Allocations</small>
-                    <span class="size-remaining-badge mac-badge {{ $sizeRemaining === 0 ? 'mac-badge-green' : ($sizeRemaining < 0 ? 'mac-badge-red' : 'mac-badge-gray') }}">
-                        {{ $sizeRemaining === 0 ? 'All allocated ✓' : ($sizeRemaining < 0 ? 'Over by '.abs($sizeRemaining) : $sizeRemaining.' remaining') }}
-                    </span>
+                    {{-- Filled by the script: what is left at each size. --}}
+                    <span class="size-remaining-badge mac-badge mac-badge-gray"></span>
                 </div>
                 <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
                     <i class="bi bi-plus"></i> Add Craft Code
@@ -179,8 +183,9 @@
                             </div>
                             <div class="col-md-2">
                                 <label class="mac-label">Size <span class="text-danger">*</span></label>
+                                {{-- Only this location's sizes; the script keeps it in step with the lines. --}}
                                 <select name="bidang_allocations[{{ $baIdx }}][size]" class="mac-select bidang-size" required>
-                                    @foreach($sizeOptions as $option)
+                                    @foreach($cardSizes->push(trim((string) ($alloc['size'] ?? '')))->filter()->unique() as $option)
                                         <option value="{{ $option }}" {{ ($alloc['size'] ?? '') === $option ? 'selected' : '' }}>{{ $option }}</option>
                                     @endforeach
                                 </select>

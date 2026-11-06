@@ -41,8 +41,46 @@ document.addEventListener('DOMContentLoaded', function() {
     // on that row, and is not something to start a fresh one on.
     const plotSizes = @json(\App\Support\PlotSizes::all());
 
-    function getSizesHtml() {
-        return plotSizes.map(s => `<option value="${s}">${s}</option>`).join('');
+    function getSizesHtml(sizes = plotSizes) {
+        return sizes.map(s => `<option value="${s}">${s}</option>`).join('');
+    }
+
+    // ── A location's booth sizes, read off its size lines ──
+    function cardSizes(plotSizeRow) {
+        return [...new Set(
+            [...plotSizeRow.querySelectorAll('.line-size')].map(s => s.value.trim()).filter(Boolean)
+        )];
+    }
+
+    // One size line. j only has to be unique within its card.
+    function lineHtml(i, j) {
+        return `
+            <div class="size-line d-flex align-items-center gap-2 mb-2">
+                <select name="plot_sizes[${i}][sizes][${j}][size]" class="mac-select line-size" required aria-label="Booth size" style="max-width:140px;">
+                    ${getSizesHtml()}
+                </select>
+                <span class="mac-muted">×</span>
+                <input type="number" name="plot_sizes[${i}][sizes][${j}][quantity]" class="mac-form-control line-quantity" value="1" required min="1" aria-label="Plots of this size" style="max-width:110px;">
+                <span class="mac-muted mac-text-sm">plots</span>
+                <button type="button" class="mac-action-btn mac-action-btn-danger remove-line" aria-label="Remove this size" title="Remove this size"><i class="bi bi-x-lg" aria-hidden="true"></i></button>
+            </div>`;
+    }
+
+    // An allocation can only be at a size its location has. Rebuilt whenever
+    // the lines change; a picked size that is still there stays picked.
+    function syncAllocationSizes(plotSizeRow) {
+        const sizes = cardSizes(plotSizeRow);
+        plotSizeRow.querySelectorAll('.bidang-size').forEach(select => {
+            const picked = select.value;
+            select.innerHTML = getSizesHtml(sizes);
+            if (sizes.includes(picked)) select.value = picked;
+        });
+    }
+
+    // A card's last line has nothing to fall back on, so it cannot be removed.
+    function refreshLineButtons(plotSizeRow) {
+        const buttons = plotSizeRow.querySelectorAll('.remove-line');
+        buttons.forEach(b => { b.disabled = buttons.length <= 1; });
     }
 
     // ── Category options HTML ──────────────────────────────
@@ -120,30 +158,52 @@ document.addEventListener('DOMContentLoaded', function() {
         return (row?.querySelector('.bidang-size')?.value || '').trim();
     }
 
-    // ── Remaining badge for one plot-size-row ──────────────
+    // ── What is left at each size of one location ──────────
+    // Per size, because an allocation only uses plots of its own size: 5 spare
+    // 3x3 cannot cover 2 too many 3x6. What is left at a size is the open pool
+    // there, drawn by anyone whose code has run out.
     function updateSizeRemainingBadge(plotSizeRow) {
         const badge = plotSizeRow.querySelector('.size-remaining-badge');
         if (!badge) return;
-        const qty = parseInt(plotSizeRow.querySelector('.plot-quantity')?.value) || 0;
-        let allocated = 0;
-        plotSizeRow.querySelectorAll('.plots-count').forEach(inp => { allocated += parseInt(inp.value) || 0; });
-        const remaining = qty - allocated;
-        if (remaining > 0) {
-            badge.textContent = `${remaining} remaining`;
-            badge.className = 'size-remaining-badge mac-badge mac-badge-gray';
-        } else if (remaining === 0) {
+
+        const holds = {};
+        let total = 0;
+        plotSizeRow.querySelectorAll('.size-line').forEach(line => {
+            const size = line.querySelector('.line-size')?.value.trim() || '';
+            const n = parseInt(line.querySelector('.line-quantity')?.value) || 0;
+            holds[size] = (holds[size] || 0) + n;
+            total += n;
+        });
+
+        const totalEl = plotSizeRow.querySelector('.location-total');
+        if (totalEl) totalEl.textContent = total;
+
+        const left = { ...holds };
+        plotSizeRow.querySelectorAll('.bidang-allocation-row').forEach(row => {
+            const size = rowSize(row);
+            left[size] = (left[size] || 0) - (parseInt(row.querySelector('.plots-count')?.value) || 0);
+        });
+
+        const sizes = Object.keys(left);
+        const over = sizes.filter(s => left[s] < 0);
+        const spare = sizes.filter(s => left[s] > 0);
+
+        if (over.length) {
+            badge.textContent = over.map(s => `${s} over by ${-left[s]}`).join(' · ');
+            badge.className = 'size-remaining-badge mac-badge mac-badge-red';
+        } else if (spare.length === 0) {
             badge.textContent = 'All allocated ✓';
             badge.className = 'size-remaining-badge mac-badge mac-badge-green';
         } else {
-            badge.textContent = `Over by ${Math.abs(remaining)}`;
-            badge.className = 'size-remaining-badge mac-badge mac-badge-red';
+            badge.textContent = spare.map(s => `${s}: ${left[s]} left for anyone`).join(' · ');
+            badge.className = 'size-remaining-badge mac-badge mac-badge-gray';
         }
     }
 
     // ── Sync total_plots hidden field + global summary ─────
     function calculateTotals() {
         let total = 0;
-        document.querySelectorAll('.plot-quantity').forEach(inp => { total += parseInt(inp.value) || 0; });
+        document.querySelectorAll('.line-quantity').forEach(inp => { total += parseInt(inp.value) || 0; });
         document.getElementById('calculatedTotal').textContent = total;
         const display = document.getElementById('totalPlotsDisplay');
         if (display) display.textContent = total;
@@ -412,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="col-md-2">
                         <label class="mac-label">Size <span class="text-danger">*</span></label>
                         <select name="bidang_allocations[${n}][size]" class="mac-select bidang-size" required>
-                            ${getSizesHtml()}
+                            ${getSizesHtml(cardSizes(plotSizeRow))}
                         </select>
                     </div>
                     <div class="col-md-2">
@@ -438,30 +498,30 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="plot-size-row mb-3" data-size-idx="${idx}" style="border:1px solid var(--ui-border);border-radius:12px;overflow:hidden;">
                 <div class="p-3 px-4" style="background:var(--ui-surface-2);">
                     <div class="row g-2 align-items-end">
-                        <div class="col-md-5">
+                        <div class="col">
                             <label class="mac-label">Location <span class="text-danger">*</span></label>
                             <input type="text" name="plot_sizes[${idx}][location]" class="mac-form-control plot-location" placeholder="e.g., B" required>
                         </div>
-                        <div class="col-md-3">
-                            <label class="mac-label">Quantity <span class="text-danger">*</span></label>
-                            <input type="number" name="plot_sizes[${idx}][quantity]" class="mac-form-control plot-quantity" placeholder="e.g., 30" required min="1" value="1">
-                        </div>
-                        <div class="col-md-3">
-                            <label class="mac-label" title="The plots no allocation below claims. They are the open pool, drawn by anyone whose code has run out — at this size.">Size of the rest</label>
-                            <select name="plot_sizes[${idx}][size]" class="mac-select plot-leftover-size" required>
-                                ${getSizesHtml()}
-                            </select>
-                        </div>
-                        <div class="col-md-1 d-flex align-items-end">
+                        <div class="col-auto d-flex align-items-end">
                             <button type="button" class="mac-action-btn-danger mac-action-btn-field remove-size" aria-label="Remove this location" title="Remove location"><i class="bi bi-trash" aria-hidden="true"></i></button>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="mac-label mb-1">Booth sizes here <span class="text-danger">*</span></label>
+                        <div class="size-lines">${lineHtml(idx, 0)}</div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <button type="button" class="add-line-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
+                                <i class="bi bi-plus"></i> Add size
+                            </button>
+                            <span class="mac-muted mac-text-sm">Total: <strong class="location-total">1</strong> plots</span>
                         </div>
                     </div>
                 </div>
                 <div class="bidang-sub-container p-3" style="border-top:1px solid var(--ui-sep);background:var(--ui-surface-2);">
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             <small class="fw-semibold" style="color:var(--ui-text-2);">Craft Code Allocations</small>
-                            <span class="size-remaining-badge mac-badge mac-badge-gray">1 remaining</span>
+                            <span class="size-remaining-badge mac-badge mac-badge-gray"></span>
                         </div>
                         <button type="button" class="add-bidang-btn mac-btn-secondary" style="font-size:0.8125rem;padding:4px 10px;">
                             <i class="bi bi-plus"></i> Add Craft Code
@@ -470,9 +530,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="bidang-rows-container"></div>
                 </div>
             </div>`;
-        document.getElementById('plotSizesContainer').insertAdjacentHTML('beforeend', html);
+        // On top, where the admin is looking. reindexPlotSizes() renumbers every
+        // row by its place on screen, so the order sent is the order shown.
+        const container = document.getElementById('plotSizesContainer');
+        container.insertAdjacentHTML('afterbegin', html);
+        refreshLineButtons(container.querySelector('.plot-size-row'));
         reindexPlotSizes();
         calculateTotals();
+        container.querySelector('.plot-size-row .plot-location').focus();
     });
 
     // ── Confirm the two removals that take real work with them ────
@@ -508,6 +573,33 @@ Its ${n} bidang allocation${n > 1 ? 's' : ''} will be removed with it.` : ''));
         if (e.target.closest('.add-bidang-btn')) {
             addBidangRowTo(e.target.closest('.plot-size-row'));
         }
+        if (e.target.closest('.add-line-btn')) {
+            const card = e.target.closest('.plot-size-row');
+            // The next free j in this card, past any gap a removal left.
+            let next = 0;
+            card.querySelectorAll('.line-size').forEach(el => {
+                const m = el.name.match(/\[sizes\]\[(\d+)\]/);
+                if (m) next = Math.max(next, parseInt(m[1]) + 1);
+            });
+            // Offer a size the card does not have yet, so the new line is not a repeat.
+            const taken = cardSizes(card);
+            card.querySelector('.size-lines').insertAdjacentHTML('beforeend', lineHtml(card.dataset.sizeIdx, next));
+            const newSelect = [...card.querySelectorAll('.line-size')].pop();
+            const fresh = plotSizes.find(s => !taken.includes(s));
+            if (fresh) newSelect.value = fresh;
+            refreshLineButtons(card);
+            syncAllocationSizes(card);
+            calculateTotals();
+            newSelect.focus();
+        }
+        if (e.target.closest('.remove-line')) {
+            const card = e.target.closest('.plot-size-row');
+            if (card.querySelectorAll('.size-line').length <= 1) return;
+            e.target.closest('.size-line').remove();
+            refreshLineButtons(card);
+            syncAllocationSizes(card);
+            calculateTotals();
+        }
         if (e.target.closest('.remove-bidang')) {
             const bidangRow = e.target.closest('.bidang-allocation-row');
             const plotSizeRow = bidangRow.closest('.plot-size-row');
@@ -519,6 +611,12 @@ Its ${n} bidang allocation${n > 1 ? 's' : ''} will be removed with it.` : ''));
     });
 
     document.getElementById('plotSizesContainer').addEventListener('change', function(e) {
+        if (e.target.matches('.line-size')) {
+            const card = e.target.closest('.plot-size-row');
+            syncAllocationSizes(card);
+            updateSizeRemainingBadge(card);
+            calculateAllocations();
+        }
         if (e.target.matches('.main-category-select')) {
             updateCodeDropdown(e.target);
             // Rebuilt from scratch, so the codes it just put back have to be
@@ -538,7 +636,7 @@ Its ${n} bidang allocation${n > 1 ? 's' : ''} will be removed with it.` : ''));
     });
 
     document.getElementById('plotSizesContainer').addEventListener('input', function(e) {
-        if (e.target.matches('.plot-quantity')) calculateTotals();
+        if (e.target.matches('.line-quantity')) calculateTotals();
         if (e.target.matches('.plots-count')) {
             updateSizeRemainingBadge(e.target.closest('.plot-size-row'));
             calculateAllocations();

@@ -69,6 +69,8 @@
                 @endunless
 
                 @if($hasDrawn && $entry->plot)
+                    {{-- Says what the button is; the lot number itself stays on the button. --}}
+                    <span>Congratulations, you have your lot. Your lot number for this event is:</span>
                     <a href="{{ route('zvote.index', $event) }}" class="ap-btn ap-btn-outline ap-draw-lot-link">
                         <i class="bi bi-geo-alt-fill" aria-hidden="true"></i>Lot <strong class="ms-1">{{ $entry->plot->plot_code }}</strong>
                     </a>

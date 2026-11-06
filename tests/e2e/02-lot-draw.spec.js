@@ -41,16 +41,19 @@ test('the office builds a two-location plan with the plan builder', async ({ pag
 
     const hallA = page.locator('.plot-size-row').nth(0);
     await hallA.locator('.plot-location').fill('Dewan A');
-    await hallA.locator('.plot-quantity').fill('3');
-    await hallA.locator('.plot-leftover-size').selectOption('3x3');
+    await hallA.locator('.line-size').selectOption('3x3');
+    await hallA.locator('.line-quantity').fill('3');
     await addAllocation(hallA, 'TEKSTIL', 'TTN', '3x3');
     await addAllocation(hallA, 'HASIL LOGAM', 'LEH', '3x3');
 
+    // A new location goes on top, with the cursor in its name.
     await page.locator('#addSizeBtn').click();
-    const hallB = page.locator('.plot-size-row').nth(1);
+    const hallB = page.locator('.plot-size-row').nth(0);
+    await expect(hallB.locator('.plot-location')).toBeFocused();
+    await expect(page.locator('.plot-size-row').nth(1).locator('.plot-location')).toHaveValue('Dewan A');
     await hallB.locator('.plot-location').fill('Dewan B');
-    await hallB.locator('.plot-quantity').fill('2');
-    await hallB.locator('.plot-leftover-size').selectOption('3x6');
+    await hallB.locator('.line-size').selectOption('3x6');
+    await hallB.locator('.line-quantity').fill('2');
     await addAllocation(hallB, 'HASIL RIMBA', 'RKP', '3x6');
 
     await expect(page.locator('#coverageSummary')).toHaveText('every code has plots');
