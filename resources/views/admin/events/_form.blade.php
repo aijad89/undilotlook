@@ -56,25 +56,25 @@
         <div class="col-12"><hr class="mac-divider"></div>
 
         <div class="col-md-6">
-            <label class="mac-label" for="start_date">Starts</label>
+            <label class="mac-label" for="start_date">Event starts</label>
             <input type="datetime-local" id="start_date" name="start_date" class="mac-form-control"
                    value="{{ $datetime('start_date') }}" required>
         </div>
 
         <div class="col-md-6">
-            <label class="mac-label" for="end_date">Ends</label>
+            <label class="mac-label" for="end_date">Event ends</label>
             <input type="datetime-local" id="end_date" name="end_date" class="mac-form-control"
                    value="{{ $datetime('end_date') }}" required>
         </div>
 
         <div class="col-md-6">
-            <label class="mac-label" for="registration_open_at">Draw list opens</label>
+            <label class="mac-label" for="registration_open_at">Published from</label>
             <input type="datetime-local" id="registration_open_at" name="registration_open_at"
                    class="mac-form-control" value="{{ $datetime('registration_open_at') }}" required>
         </div>
 
         <div class="col-md-6">
-            <label class="mac-label" for="registration_close_at">Draw list closes</label>
+            <label class="mac-label" for="registration_close_at">Published until</label>
             <input type="datetime-local" id="registration_close_at" name="registration_close_at"
                    class="mac-form-control" value="{{ $datetime('registration_close_at') }}" required>
         </div>

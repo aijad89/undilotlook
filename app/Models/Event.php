@@ -170,13 +170,6 @@ class Event extends Model
         return $this->hasMany(PresetAllocation::class);
     }
 
-    public function scopeOpenForRegistration($query)
-    {
-        return $query->where('status', 'open')
-            ->where('registration_open_at', '<=', now())
-            ->where('registration_close_at', '>=', now());
-    }
-
     /**
      * Where a published event stands for a visitor: ended, now, open, soon or
      * closed. The public list and the event page both read this, so they never
