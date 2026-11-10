@@ -42,14 +42,11 @@ class PlotAllocationAlgorithm
         // Everyone in the draw and not yet holding a lot. The row's existence is
         // the approval, so there is no status to filter on.
         //
-        // confirmed_participation is deliberately NOT a condition: the draw sets
-        // it, at the moment a lot is handed over. Requiring it beforehand would
-        // empty this pool of exactly the people the bulk run exists to place.
-        //
-        // A preset row carries plot_id already and is skipped: that company is
-        // seated, and LotAllocator would only confirm what it already has.
+        // A set-aside lot nobody confirmed is included: LotAllocator hands that
+        // company its own reserved lot and records it, which is what opens its
+        // lot page and slip once voting has closed.
         $eligible = EventRegistration::where('event_id', $event->id)
-            ->whereNull('plot_id')
+            ->awaitingLot()
             ->with('company')
             ->get()
             // Shuffled, not ordered: the order lots are handed out in is the only

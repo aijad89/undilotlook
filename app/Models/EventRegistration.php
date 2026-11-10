@@ -74,4 +74,20 @@ class EventRegistration extends Model
     {
         return $this->belongsTo(Plot::class);
     }
+
+    /**
+     * Still owed a lot: no plot at all, or a lot set aside that was never taken
+     * up. A set-aside lot carries `plot_id` from the moment it is reserved, but
+     * the company only holds it once `polls` records the hand-over — until then
+     * its lot page and slip stay shut. The bulk run, "completed" and the
+     * dashboard all ask this one question.
+     */
+    public function scopeAwaitingLot($query)
+    {
+        return $query->where(fn ($q) => $q
+            ->whereNull('plot_id')
+            ->orWhereNotExists(fn ($p) => $p->selectRaw('1')->from('polls')
+                ->whereColumn('polls.user_id', 'event_registrations.user_id')
+                ->whereColumn('polls.event_id', 'event_registrations.event_id')));
+    }
 }

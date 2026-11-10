@@ -404,7 +404,7 @@ class PollingController extends Controller
         // Completed means every lot is out. A closed draw with people still
         // unseated is the state "Assign remaining lots" exists for, and
         // "completed" has no way back.
-        if ($to === 'completed' && $event->registrations()->whereNull('plot_id')->exists()) {
+        if ($to === 'completed' && $event->registrations()->awaitingLot()->exists()) {
             return back()->withErrors(['error' => 'Some companies in the draw still have no lot. Assign the remaining lots first.']);
         }
 
@@ -442,7 +442,8 @@ class PollingController extends Controller
                 "{$result['allocated']} lot(s) assigned, but {$names->count()} could not be placed — "
                 .$names->take(5)->implode(', ')
                 .($names->count() > 5 ? ', and '.($names->count() - 5).' more' : '').'. '
-                .'The draw stays closed, not completed, so their lots can still be sorted out.');
+                .'The draw stays closed, not completed. To place them by hand, use Set aside on a free plot, '
+                .'then press Assign remaining lots again.');
         }
 
         return redirect()->route('admin.polling.show', $event)

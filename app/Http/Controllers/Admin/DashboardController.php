@@ -65,6 +65,8 @@ class DashboardController extends Controller
                 'registrations as on_list' => $inZone,
                 'registrations as coded' => fn ($q) => $inZone($q)->whereNotNull('code')->where('code', '!=', ''),
                 'registrations as confirmed' => fn ($q) => $inZone($q)->where('confirmed_participation', true),
+                // Event-wide on purpose: only super and HQ read it (rule A7).
+                'registrations as awaiting' => fn ($q) => $q->awaitingLot(),
                 'plots as plots_total',
                 // A set-aside lot is a surprise to the zone until it is confirmed.
                 'plots as plots_taken' => fn ($q) => $q->where('is_allocated', true)
@@ -111,6 +113,18 @@ class DashboardController extends Controller
                 $deadline = $event->polling_deadline ? ', closes '.$event->polling_deadline->diffForHumans() : '';
                 $rows[] = ['warn', "{$event->title}: {$waiting} ".str('company')->plural($waiting)." not confirmed yet{$deadline}",
                     route('admin.events.registrations.index', $event)];
+            }
+        }
+
+        // A7 — voting has closed (often by the scheduler, unattended) and some
+        // companies still have no lot. Closing hands out nothing; Assign remaining
+        // lots does, and only super and HQ may press it.
+        if ($global) {
+            foreach ($events->where('polling_status', 'closed') as $event) {
+                if ($event->awaiting > 0) {
+                    $rows[] = ['bad', "{$event->title}: voting closed, {$event->awaiting} ".str('company')->plural($event->awaiting).' still without a lot',
+                        route('admin.polling.show', $event)];
+                }
             }
         }
 
