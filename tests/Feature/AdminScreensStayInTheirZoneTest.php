@@ -160,3 +160,17 @@ it('shows the coding sheet on one screen and the hierarchy on the other', functi
         // never as a category of its own.
         ->assertDontSee('<h3 class="mac-card-title">TENUNAN</h3>', false);
 });
+
+it('counts only the admin own zone on the event list', function () {
+    $event = Event::factory()->create(['title' => 'Shared Fair']);
+    EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Johor'])->id]);
+    foreach (Company::factory()->count(2)->create(['state' => 'Kedah']) as $kedah) {
+        EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $kedah->id]);
+    }
+
+    $count = fn ($admin) => $this->actingAs($admin, 'admin')->get(route('admin.events.index'))
+        ->assertOk()->viewData('events')->firstWhere('id', $event->id)->registrations_count;
+
+    expect($count(stateAdmin('Johor')))->toBe(1)
+        ->and($count(superAdmin()))->toBe(3);
+});

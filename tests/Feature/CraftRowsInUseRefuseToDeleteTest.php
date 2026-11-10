@@ -100,3 +100,22 @@ it('has no way to add or delete a craft category', function () {
     $this->actingAs(superAdmin(), 'admin')->delete(url("admin/settings/kraf-hierarchy/{$category->id}"))->assertNotFound();
     expect($category->fresh())->not->toBeNull();
 });
+
+it('records an unused craft row in the audit trail when it is deleted', function () {
+    $code = KrafBidang::factory()->code('RKP')->create();
+    $sub = KrafSubBidang::factory()->create();
+    $class = KrafPengelasan::factory()->create();
+    $product = App\Models\KrafProduk::factory()->create();
+
+    $admin = superAdmin();
+    $this->actingAs($admin, 'admin')->delete(route('admin.settings.kraf-codes.destroy', $code))->assertSessionHas('success');
+    $this->actingAs($admin, 'admin')->delete(route('admin.settings.kraf-hierarchy.sub.destroy', $sub))->assertSessionHas('success');
+    $this->actingAs($admin, 'admin')->delete(route('admin.settings.kraf-hierarchy.pengelasan.destroy', $class))->assertSessionHas('success');
+    $this->actingAs($admin, 'admin')->delete(route('admin.settings.kraf-hierarchy.produk.destroy', $product))->assertSessionHas('success');
+
+    foreach ([$code, $sub, $class, $product] as $row) {
+        expect(App\Models\AuditTrail::where('action', 'deleted')
+            ->where('auditable_type', $row::class)->where('auditable_id', $row->id)->exists())
+            ->toBeTrue(class_basename($row).' delete was not audited');
+    }
+});

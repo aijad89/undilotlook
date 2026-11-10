@@ -31,7 +31,10 @@ class EventController extends Controller
         $admin = $request->user('admin');
 
         $events = Event::query()
-            ->withCount('registrations')
+            // The count is this admin's zone, like the draw list it links to.
+            ->withCount(['registrations' => fn ($q) => $q->unless($admin->hasGlobalAccess(), fn ($q) => $q->whereHas(
+                'company', fn ($c) => $c->where('state', $admin->state)
+            ))])
             ->when($request->input('search'), fn ($q, $search) => $q->where(
                 fn ($w) => $w->where('title', 'like', "%{$search}%")
                     ->orWhere('location', 'like', "%{$search}%")

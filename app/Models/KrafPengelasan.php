@@ -2,13 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\Auditable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /** The third level of the craft hierarchy: category → sub-category → this. */
 class KrafPengelasan extends Model
 {
-    use HasFactory;
+    use Auditable, HasFactory;
 
     protected $table = 'kraf_pengelasan';
 
