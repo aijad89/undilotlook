@@ -21,7 +21,7 @@ function joinable(array $attributes = []): Event
 /** A valid join: how they paid, and the receipt. */
 function payment(string $method = 'transfer'): array
 {
-    return ['payment_method' => $method, 'receipt' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')];
+    return ['declaration' => 1, 'payment_method' => $method, 'receipt' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')];
 }
 
 it('needs how they paid and a receipt, and keeps nothing else from a paid request', function () {
@@ -30,7 +30,7 @@ it('needs how they paid and a receipt, and keeps nothing else from a paid reques
 
     $this->actingAs($company->user, 'web')
         ->post(route('events.join', $event))
-        ->assertSessionHasErrors(['payment_method', 'receipt'])
+        ->assertSessionHasErrors(['declaration', 'payment_method', 'receipt'])
         ->assertSessionDoesntHaveErrors('documents');
 
     $this->actingAs($company->user, 'web')
@@ -39,7 +39,7 @@ it('needs how they paid and a receipt, and keeps nothing else from a paid reques
 
     // A waiver's supporting documents are checked like any file.
     $this->actingAs($company->user, 'web')
-        ->post(route('events.join', $event), ['payment_method' => 'waiver', 'waiver_category' => 'award', 'documents' => [UploadedFile::fake()->create('virus.exe', 10)]])
+        ->post(route('events.join', $event), ['declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'award', 'documents' => [UploadedFile::fake()->create('virus.exe', 10)]])
         ->assertSessionHasErrors('documents.0');
 
     // Back on the event page: one message saying it was sent, not two.
@@ -124,7 +124,7 @@ it('shows a rejection reason to the participant, who may send again', function (
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')->get(route('events.show', $event))
         ->assertSee('SSM certificate has expired.')
-        ->assertSee('Do you want to join this event?');
+        ->assertSee('I want to join this event, and I declare');
 
     $this->actingAs($company->user, 'web')
         ->post(route('events.join', $event), payment())
@@ -175,19 +175,36 @@ it('says Register now on the home page only while registration is open', functio
         ->and(App\Models\Event::firstWhere('title', 'Later Fair')->publicStage())->toBe('soon');
 });
 
-it('puts the steps in one form, question first, and opens on payment after a failed send', function () {
+it('puts the steps in one form, declaration first, and opens on the step that failed', function () {
     $event = joinable();
     $company = Company::factory()->create(['state' => 'Johor']);
     $this->actingAs($company->user, 'web');
 
     $this->get(route('events.show', $event))
-        ->assertSeeInOrder(['data-step="1"', 'Do you want to join this event?', 'data-step="2"', 'How did you pay?'], false)
+        ->assertSeeInOrder(['data-step="1"', 'I want to join this event, and I declare', 'data-step="2"', 'How did you pay?'], false)
         ->assertSee('data-start="1"', false);
 
-    // A failed send comes back to the payment step, not to the question.
+    // Declared but no payment: back on the payment step.
+    $this->from(route('events.show', $event))->followingRedirects()
+        ->post(route('events.join', $event), ['declaration' => 1])
+        ->assertSee('data-start="2"', false);
+
+    // Not declared: back on the declaration, whatever else is wrong.
     $this->from(route('events.show', $event))->followingRedirects()
         ->post(route('events.join', $event))
-        ->assertSee('data-start="2"', false);
+        ->assertSee('data-start="1"', false)
+        ->assertSee('Tick the declaration to join.');
+});
+
+it('refuses a request that is not declared, even with everything else in order', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), ['declaration' => null] + payment())
+        ->assertSessionHasErrors('declaration');
+
+    expect(EventJoinRequest::count())->toBe(0);
 });
 
 it('takes a fee waiver instead of a receipt, with a certificate where the category needs one', function () {
@@ -196,18 +213,18 @@ it('takes a fee waiver instead of a receipt, with a certificate where the catego
     $this->actingAs($company->user, 'web');
 
     // A waiver needs a category, and no receipt.
-    $this->post(route('events.join', $event), ['payment_method' => 'waiver'])
+    $this->post(route('events.join', $event), ['declaration' => 1, 'payment_method' => 'waiver'])
         ->assertSessionHasErrors('waiver_category')
         ->assertSessionDoesntHaveErrors('receipt');
 
     // Every waiver needs a document that proves it, OKU and first-timer alike.
     foreach (['disabled', 'first_time'] as $category) {
-        $this->post(route('events.join', $event), ['payment_method' => 'waiver', 'waiver_category' => $category])
+        $this->post(route('events.join', $event), ['declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => $category])
             ->assertSessionHasErrors('documents');
     }
 
     $this->post(route('events.join', $event), [
-        'payment_method' => 'waiver', 'waiver_category' => 'first_time',
+        'declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'first_time',
         'documents' => [UploadedFile::fake()->create('letter.pdf', 100, 'application/pdf')],
     ])->assertSessionHas('success');
 
@@ -229,7 +246,7 @@ it('takes the OKU certificate from Supporting documents, and drops a category se
     $this->actingAs($company->user, 'web');
 
     $this->post(route('events.join', $event), [
-        'payment_method' => 'waiver', 'waiver_category' => 'disabled',
+        'declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'disabled',
         'documents' => [UploadedFile::fake()->create('oku.pdf', 100, 'application/pdf')],
     ])->assertSessionHas('success');
 

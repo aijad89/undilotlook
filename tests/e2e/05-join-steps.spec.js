@@ -5,8 +5,8 @@ const { seed } = require('./fixtures/seed');
 
 /**
  * Joining is one form shown a question at a time. The steps are switched in
- * the browser, so only a browser can check them: No goes nowhere, Yes leads to
- * payment, Previous goes back, and Join appears on the last step only.
+ * the browser, so only a browser can check them: Next waits for the declaration,
+ * then payment; Previous goes back, and Join appears on the last step only.
  */
 test('a participant walks the join steps with Previous and Next, then sends', async ({ page }) => {
     const eventId = seed('join-setup.php').trim().split('\n').pop();
@@ -25,15 +25,18 @@ test('a participant walks the join steps with Previous and Next, then sends', as
     await expect(next).toBeDisabled();
     await expect(join).toBeHidden();
 
-    await form.getByLabel('No').check();
-    await expect(form.getByText('No problem.')).toBeVisible();
+    // Ticked and unticked: Next follows the declaration.
+    const declare = form.getByLabel(/I want to join this event, and I declare/);
+    await declare.check();
+    await expect(next).toBeEnabled();
+    await declare.uncheck();
     await expect(next).toBeDisabled();
 
-    await form.getByLabel('Yes').check();
+    await declare.check();
     await next.click();
     await expect(form.getByText('Step 2 of 2')).toBeVisible();
     await expect(form.getByText('How did you pay?')).toBeVisible();
-    await expect(form.getByText('Do you want to join this event?')).toBeHidden();
+    await expect(declare).toBeHidden();
     await expect(next).toBeHidden();
     await expect(join).toBeVisible();
 
@@ -68,7 +71,7 @@ test('paying asks for the receipt only; a fee waiver asks for a category and doc
     await page.goto(`/events/${eventId}`);
 
     const form = page.locator('#join-form');
-    await form.getByLabel('Yes').check();
+    await form.getByLabel(/I want to join this event, and I declare/).check();
     await form.getByRole('button', { name: 'Next' }).click();
 
     // Paying: the receipt, and no supporting documents.

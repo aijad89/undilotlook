@@ -48,6 +48,7 @@ class JoinRequestController extends Controller
 
         $data = $request->validate(
             [
+                'declaration' => ['accepted'],
                 'payment_method' => ['required', Rule::in(array_keys(EventJoinRequest::PAYMENT_METHODS))],
                 'receipt' => $waiver ? ['exclude'] : self::FILE_RULE,
                 'waiver_category' => $waiver
@@ -57,6 +58,7 @@ class JoinRequestController extends Controller
                 'documents.*' => $waiver ? self::FILE_RULE : ['exclude'],
             ],
             [
+                'declaration.accepted' => 'Tick the declaration to join.',
                 'payment_method.required' => 'Choose how you paid.',
                 'receipt.required' => 'Attach your payment receipt.',
                 'waiver_category.required' => 'Choose which waiver applies to you.',

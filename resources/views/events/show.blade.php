@@ -42,8 +42,8 @@
     .evd-step legend.evd-question { margin-bottom: 8px; }
     .evd-pay { display: flex; flex-wrap: wrap; gap: 8px; }
     .evd-waivers { display: grid; gap: 8px; }
-    .evd-waivers .evd-pay-option { align-items: flex-start; padding: 10px 14px; line-height: 1.4; }
-    .evd-waivers .evd-pay-option input { margin-top: 4px; }
+    .evd-waivers .evd-pay-option, .evd-pay-option.evd-declare { align-items: flex-start; padding: 10px 14px; line-height: 1.4; }
+    .evd-waivers .evd-pay-option input, .evd-declare input { margin-top: 4px; }
     .evd-pay-option { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--ui-border); border-radius: var(--ui-r); font-size: 1rem; color: var(--ui-text); cursor: pointer; }
     .evd-pay-option:has(input:checked) { border-color: var(--ui-blue); background: var(--ui-blue-tint); color: var(--ui-blue-text); }
     .evd-optional { font-weight: 400; color: var(--ui-muted); }
@@ -106,19 +106,17 @@
             @if($canJoin)
                 <form method="POST" action="{{ route('events.join', $event) }}" enctype="multipart/form-data"
                       class="evd-card evd-join-card" id="join-form"
-                      data-start="{{ $errors->hasAny(['payment_method', 'receipt', 'waiver_category', 'documents', 'documents.*']) ? 2 : 1 }}">
+                      data-start="{{ ! $errors->has('declaration') && $errors->hasAny(['payment_method', 'receipt', 'waiver_category', 'documents', 'documents.*']) ? 2 : 1 }}">
                     @csrf
                     <p class="evd-step-count" data-step-count hidden></p>
 
                     <div class="evd-join" data-step="1">
-                        <fieldset class="evd-step">
-                            <legend class="evd-join-title" id="join-heading">Do you want to join this event?</legend>
-                            <div class="evd-pay">
-                                <label class="evd-pay-option"><input type="radio" name="wants_to_join" value="yes"> Yes</label>
-                                <label class="evd-pay-option"><input type="radio" name="wants_to_join" value="no"> No</label>
-                            </div>
-                        </fieldset>
-                        <p class="evd-note" data-said-no hidden>No problem. You can change your mind until {{ $event->registration_close_at->format('d M Y, h:i A') }}.</p>
+                        <h2 class="evd-join-title" id="join-heading">Declaration</h2>
+                        <label class="evd-pay-option evd-declare">
+                            <input type="checkbox" name="declaration" value="1" @checked(old('declaration')) required>
+                            I want to join this event, and I declare that the information and documents I submit are true.
+                        </label>
+                        @error('declaration')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                     </div>
 
                     <div class="evd-join" data-step="2">
@@ -183,13 +181,12 @@
                     var prev = form.querySelector('[data-prev]');
                     var next = form.querySelector('[data-next]');
                     var submit = document.querySelector('[data-join-submit]');
-                    var saidNo = form.querySelector('[data-said-no]');
+                    var declaration = form.querySelector('input[name=declaration]');
                     var current = Number(form.dataset.start) || 1;
 
-                    // Step 1 answered No: nowhere to go next.
+                    // Step 1 not declared: nowhere to go next.
                     function blocked() {
-                        var answer = form.querySelector('input[name=wants_to_join]:checked');
-                        return current === 1 && (!answer || answer.value !== 'yes');
+                        return current === 1 && !declaration.checked;
                     }
 
                     function show(n) {
@@ -231,13 +228,10 @@
 
                     form.addEventListener('change', function (e) {
                         if (e.target.name === 'payment_method') payment();
-                        if (e.target.name !== 'wants_to_join') return;
-                        saidNo.hidden = e.target.value !== 'no';
-                        next.disabled = blocked();
+                        if (e.target === declaration) next.disabled = blocked();
                     });
                     payment();
 
-                    if (current > 1) form.querySelector('input[name=wants_to_join][value=yes]').checked = true;
                     count.hidden = false;
                     form.querySelector('[data-nav]').hidden = false;
                     show(current);
