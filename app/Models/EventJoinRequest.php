@@ -25,6 +25,18 @@ class EventJoinRequest extends Model
         'cash' => 'Cash',
         'cheque' => 'Cheque',
         'transfer' => 'Online transfer',
+        'waiver' => 'Fee waiver',
+    ];
+
+    /**
+     * Who may join without paying. Every category sends supporting documents
+     * that prove it; the office checks them.
+     */
+    public const WAIVER_CATEGORIES = [
+        'disabled' => 'Person with disabilities (OKU), with certificate',
+        'award' => 'Anugerah Usahawan Kraf or Anugerah Usahawan Kraf Muda recipient, previous year',
+        'first_time' => 'First time joining a promotion with Kraftangan Malaysia',
+        'incubator' => 'Incubator entrepreneur, first time joining a promotion with Kraftangan Malaysia',
     ];
 
     protected $fillable = [
@@ -32,6 +44,7 @@ class EventJoinRequest extends Model
         'company_id',
         'user_id',
         'payment_method',
+        'waiver_category',
         'documents',
         'status',
         'reject_reason',

@@ -41,17 +41,26 @@ class JoinRequestController extends Controller
             return back()->with('error', 'Your request is already with the office.');
         }
 
-        // How they paid and the receipt for it; supporting documents if they like.
+        // Paid: how, and the receipt — nothing else. Waiver: which category, and
+        // supporting documents that prove it (the OKU certificate, the award
+        // letter…), at least one.
+        $waiver = $request->input('payment_method') === 'waiver';
+
         $data = $request->validate(
             [
                 'payment_method' => ['required', Rule::in(array_keys(EventJoinRequest::PAYMENT_METHODS))],
-                'receipt' => self::FILE_RULE,
-                'documents' => ['nullable', 'array', 'max:'.self::MAX_FILES],
-                'documents.*' => self::FILE_RULE,
+                'receipt' => $waiver ? ['exclude'] : self::FILE_RULE,
+                'waiver_category' => $waiver
+                    ? ['required', Rule::in(array_keys(EventJoinRequest::WAIVER_CATEGORIES))]
+                    : ['exclude'],
+                'documents' => $waiver ? ['required', 'array', 'max:'.self::MAX_FILES] : ['exclude'],
+                'documents.*' => $waiver ? self::FILE_RULE : ['exclude'],
             ],
             [
                 'payment_method.required' => 'Choose how you paid.',
                 'receipt.required' => 'Attach your payment receipt.',
+                'waiver_category.required' => 'Choose which waiver applies to you.',
+                'documents.required' => 'Attach a document that shows you qualify for the waiver.',
             ]
         );
 
@@ -61,9 +70,9 @@ class JoinRequestController extends Controller
             'original' => $file->getClientOriginalName(),
         ];
 
-        $documents = collect([$keep($request->file('receipt'), 'Payment receipt')])
-            ->concat(collect($request->file('documents', []))->map(fn ($file) => $keep($file, $file->getClientOriginalName())))
-            ->all();
+        $documents = $waiver
+            ? collect($request->file('documents', []))->map(fn ($file) => $keep($file, $file->getClientOriginalName()))->values()->all()
+            : [$keep($request->file('receipt'), 'Payment receipt')];
 
         // A rejected request is asked again in place: its old files go.
         if ($existing) {
@@ -75,6 +84,7 @@ class JoinRequestController extends Controller
             [
                 'user_id' => $request->user()->id,
                 'payment_method' => $data['payment_method'],
+                'waiver_category' => $data['waiver_category'] ?? null,
                 'documents' => $documents,
                 'status' => 'pending',
                 'reject_reason' => null,

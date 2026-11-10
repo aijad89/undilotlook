@@ -41,6 +41,9 @@
     .evd-step { margin: 0 0 8px; padding: 0; border: 0; }
     .evd-step legend.evd-question { margin-bottom: 8px; }
     .evd-pay { display: flex; flex-wrap: wrap; gap: 8px; }
+    .evd-waivers { display: grid; gap: 8px; }
+    .evd-waivers .evd-pay-option { align-items: flex-start; padding: 10px 14px; line-height: 1.4; }
+    .evd-waivers .evd-pay-option input { margin-top: 4px; }
     .evd-pay-option { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--ui-border); border-radius: var(--ui-r); font-size: 1rem; color: var(--ui-text); cursor: pointer; }
     .evd-pay-option:has(input:checked) { border-color: var(--ui-blue); background: var(--ui-blue-tint); color: var(--ui-blue-text); }
     .evd-optional { font-weight: 400; color: var(--ui-muted); }
@@ -103,7 +106,7 @@
             @if($canJoin)
                 <form method="POST" action="{{ route('events.join', $event) }}" enctype="multipart/form-data"
                       class="evd-card evd-join-card" id="join-form"
-                      data-start="{{ $errors->hasAny(['payment_method', 'receipt', 'documents', 'documents.*']) ? 2 : 1 }}">
+                      data-start="{{ $errors->hasAny(['payment_method', 'receipt', 'waiver_category', 'documents', 'documents.*']) ? 2 : 1 }}">
                     @csrf
                     <p class="evd-step-count" data-step-count hidden></p>
 
@@ -132,17 +135,37 @@
                             @error('payment_method')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                         </fieldset>
 
-                        <label class="evd-question" for="receipt">Payment receipt</label>
-                        <input type="file" id="receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" required>
-                        @error('receipt')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                        {{-- Paid: the receipt only. Waiver: which category, and Supporting documents for any proof.
+                             The script shows the one that applies and switches the other off. --}}
+                        <div class="evd-join" data-when="paid">
+                            <label class="evd-question" for="receipt">Payment receipt</label>
+                            <input type="file" id="receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" data-required>
+                            @error('receipt')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                        </div>
 
-                        <label class="evd-question" for="documents">Supporting documents <span class="evd-optional">(optional)</span></label>
-                        <input type="file" id="documents" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple>
-                        @error('documents')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
-                        @foreach($errors->get('documents.*') as $messages)
-                            <p class="evd-msg evd-msg-bad">{{ $messages[0] }}</p>
-                        @endforeach
-                        <p class="evd-note" style="margin-top:0;">PDF or image, up to 5 MB each. Up to 10 supporting documents; hold Ctrl to pick several.</p>
+                        <div class="evd-join" data-when="waiver">
+                            <fieldset class="evd-step">
+                                <legend class="evd-question">Which waiver applies to you?</legend>
+                                <div class="evd-waivers">
+                                    @foreach(\App\Models\EventJoinRequest::WAIVER_CATEGORIES as $key => $label)
+                                        <label class="evd-pay-option">
+                                            <input type="radio" name="waiver_category" value="{{ $key }}" @checked(old('waiver_category') === $key)
+                                                   data-required>
+                                            {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                                @error('waiver_category')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                            </fieldset>
+
+                            <label class="evd-question" for="documents">Supporting documents</label>
+                            <input type="file" id="documents" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple data-required>
+                            @error('documents')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                            @foreach($errors->get('documents.*') as $messages)
+                                <p class="evd-msg evd-msg-bad">{{ $messages[0] }}</p>
+                            @endforeach
+                            <p class="evd-note" style="margin-top:0;">PDF or image, up to 5 MB each, at most 10; hold Ctrl to pick several.</p>
+                        </div>
                     </div>
 
                     <div class="evd-wizard-nav" data-nav hidden>
@@ -190,11 +213,29 @@
                     });
                     prev.addEventListener('click', function () { show(current - 1); });
 
+                    // Paid or waived: show the block that applies; switch the other
+                    // off, so it is neither checked nor sent. What the shown block
+                    // marks data-required becomes required.
+                    function payment() {
+                        var method = form.querySelector('input[name=payment_method]:checked');
+                        var waived = method && method.value === 'waiver';
+                        form.querySelectorAll('[data-when]').forEach(function (block) {
+                            var on = method && (block.dataset.when === 'waiver') === waived;
+                            block.hidden = !on;
+                            block.querySelectorAll('input').forEach(function (input) {
+                                input.disabled = !on;
+                                input.required = on && input.hasAttribute('data-required');
+                            });
+                        });
+                    }
+
                     form.addEventListener('change', function (e) {
+                        if (e.target.name === 'payment_method') payment();
                         if (e.target.name !== 'wants_to_join') return;
                         saidNo.hidden = e.target.value !== 'no';
                         next.disabled = blocked();
                     });
+                    payment();
 
                     if (current > 1) form.querySelector('input[name=wants_to_join][value=yes]').checked = true;
                     count.hidden = false;

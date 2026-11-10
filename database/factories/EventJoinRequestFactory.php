@@ -22,6 +22,7 @@ class EventJoinRequestFactory extends Factory
             'company_id' => Company::factory(),
             'user_id' => fn (array $row) => Company::find($row['company_id'])->user_id,
             'payment_method' => 'transfer',
+            'waiver_category' => null,
             'documents' => [],
             'status' => 'pending',
             'reject_reason' => null,

@@ -425,8 +425,10 @@ return new class extends Migration
             $table->foreignId('company_id')->constrained()->cascadeOnDelete();
             $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
 
-            // cash | cheque | transfer — EventJoinRequest::PAYMENT_METHODS.
+            // cash | cheque | transfer | waiver — EventJoinRequest::PAYMENT_METHODS.
             $table->string('payment_method', 20)->nullable();
+            // Set only for a waiver — EventJoinRequest::WAIVER_CATEGORIES.
+            $table->string('waiver_category', 20)->nullable();
 
             // [{name, path, original}]: the payment receipt first, then any
             // supporting documents. Files on the `local` disk, served through a

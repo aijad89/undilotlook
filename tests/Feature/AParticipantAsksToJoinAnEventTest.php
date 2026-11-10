@@ -24,7 +24,7 @@ function payment(string $method = 'transfer'): array
     return ['payment_method' => $method, 'receipt' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')];
 }
 
-it('needs how they paid and a receipt; supporting documents are optional', function () {
+it('needs how they paid and a receipt, and keeps nothing else from a paid request', function () {
     $event = joinable();
     $company = Company::factory()->create(['state' => 'Johor']);
 
@@ -37,8 +37,9 @@ it('needs how they paid and a receipt; supporting documents are optional', funct
         ->post(route('events.join', $event), ['payment_method' => 'bitcoin', 'receipt' => UploadedFile::fake()->create('virus.exe', 10)])
         ->assertSessionHasErrors(['payment_method', 'receipt']);
 
+    // A waiver's supporting documents are checked like any file.
     $this->actingAs($company->user, 'web')
-        ->post(route('events.join', $event), payment() + ['documents' => [UploadedFile::fake()->create('virus.exe', 10)]])
+        ->post(route('events.join', $event), ['payment_method' => 'waiver', 'waiver_category' => 'award', 'documents' => [UploadedFile::fake()->create('virus.exe', 10)]])
         ->assertSessionHasErrors('documents.0');
 
     // Back on the event page: one message saying it was sent, not two.
@@ -52,7 +53,8 @@ it('needs how they paid and a receipt; supporting documents are optional', funct
     $request = EventJoinRequest::sole();
     expect($request->status)->toBe('pending')
         ->and($request->payment_method)->toBe('cheque')
-        ->and(array_column($request->documents, 'name'))->toBe(['Payment receipt', 'booth.jpg']);
+        // Paid: the receipt only; a supporting document sent anyway is not kept.
+        ->and(array_column($request->documents, 'name'))->toBe(['Payment receipt']);
     Storage::disk('local')->assertExists($request->documents[0]['path']);
 
     auth()->forgetGuards();
@@ -186,4 +188,54 @@ it('puts the steps in one form, question first, and opens on payment after a fai
     $this->from(route('events.show', $event))->followingRedirects()
         ->post(route('events.join', $event))
         ->assertSee('data-start="2"', false);
+});
+
+it('takes a fee waiver instead of a receipt, with a certificate where the category needs one', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    // A waiver needs a category, and no receipt.
+    $this->post(route('events.join', $event), ['payment_method' => 'waiver'])
+        ->assertSessionHasErrors('waiver_category')
+        ->assertSessionDoesntHaveErrors('receipt');
+
+    // Every waiver needs a document that proves it, OKU and first-timer alike.
+    foreach (['disabled', 'first_time'] as $category) {
+        $this->post(route('events.join', $event), ['payment_method' => 'waiver', 'waiver_category' => $category])
+            ->assertSessionHasErrors('documents');
+    }
+
+    $this->post(route('events.join', $event), [
+        'payment_method' => 'waiver', 'waiver_category' => 'first_time',
+        'documents' => [UploadedFile::fake()->create('letter.pdf', 100, 'application/pdf')],
+    ])->assertSessionHas('success');
+
+    $request = EventJoinRequest::sole();
+    expect($request->payment_method)->toBe('waiver')
+        ->and($request->waiver_category)->toBe('first_time')
+        ->and(array_column($request->documents, 'name'))->toBe(['letter.pdf']);
+
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->get(route('admin.events.registrations.index', $event))
+        ->assertSee('Fee waiver')
+        ->assertSee('First time joining a promotion with Kraftangan Malaysia');
+});
+
+it('takes the OKU certificate from Supporting documents, and drops a category sent with a payment', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    $this->post(route('events.join', $event), [
+        'payment_method' => 'waiver', 'waiver_category' => 'disabled',
+        'documents' => [UploadedFile::fake()->create('oku.pdf', 100, 'application/pdf')],
+    ])->assertSessionHas('success');
+
+    expect(array_column(EventJoinRequest::sole()->documents, 'name'))->toBe(['oku.pdf']);
+
+    $other = joinable();
+    $this->post(route('events.join', $other), payment('cash') + ['waiver_category' => 'award'])->assertSessionHas('success');
+    expect(EventJoinRequest::where('event_id', $other->id)->sole()->waiver_category)->toBeNull();
 });

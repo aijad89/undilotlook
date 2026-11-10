@@ -58,6 +58,9 @@
                                 </td>
                                 <td class="mac-text-sm">
                                     {{ \App\Models\EventJoinRequest::PAYMENT_METHODS[$jr->payment_method] ?? '—' }}
+                                    @if($jr->waiver_category)
+                                        <div class="mac-muted">{{ \App\Models\EventJoinRequest::WAIVER_CATEGORIES[$jr->waiver_category] ?? $jr->waiver_category }}</div>
+                                    @endif
                                 </td>
                                 <td class="mac-text-sm">
                                     @forelse($jr->documents ?? [] as $i => $doc)
