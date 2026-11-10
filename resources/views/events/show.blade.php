@@ -14,8 +14,8 @@
     .evd-head { display: flex; gap: 18px; align-items: flex-start; margin-bottom: 20px; }
     .evd-head h1 { margin: 0 0 10px; font-size: 2.25rem; font-weight: 700; line-height: 1.15; letter-spacing: -0.02em; color: var(--ui-text); }
     .evd-head .ev-date { width: 68px; }
-    .evd-head .ev-date-day { font-size: 1.875rem; }
-    .evd-about { max-width: 72ch; margin: 0; font-size: 1.0625rem; line-height: 1.7; color: var(--ui-text-2); white-space: pre-line; }
+    .evd-head .ev-date-day { font-size: 1.75rem; }
+    .evd-about { max-width: 72ch; margin: 0; font-size: 1rem; line-height: 1.7; color: var(--ui-text-2); white-space: pre-line; }
     .evd-card { padding: 22px; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); }
     .evd-fact { display: flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--ui-sep); }
     .evd-fact:first-child { padding-top: 0; }

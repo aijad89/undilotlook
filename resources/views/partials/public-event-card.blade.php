@@ -44,7 +44,7 @@
                     </a>
                     @break
                 @case('soon')
-                    <span class="ev-cta ev-cta-gold">Coming soon</span>
+                    <span class="ev-cta ev-cta-neutral">Coming soon</span>
                     @break
                 @case('now')
                     <span class="ev-cta ev-cta-info">Happening now</span>

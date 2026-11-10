@@ -50,7 +50,7 @@
         min-width:34px; height:46px; padding:0 6px;
         background:var(--ui-navy-900); color:#fff; border-radius:6px;
         font-size:1.5rem; font-weight:700; font-variant-numeric:tabular-nums;
-        box-shadow:0 1px 3px rgba(0,0,0,0.18), 0 6px 18px rgba(0,0,0,0.10);
+        box-shadow:var(--ui-shadow-1);
         /* The hairline is the split in the flap, not decoration. */
         background-image:linear-gradient(to bottom, transparent calc(50% - 1px), rgba(255,255,255,0.14) 50%, transparent calc(50% + 1px));
     }
@@ -76,7 +76,7 @@
     .lr-env-body {
         position:absolute; inset:0; border-radius:8px;
         background:var(--ui-surface-2); border:1px solid var(--ui-border);
-        box-shadow:0 1px 3px rgba(0,0,0,0.05), 0 8px 24px rgba(0,0,0,0.07);
+        box-shadow:var(--ui-shadow-1);
     }
     .lr-env-flap {
         position:absolute; left:0; right:0; top:0; height:66px; z-index:3;
@@ -96,7 +96,7 @@
         position:absolute; left:14px; right:14px; top:22px; z-index:2;
         padding:14px 0; border-radius:8px; background:var(--ui-surface);
         border:1px solid var(--ui-border);
-        box-shadow:0 1px 3px rgba(0,0,0,0.05);
+        box-shadow:var(--ui-shadow-1);
         opacity:0; transform:translateY(10px);
         /* Ends 2.0s after .is-open lands — the second half of the 4s. */
         transition:opacity 0.9s ease 0.6s, transform 1.4s cubic-bezier(0.16, 1, 0.3, 1) 0.6s;

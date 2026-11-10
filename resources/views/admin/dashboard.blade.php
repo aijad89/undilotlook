@@ -163,7 +163,7 @@
 
     .dash-totals { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 8px 0 4px; }
     .dash-totals > div { padding: 10px; border-radius: var(--ui-r); background: var(--ui-neutral-tint); }
-    .dash-totals strong { display: block; font-size: 1.375rem; line-height: 1.2; }
+    .dash-totals strong { display: block; font-size: 1.5rem; line-height: 1.2; }
     .dash-totals span { font-size: 0.8125rem; color: var(--ui-muted); }
 
     .dash-sub { margin: 16px 0 6px; font-size: 0.8125rem; font-weight: 650; color: var(--ui-text-2); }

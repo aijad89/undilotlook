@@ -6,7 +6,6 @@
     .ev-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 0.875rem; font-weight: 600; white-space: nowrap; }
     .ev-badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
     .ev-badge-ok { background: var(--ui-ok-tint); color: var(--ui-ok-text); }
-    .ev-badge-gold { background: var(--ui-gold-tint); color: var(--ui-gold-text); }
     .ev-badge-info { background: var(--ui-info-tint); color: var(--ui-info-text); }
     .ev-badge-neutral { background: var(--ui-neutral-tint); color: var(--ui-neutral-text); }
 

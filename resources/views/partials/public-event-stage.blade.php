@@ -4,7 +4,7 @@
         'ended' => ['Ended', 'neutral'],
         'now' => ['Happening now', 'info'],
         'open' => ['Lot draw open', 'ok'],
-        'soon' => ['Coming soon', 'gold'],
+        'soon' => ['Coming soon', 'neutral'],
         'closed' => ['Lot draw closed', 'neutral'],
     ][$event->publicStage()];
 @endphp
