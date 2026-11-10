@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-10-15T12:00:00+08:00",
+  "generatedAt": "2026-11-10T12:00:00+08:00",
   "title": "Design System: undilot",
   "extensions": {
     "colorMeta": {
@@ -843,12 +843,31 @@
           "#b0c9ec",
           "#e6effc"
         ]
+      },
+      "selection": {
+        "role": "primary",
+        "displayName": "Selection Wash",
+        "canonical": "#cfdcfa",
+        "tonalRamp": [
+          "#0b2a73",
+          "#1a3f96",
+          "#3058b5",
+          "#5276cc",
+          "#7b98dc",
+          "#a6bbea",
+          "#cfdcfa",
+          "#eef3fe"
+        ]
       }
     },
     "typographyMeta": {
+      "display-sign-in": {
+        "displayName": "Display, sign-in",
+        "purpose": "The sign-in panel title; the one fluid size."
+      },
       "display": {
         "displayName": "Display",
-        "purpose": "Public event list headline (1.5rem on a phone); large state glyphs."
+        "purpose": "The public event list's headline and an event page's title; the day on a large date tile."
       },
       "headline-portal": {
         "displayName": "Headline, portal",
@@ -868,7 +887,7 @@
       },
       "heading-sm": {
         "displayName": "Small heading",
-        "purpose": "A draw card's title."
+        "purpose": "A draw card's title and an event card's title on the public list."
       },
       "title-lead": {
         "displayName": "Lead / section title",
@@ -882,6 +901,10 @@
         "displayName": "Body, portal",
         "purpose": "Usahawan copy, labels and cells; secondary portal copy is 0.875rem."
       },
+      "note": {
+        "displayName": "Note",
+        "purpose": "The one line beside or under an event's call to action, on the public list and an event's page."
+      },
       "body-admin": {
         "displayName": "Body, admin",
         "purpose": "Admin table cells, fields, alerts and detail values; portal secondary copy."
@@ -892,7 +915,7 @@
       },
       "label": {
         "displayName": "Label",
-        "purpose": "Admin table headers, nav section labels, badges and stepper labels, sentence case."
+        "purpose": "Admin table headers, badges, nav count badges and stepper labels, sentence case; a date tile's month is the one uppercase use."
       },
       "mono": {
         "displayName": "Mono",
@@ -903,17 +926,17 @@
       {
         "name": "rest",
         "value": "0 1px 2px rgba(16, 24, 40, 0.05), 0 1px 3px rgba(16, 24, 40, 0.06)",
-        "purpose": "Cards, filter bar, buttons; the border does most of the work."
+        "purpose": "Cards, filter bar, buttons, event cards and the facts card; the border does most of the work."
       },
       {
         "name": "raised",
         "value": "0 2px 4px -2px rgba(16, 24, 40, 0.06), 0 8px 16px -4px rgba(16, 24, 40, 0.10)",
-        "purpose": "Defined, not yet used."
+        "purpose": "A whole-card link under the pointer (public event card) and a date tile laid over a banner."
       },
       {
         "name": "pop",
         "value": "0 4px 6px -2px rgba(16, 24, 40, 0.05), 0 16px 32px -8px rgba(16, 24, 40, 0.18)",
-        "purpose": "Dropdown menus and the open mobile drawer only."
+        "purpose": "Dropdown menus and the open mobile drawers only."
       },
       {
         "name": "focus-ring",
@@ -924,6 +947,16 @@
         "name": "input-focus-halo",
         "value": "0 0 0 3px rgba(26, 86, 219, 0.18)",
         "purpose": "Mouse focus on inputs, with a blue border."
+      },
+      {
+        "name": "bevel-admin",
+        "value": "inset 0 -1px 0 rgba(0, 0, 0, 0.12)",
+        "purpose": "Office primary button, over Rest (0.14 on the success button)."
+      },
+      {
+        "name": "bevel-portal",
+        "value": "inset 0 -2px 0 rgba(0, 0, 0, 0.15)",
+        "purpose": "Portal and sign-in primary button, over Rest."
       }
     ],
     "motion": [
@@ -949,16 +982,24 @@
         "value": "576px"
       },
       {
+        "name": "public-stack",
+        "value": "640px"
+      },
+      {
         "name": "admin-stack",
         "value": "768px"
       },
       {
-        "name": "auth-stack",
+        "name": "two-column-stack",
         "value": "860px"
       },
       {
         "name": "portal-desk",
         "value": "992px"
+      },
+      {
+        "name": "column-unpadded",
+        "value": "1032px"
       }
     ]
   },
@@ -984,7 +1025,7 @@
       "kind": "button",
       "refersTo": "button-portal-primary",
       "description": "The usahawan's one step: 48px, 1rem, full width on a phone.",
-      "html": "<button class=\"ds-btn-portal-primary\">Sahkan lot</button>",
+      "html": "<button class=\"ds-btn-portal-primary\">Confirm Lot</button>",
       "css": ".ds-btn-portal-primary { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 20px; border: 1px solid transparent; border-radius: 8px; background: #1a56db; color: #fff; font: 600 1rem/1.2 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; cursor: pointer; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06), inset 0 -2px 0 rgba(0,0,0,.15); transition: background-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-portal-primary:hover { background: #1546b3; } .ds-btn-portal-primary:active { background: #103a96; } .ds-btn-portal-primary:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
     },
     {
@@ -1023,7 +1064,7 @@
       "name": "Admin Rail",
       "kind": "nav",
       "refersTo": "nav-rail",
-      "description": "Navy rail; active item fills navy-700 with a gold bar and gold icon.",
+      "description": "Navy rail grouped by job; active item fills navy-700 with a gold bar and gold icon.",
       "html": "<nav class=\"ds-rail\"><a class=\"ds-rail-item\" href=\"#\">Events</a><a class=\"ds-rail-item is-active\" href=\"#\">Lot Draw</a><a class=\"ds-rail-item\" href=\"#\">Companies</a></nav>",
       "css": ".ds-rail { width: 264px; padding: 10px 0; background: #0b2240; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-rail-item { position: relative; display: flex; align-items: center; min-height: 40px; margin: 2px 10px; padding: 9px 12px; border-radius: 8px; color: #d6deea; font-size: 0.875rem; font-weight: 500; text-decoration: none; transition: background-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-rail-item:hover { background: rgba(255,255,255,.07); color: #fff; } .ds-rail-item.is-active { background: #1b3f70; color: #fff; font-weight: 600; } .ds-rail-item.is-active::before { content: ''; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #e3a92b; } .ds-rail-item:focus-visible { outline: none; box-shadow: 0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c; }"
     },
@@ -1031,9 +1072,17 @@
       "name": "Draw-Stage Stepper",
       "kind": "custom",
       "refersTo": "draw-stepper",
-      "description": "The signature: four stops on every draw, passed ones filled, the current one ringed.",
+      "description": "The signature: four stops on every draw in the office (three, from Open, on the portal card), passed ones filled, the current one ringed.",
       "html": "<ol class=\"ds-stepper\"><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Draft</span></li><li class=\"done\"><span class=\"dot\"><svg width=\"12\" height=\"12\" viewBox=\"0 0 16 16\" fill=\"currentColor\"><path d=\"M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z\"/></svg></span><span class=\"label\">Open</span></li><li class=\"current\" aria-current=\"step\"><span class=\"dot\"></span><span class=\"label\">Closed</span></li><li><span class=\"dot\"></span><span class=\"label\">End</span></li></ol>",
       "css": ".ds-stepper { list-style: none; margin: 0; padding: 0; display: flex; width: 420px; font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-stepper li { position: relative; flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; } .ds-stepper li::before { content: ''; position: absolute; top: 9px; left: calc(-50% + 12px); right: calc(50% + 12px); height: 2px; border-radius: 4px; background: #dce1e8; } .ds-stepper li:first-child::before { display: none; } .ds-stepper .dot { position: relative; z-index: 1; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; display: grid; place-items: center; background: #fff; border: 2px solid #c3ccd8; color: transparent; } .ds-stepper .label { font-size: 0.75rem; font-weight: 600; color: #586477; } .ds-stepper li.done::before, .ds-stepper li.current::before { background: #1a56db; } .ds-stepper li.done .dot { background: #1a56db; border-color: #1a56db; color: #fff; } .ds-stepper li.done .label { color: #344054; } .ds-stepper li.current .dot { border-color: #1a56db; box-shadow: 0 0 0 4px #ebf1fd; } .ds-stepper li.current .dot::after { content: ''; width: 8px; height: 8px; border-radius: 50%; background: #1a56db; } .ds-stepper li.current .label { color: #101828; } @media (prefers-reduced-motion: no-preference) { .ds-stepper li.current .dot { animation: ds-stop-in 420ms cubic-bezier(0.16,1,0.3,1) both; } @keyframes ds-stop-in { from { box-shadow: 0 0 0 12px rgba(26,86,219,0); } to { box-shadow: 0 0 0 4px #ebf1fd; } } }"
+    },
+    {
+      "name": "Event Card",
+      "kind": "card",
+      "refersTo": "event-card",
+      "description": "One event on the public list: date tile, title, meta, a note and the action; the whole card is the link.",
+      "html": "<article class=\"ds-ev\"><div class=\"ds-ev-date\"><span class=\"m\">Nov</span><span class=\"d\">21</span></div><div class=\"ds-ev-info\"><h3 class=\"ds-ev-title\"><a href=\"#\">Hari Kraf Kebangsaan 2026</a></h3><p class=\"ds-ev-meta\">Kuala Lumpur</p><div class=\"ds-ev-foot\"><p class=\"ds-ev-note\">Lot draw open until 28 Nov, 05:00 PM</p><a class=\"ds-ev-cta\" href=\"#\">Confirm your lot</a></div></div></article>",
+      "css": ".ds-ev { position: relative; display: grid; grid-template-columns: 84px minmax(0,1fr); column-gap: 40px; padding: 30px; background: #fff; border: 1px solid #dce1e8; border-radius: 12px; box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 1px 3px rgba(16,24,40,.06); font-family: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; color: #101828; transition: box-shadow 140ms cubic-bezier(0.16,1,0.3,1), border-color 140ms cubic-bezier(0.16,1,0.3,1); } .ds-ev:hover { border-color: #a9b4c3; box-shadow: 0 2px 4px -2px rgba(16,24,40,.06), 0 8px 16px -4px rgba(16,24,40,.10); } .ds-ev:focus-within { outline: 3px solid #ffdd00; outline-offset: 2px; } .ds-ev-date { overflow: hidden; align-self: start; border: 1px solid #dce1e8; border-radius: 8px; text-align: center; line-height: 1; font-variant-numeric: tabular-nums; } .ds-ev-date .m { display: block; padding: 5px 0 4px; background: #0b2240; color: #fff; font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; } .ds-ev-date .d { display: block; padding: 10px 0 12px; font-size: 2.25rem; font-weight: 700; } .ds-ev-title { margin: 0 0 4px; font-size: 1.25rem; font-weight: 700; line-height: 1.3; } .ds-ev-title a { color: #101828; text-decoration: none; } .ds-ev-title a::after { content: ''; position: absolute; inset: 0; } .ds-ev-meta { margin: 0; font-size: 1rem; color: #586477; } .ds-ev-foot { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 16px; padding-top: 16px; } .ds-ev-note { margin: 0; font-size: .9375rem; color: #586477; } .ds-ev-cta { position: relative; z-index: 1; display: inline-flex; align-items: center; justify-content: center; width: 240px; height: 56px; border-radius: 8px; background: #1a56db; color: #fff; font-size: 1rem; font-weight: 600; text-decoration: none; } .ds-ev-cta:hover { background: #1546b3; }"
     },
     {
       "name": "Admin Empty State",
@@ -1046,9 +1095,10 @@
   ],
   "narrative": {
     "northStar": "The Service Counter",
-    "overview": "undilot reads like a government service and works like a well-made dashboard: a navy shell that holds still, white work surfaces on a cool grey ground, one blue that acts. The office sits at a desk for hours scanning draw lists, so its screens are dense, Stripe-calm tables and forms at 40px controls. Usahawan, many older and on a phone, get the same world at a larger size: one reading column (760px), 1rem body, 48px targets, one large button per draw.\n\nNothing is decorative. Depth is a hairline and a whisper of shadow; colour carries meaning (blue acts, gold marks what is yours, state colours always name themselves in words). The one authored moment is the draw-stage stepper's current stop settling in. The system refuses the grey dashboard with a single accent and the frosted Apple imitation it replaced.\n\nThe whole thing ships with no build step: every stylesheet is an inline <style> in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as --ui-* custom properties in partials/ui-tokens.blade.php; nothing else spells a hex value except the two places CSS variables cannot reach (see The No Stray Hex Rule).",
+    "overview": "undilot reads like a government service and works like a well-made dashboard: a navy shell that holds still, white work surfaces on a cool grey ground, one blue that acts. The office sits at a desk for hours scanning draw lists, so its screens are dense, Stripe-calm tables and forms at 40px controls. Usahawan, many older and on a phone, get the same world at a larger size: 1rem body, 48px targets, one large button per draw. Every screen, office, portal and public alike, sits on the same 1000px column down the middle.\n\nNothing is decorative. Depth is a hairline and a whisper of shadow; colour carries meaning (blue acts, gold marks what is yours, state colours always name themselves in words). Two moments are authored: the draw-stage stepper's current stop settling in, and the lot reveal a usahawan watches on confirming a lot. The system refuses the grey dashboard with a single accent and the frosted Apple imitation it replaced.\n\nThe whole thing ships with no build step: every stylesheet is an inline <style> in a Blade partial, and the only libraries (Bootstrap 5.3.3, Bootstrap Icons 1.11.3) come from a CDN with pinned versions and SRI hashes. Tokens live once, as --ui-* custom properties in partials/ui-tokens.blade.php; nothing else spells a hex value except the two places CSS variables cannot reach (see The No Stray Hex Rule).",
     "keyCharacteristics": [
-      "Navy shell (rail, app bar, sign-in panel), white surfaces on a cool grey ground.",
+      "Navy shell (rail, participant bar, sign-in panel), white surfaces on a cool grey ground.",
+      "One 1000px column on every page; one top bar and one footer shared by the portal and the public pages.",
       "One action blue; Kraftangan gold only for \"yours\", \"you are here\" and the mark.",
       "GOV.UK yellow-and-black focus ring on every focusable thing.",
       "System UI type with tabular figures on every number.",
@@ -1059,7 +1109,7 @@
     "rules": [
       {
         "name": "The One Blue Rule",
-        "body": "Only blue acts. A secondary action is white with a strong hairline; a destructive action is white with bad-text until hover turns it solid bad.",
+        "body": "Only blue acts. A secondary action is white with a strong hairline; a destructive action is white with bad-text until hover turns it solid bad. On the navy bar the signed-out Sign In is the one white-filled button, because blue does not read on navy.",
         "section": "colors"
       },
       {
@@ -1083,6 +1133,11 @@
         "section": "typography"
       },
       {
+        "name": "The One Column Rule",
+        "body": "No shell sets its own width. Every page, and the bar and footer that frame it, reads --ui-page-w; a new surface takes the column, not a new max-width.",
+        "section": "layout"
+      },
+      {
         "name": "The Tables Become Cards Rule",
         "body": "Below 768px every .mac-table stacks: each row a bordered 12px card, each cell a label/value line (the value wrapped in .mac-cell) whose label is copied from the column header by script. A cell holding one field is labelled like any value; a cell with a button or more than one control, a blank header or a colspan is skipped. A wide one-form row (td[colspan]) instead shows each field's aria-label above it, label and field sharing a .mac-field box (the label aria-hidden; the box is display: contents above 768px), with the row's button on the fields' baseline; a worded button there takes its own full-width line under the fields. Detail rows stack label over value, full width. The outer card gives up its chrome so cards never nest in cards, unless it carries .mac-card-keep: a small table inside a detail card keeps the card, and its rows become sep-divided lines inside it, labelled at the detail-label size (0.8125rem/500).",
         "section": "layout"
@@ -1094,7 +1149,7 @@
       },
       {
         "name": "The Hairline First Rule",
-        "body": "A surface is separated from the ground by a 1px border, not by shadow. Never stack a shadow heavier than Rest on anything that does not float.",
+        "body": "A surface is separated from the ground by a 1px border, not by shadow. Never stack a shadow heavier than Rest on anything that does not float; the one response is Raised on a card that is itself one link, under the pointer.",
         "section": "elevation"
       }
     ],
@@ -1102,6 +1157,7 @@
       "Do take every colour, radius, shadow and duration from --ui-* in partials/ui-tokens.blade.php.",
       "Do write styles inline in a Blade partial and load libraries from a pinned CDN URL; there is no build step and no Node in production.",
       "Do use .mac- classes on office pages and .ap- classes on participant pages, and only one of the two on any page.",
+      "Do put every page on the one column (max-width: var(--ui-page-max); margin-inline: auto; padding-inline: var(--ui-page-pad)), and frame participant and public pages with the shared portal-bar and site-footer partials.",
       "Do give every focusable element the GOV.UK ring (0 0 0 3px #ffdd00, 0 0 0 5px #0b0c0c); plain text links take the yellow highlighter with a black underline instead.",
       "Do show status as a word with its marker, never as colour alone.",
       "Do put the draw-stage stepper on every draw, full on a draw's own page and compact in a table row.",
@@ -1112,6 +1168,7 @@
       "Don't introduce a second action colour; blue is the only one that acts.",
       "Don't put .mac- or .ap- classes on the sign-in views; they carry their own look.",
       "Don't spell a hex value outside ui-tokens; the only exceptions are CalendarPalette::PALETTE and the PDF slip, each naming the token it mirrors.",
+      "Don't give a shell or page its own max-width; take the column.",
       "Don't add a shadow heavier than Rest to anything that does not float.",
       "Don't mark an unread or active row with a coloured side stripe; use the blue tint and its hairline.",
       "Don't fade a locked tile whose label must stay readable; hatch it.",

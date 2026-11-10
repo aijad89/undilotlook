@@ -53,3 +53,7 @@ Thumbs.db
 /.playwright-mcp
 /.impeccable/review/
 /.impeccable/questions/
+# Two exceptions to the rule above, kept local on purpose: a weekly handover
+# note (asked for 2026-10-16) and the to-do list (asked for 2026-11-10).
+/last16.10.26.md
+/TODO.md
