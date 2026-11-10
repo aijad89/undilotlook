@@ -58,7 +58,7 @@
         </div>
     </div>
 
-    @include('partials.draw-stepper', ['status' => $event->polling_status])
+    @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => \App\Models\Event::PARTICIPANT_STAGE_LABELS, 'stops' => \App\Models\Event::PARTICIPANT_STAGES])
 
     @if($errors->any())
         <div class="ap-alert ap-alert-danger" role="alert">

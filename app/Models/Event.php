@@ -87,7 +87,7 @@ class Event extends Model
      * The stages a lot draw goes through.
      *
      * `polling` reads as "Open" and `completed` as "End" because that is what the
-     * stepper on the lot draw page calls them.
+     * admin screens' stepper calls them.
      */
     public const POLLING_STATUSES = [
         'draft' => 'Draft',
@@ -96,6 +96,14 @@ class Event extends Model
         'completed' => 'End',
         'cancelled' => 'Cancelled',
     ];
+
+    /**
+     * The participant's stepper, on the dashboard and the lot page alike. A draft
+     * draw is the office's, not yet the participant's, so it starts at Open.
+     */
+    public const PARTICIPANT_STAGES = ['polling', 'closed', 'completed'];
+
+    public const PARTICIPANT_STAGE_LABELS = ['completed' => 'Completed'] + self::POLLING_STATUSES;
 
     /**
      * How the lot is revealed when a participant draws.

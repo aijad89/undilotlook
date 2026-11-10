@@ -6,11 +6,6 @@
 @section('content')
 @include('partials.apple-styles')
 
-@php
-    // The usahawan's words for the four stops.
-    $stopLabels = ['draft' => 'Draft', 'polling' => 'Open', 'closed' => 'Closed', 'completed' => 'Completed', 'cancelled' => 'Cancelled'];
-@endphp
-
 <div class="ap-page">
     <div class="ap-page-header">
         <div>
@@ -47,8 +42,7 @@
                 @endif
             </div>
 
-            {{-- From Open on: a draft draw is the office's, not yet the usahawan's. --}}
-            @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => $stopLabels, 'stops' => ['polling', 'closed', 'completed']])
+            @include('partials.draw-stepper', ['status' => $event->polling_status, 'labels' => \App\Models\Event::PARTICIPANT_STAGE_LABELS, 'stops' => \App\Models\Event::PARTICIPANT_STAGES])
 
             <div class="ap-draw-next">
                 {{-- A drawn lot is named once, on its own link. --}}

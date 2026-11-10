@@ -221,3 +221,16 @@ it('runs a whole draw through the screens, from an empty event to everyone seate
     $lot = EventRegistration::where('company_id', $companies[0]->id)->sole()->plot->plot_code;
     $this->actingAs($companies[0]->user)->get(route('dashboard'))->assertSee($lot);
 });
+
+it('shows the lot page the same stages as the dashboard, Open to Completed', function () {
+    $event = openDraw();
+    $user = inDraw($event)->company->user;
+
+    foreach ([route('dashboard'), route('zvote.index', $event)] as $url) {
+        $this->actingAs($user, 'web')->get($url)
+            ->assertOk()
+            ->assertSeeInOrder(['class="label">Open<', 'class="label">Closed<', 'class="label">Completed<'], false)
+            ->assertDontSee('class="label">Draft<', false)
+            ->assertDontSee('class="label">End<', false);
+    }
+});
