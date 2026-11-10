@@ -3,8 +3,7 @@
 Panduan untuk sesiapa — manusia atau agen — yang bekerja dalam repo ini.
 
 Fail ini memegang **peraturan dan keputusan sahaja**: perkara yang tidak boleh
-diterbitkan semula dengan membaca kod. Apa yang masih perlu dibuat ada dalam
-`TODO.md`.
+diterbitkan semula dengan membaca kod.
 
 ---
 
