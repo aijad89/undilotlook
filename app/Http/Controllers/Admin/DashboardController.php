@@ -67,6 +67,7 @@ class DashboardController extends Controller
                 'registrations as confirmed' => fn ($q) => $inZone($q)->where('confirmed_participation', true),
                 // Event-wide on purpose: only super and HQ read it (rule A7).
                 'registrations as awaiting' => fn ($q) => $q->awaitingLot(),
+                'joinRequests as join_pending' => fn ($q) => $inZone($q)->where('status', 'pending'),
                 'plots as plots_total',
                 // A set-aside lot is a surprise to the zone until it is confirmed.
                 'plots as plots_taken' => fn ($q) => $q->where('is_allocated', true)
@@ -91,6 +92,14 @@ class DashboardController extends Controller
             if ($missing > 0) {
                 $rows[] = ['warn', "{$event->title}: {$missing} draw-list ".str('row')->plural($missing).' with no craft code',
                     route('admin.events.registrations.index', $event)];
+            }
+        }
+
+        // A8 — companies asking to join, waiting on this admin's zone.
+        foreach ($events as $event) {
+            if ($event->join_pending > 0) {
+                $rows[] = ['warn', "{$event->title}: {$event->join_pending} join ".str('request')->plural($event->join_pending).' to review',
+                    route('admin.events.registrations.index', $event).'#join-requests'];
             }
         }
 

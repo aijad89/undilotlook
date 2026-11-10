@@ -33,6 +33,8 @@
         <div class="ev-foot">
             @if($stage === 'open')
                 <p class="ev-foot-note">Lot draw open until {{ $event->polling_deadline->format('d M, h:i A') }}</p>
+            @elseif($stage === 'register')
+                <p class="ev-foot-note">Registration closes {{ $event->registration_close_at->format('d M, h:i A') }}</p>
             @elseif($stage === 'soon' && $event->polling_start_date)
                 <p class="ev-foot-note">Lot draw opens {{ $event->polling_start_date->format('d M, h:i A') }}</p>
             @endif
@@ -41,6 +43,11 @@
                 @case('open')
                     <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="ev-cta ev-cta-primary">
                         Confirm your lot <i class="bi bi-arrow-right" aria-hidden="true"></i>
+                    </a>
+                    @break
+                @case('register')
+                    <a href="{{ route('events.show', $event) }}" class="ev-cta ev-cta-primary">
+                        Register now <i class="bi bi-arrow-right" aria-hidden="true"></i>
                     </a>
                     @break
                 @case('soon')

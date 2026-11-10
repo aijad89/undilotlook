@@ -267,9 +267,8 @@ return new class extends Migration
             $table->dateTime('start_date');
             $table->dateTime('end_date');
 
-            // The window during which the event is "open". Nothing self-registers
-            // here — an admin builds the draw list — but the window still drives
-            // `events.status`, which the polling guard and the public listing read.
+            // The registration window: a participant may ask to join only between
+            // these two. With auto_open / auto_close it also drives `events.status`.
             $table->dateTime('registration_open_at');
             $table->dateTime('registration_close_at');
             $table->boolean('auto_open')->default(false);
@@ -415,6 +414,36 @@ return new class extends Migration
             $table->unique(['event_id', 'company_id']);
         });
 
+        /**
+         * A participant asking to join an event's draw. Approving it is what
+         * puts the company on the draw list; the request stays as the record.
+         * pending | approved | rejected — EventJoinRequest::STATUSES.
+         */
+        Schema::create('event_join_requests', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('event_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('company_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+
+            // cash | cheque | transfer — EventJoinRequest::PAYMENT_METHODS.
+            $table->string('payment_method', 20)->nullable();
+
+            // [{name, path, original}]: the payment receipt first, then any
+            // supporting documents. Files on the `local` disk, served through a
+            // controller that asks who is reading.
+            $table->json('documents')->nullable();
+
+            $table->string('status', 20)->default('pending');
+            $table->text('reject_reason')->nullable();
+            $table->foreignId('reviewed_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->timestamp('reviewed_at')->nullable();
+            $table->timestamps();
+
+            // One request per company per event; asking again after a rejection
+            // reuses it.
+            $table->unique(['event_id', 'company_id']);
+        });
+
         Schema::create('polls', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
@@ -517,6 +546,7 @@ return new class extends Migration
             'notifications',
             'preset_allocations',
             'polls',
+            'event_join_requests',
             'event_registrations',
             'plots',
             'bidang_allocations',

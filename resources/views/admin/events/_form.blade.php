@@ -56,6 +56,18 @@
         <div class="col-12"><hr class="mac-divider"></div>
 
         <div class="col-md-6">
+            <label class="mac-label" for="registration_open_at">Registration opens</label>
+            <input type="datetime-local" id="registration_open_at" name="registration_open_at"
+                   class="mac-form-control" value="{{ $datetime('registration_open_at') }}" required>
+        </div>
+
+        <div class="col-md-6">
+            <label class="mac-label" for="registration_close_at">Registration closes</label>
+            <input type="datetime-local" id="registration_close_at" name="registration_close_at"
+                   class="mac-form-control" value="{{ $datetime('registration_close_at') }}" required>
+        </div>
+
+        <div class="col-md-6">
             <label class="mac-label" for="start_date">Event starts</label>
             <input type="datetime-local" id="start_date" name="start_date" class="mac-form-control"
                    value="{{ $datetime('start_date') }}" required>
@@ -68,30 +80,18 @@
         </div>
 
         <div class="col-md-6">
-            <label class="mac-label" for="registration_open_at">Published from</label>
-            <input type="datetime-local" id="registration_open_at" name="registration_open_at"
-                   class="mac-form-control" value="{{ $datetime('registration_open_at') }}" required>
-        </div>
-
-        <div class="col-md-6">
-            <label class="mac-label" for="registration_close_at">Published until</label>
-            <input type="datetime-local" id="registration_close_at" name="registration_close_at"
-                   class="mac-form-control" value="{{ $datetime('registration_close_at') }}" required>
-        </div>
-
-        <div class="col-md-6">
             <div class="form-check">
                 <input type="checkbox" class="form-check-input" id="auto_open" name="auto_open" value="1"
                        @checked($value('auto_open'))>
                 <label class="form-check-label mac-text-sm" for="auto_open">
-                    Publish automatically when the window opens
+                    Publish automatically when registration opens
                 </label>
             </div>
             <div class="form-check">
                 <input type="checkbox" class="form-check-input" id="auto_close" name="auto_close" value="1"
                        @checked($value('auto_close'))>
                 <label class="form-check-label mac-text-sm" for="auto_close">
-                    Unpublish automatically when it closes
+                    Unpublish automatically when registration closes
                 </label>
             </div>
         </div>

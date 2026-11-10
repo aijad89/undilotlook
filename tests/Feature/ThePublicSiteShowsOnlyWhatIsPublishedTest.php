@@ -87,7 +87,8 @@ it('gives each public event one stage, the event dates winning over the draw', f
     expect($make(['polling_status' => 'polling', 'polling_deadline' => now()->addDay()])->publicStage())->toBe('open')
         ->and($make(['polling_status' => 'polling', 'polling_deadline' => now()->subMinute()])->publicStage())->toBe('closed')
         ->and($make(['polling_status' => 'completed'])->publicStage())->toBe('closed')
-        ->and($make(['polling_status' => 'draft'])->publicStage())->toBe('soon')
+        ->and($make(['polling_status' => 'draft'])->publicStage())->toBe('register')
+        ->and($make(['polling_status' => 'draft', 'registration_open_at' => now()->addDay(), 'registration_close_at' => now()->addDays(2)])->publicStage())->toBe('soon')
         ->and($make(['polling_status' => 'polling', 'polling_deadline' => now()->addDay(), 'start_date' => now()->subDay()])->publicStage())->toBe('now')
         ->and($make(['polling_status' => 'polling', 'polling_deadline' => now()->addDay(), 'start_date' => now()->subWeek(), 'end_date' => now()->subDay()])->publicStage())->toBe('ended');
 });

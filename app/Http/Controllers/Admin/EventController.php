@@ -102,7 +102,7 @@ class EventController extends Controller
             if ($event->registration_open_at && $event->registration_close_at) {
                 $bars[] = [
                     'id' => 'reg-'.$event->id,
-                    'title' => 'Published: '.$event->title,
+                    'title' => 'Registration: '.$event->title,
                     'start' => $event->registration_open_at->toDateString(),
                     'end' => $event->registration_close_at->copy()->addDay()->toDateString(),
                     'classNames' => ['reg-window'],

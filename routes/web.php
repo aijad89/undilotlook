@@ -16,6 +16,7 @@ use App\Http\Controllers\Admin\SocialLinkController;
 use App\Http\Controllers\Auth\Admin\LoginController as AdminLoginController;
 use App\Http\Controllers\DevAutoLoginController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\JoinRequestController;
 use App\Http\Controllers\LotDrawController;
 use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
@@ -47,11 +48,18 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
     Route::get('/events/{event}/lot/slip', [LotDrawController::class, 'slip'])->name('zvote.slip');
+    Route::post('/events/{event}/join', [JoinRequestController::class, 'store'])->name('events.join');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'read'])->name('notifications.read');
 });
+
+/* A join request's document: for its own company, or an admin of that zone. */
+Route::get('/join-requests/{joinRequest}/documents/{index}', [JoinRequestController::class, 'document'])
+    ->middleware('auth:web,admin')
+    ->whereNumber('index')
+    ->name('join-requests.document');
 
 /*
  * An announcement's banner or file: reached from either portal, so either guard
@@ -122,6 +130,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('undo', [EntRegistrationController::class, 'undo'])->name('undo');
                 Route::put('{registration}', [EntRegistrationController::class, 'update'])->name('update');
                 Route::delete('{registration}', [EntRegistrationController::class, 'destroy'])->name('destroy');
+                Route::post('join/{joinRequest}/approve', [EntRegistrationController::class, 'approve'])->name('approve');
+                Route::post('join/{joinRequest}/reject', [EntRegistrationController::class, 'reject'])->name('reject');
             });
 
         /*

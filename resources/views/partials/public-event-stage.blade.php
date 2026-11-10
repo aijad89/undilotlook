@@ -4,6 +4,7 @@
         'ended' => ['Ended', 'neutral'],
         'now' => ['Happening now', 'info'],
         'open' => ['Lot draw open', 'ok'],
+        'register' => ['Register now', 'ok'],
         'soon' => ['Coming soon', 'neutral'],
         'closed' => ['Lot draw closed', 'neutral'],
     ][$event->publicStage()];

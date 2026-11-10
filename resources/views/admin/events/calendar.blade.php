@@ -165,7 +165,7 @@
                     <span style="width:16px;background:{{ $palette['registration_fill'] }};"></span>
                     <span style="width:4px;background:{{ $palette['registration_close_cap'] }};"></span>
                 </span>
-                Published <span class="cal-legend-aside">(opens · closes)</span>
+                Registration <span class="cal-legend-aside">(opens · closes)</span>
             </div>
             <div class="cal-legend-item"><div class="cal-dot" style="background:{{ $palette['polling'] }};"></div> Voting window</div>
         </div>
@@ -268,7 +268,7 @@
                 badge.className = 'pop-badge is-' + known;
 
                 document.getElementById('pop-dates').querySelector('span').textContent =
-                    (isReg ? 'Published: ' : '') + fmt(start) + (end > start ? ' – ' + fmt(end) : '');
+                    (isReg ? 'Registration: ' : '') + fmt(start) + (end > start ? ' – ' + fmt(end) : '');
 
                 document.getElementById('pop-loc').querySelector('span').textContent = props.location || '—';
 

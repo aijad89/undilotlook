@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Company;
 use App\Models\Event;
+use App\Models\EventJoinRequest;
 use App\Models\EventRegistration;
 use App\Support\EventVisibility;
 use App\Support\KrafPicker;
@@ -16,8 +17,9 @@ use Illuminate\Validation\Rule;
 /**
  * The draw list: which companies are in one event's lot draw.
  *
- * PUTTING A COMPANY HERE IS THE APPROVAL. There is no status to set and nothing
- * to approve afterwards — the row exists, so the company is in the draw. What
+ * PUTTING A COMPANY HERE IS THE APPROVAL. The row exists, so the company is in
+ * the draw. It gets here two ways — the office adds it, or the office approves
+ * the company's own join request — and both go through addToList(). What
  * the office still has to say is the craft CODE it draws under and the booth
  * SIZE it needs, because the plan is built from those two numbers.
  *
@@ -71,8 +73,14 @@ class EntRegistrationController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'state', 'kraf_code', 'plot_size']);
 
+        // Join requests waiting on the office, in this admin's zone.
+        $joinRequests = $scoped($event->joinRequests()->with('company')->where('status', 'pending'))
+            ->oldest()
+            ->get();
+
         return view('admin.events.registrations.index', [
             'event' => $event,
+            'joinRequests' => $joinRequests,
             'registrations' => $registrations,
             'candidates' => $candidates,
             'codes' => KrafPicker::codes(),
@@ -111,36 +119,85 @@ class EntRegistrationController extends Controller
 
         DB::transaction(function () use ($companies, $event, $data, &$added) {
             foreach ($companies as $company) {
-                // A company cannot be in the same draw twice — there is a unique
-                // index saying so. firstOrCreate makes a double submit harmless
-                // rather than a 500.
-                // A code picked here applies to every company added; left blank,
-                // each company brings its own usual code (set on its page), if any.
-                $code = $data['code'] ?? $company->kraf_code;
-
-                $registration = EventRegistration::firstOrCreate(
-                    ['event_id' => $event->id, 'company_id' => $company->id],
-                    [
-                        'user_id' => $company->user_id,
-                        'code' => $code,
-                        'code_updated_at' => $code ? now() : null,
-                        // Same for the booth size; 3x3 when neither says.
-                        'plot_size' => $data['plot_size'] ?? $company->plot_size ?? '3x3',
-                    ]
-                );
-
-                $added += $registration->wasRecentlyCreated ? 1 : 0;
-
-                // A size picked for the batch becomes the company's own too.
-                if ($registration->wasRecentlyCreated && isset($data['plot_size'])) {
-                    $company->syncBoothSize($data['plot_size']);
-                }
+                $added += $this->addToList($event, $company, $data['code'] ?? null, $data['plot_size'] ?? null) ? 1 : 0;
             }
         });
 
         return back()->with('success', $added === 1
             ? 'One company added to the draw list.'
             : "{$added} companies added to the draw list.");
+    }
+
+    /**
+     * Put one company on the draw list. Shared by the office's own add and by
+     * approving a join request, so both write the same row.
+     *
+     * A company cannot be in the same draw twice — there is a unique index
+     * saying so. firstOrCreate makes a double submit harmless rather than a 500.
+     * A code left blank takes the company's own usual code, if any; the booth
+     * size likewise, 3x3 when neither says. A pending join request from the
+     * company is settled by the add, whichever door it came through.
+     *
+     * Returns whether a row was added.
+     */
+    private function addToList(Event $event, Company $company, ?string $code, ?string $size): bool
+    {
+        $code ??= $company->kraf_code;
+
+        $registration = EventRegistration::firstOrCreate(
+            ['event_id' => $event->id, 'company_id' => $company->id],
+            [
+                'user_id' => $company->user_id,
+                'code' => $code,
+                'code_updated_at' => $code ? now() : null,
+                'plot_size' => $size ?? $company->plot_size ?? '3x3',
+            ]
+        );
+
+        // A size picked here becomes the company's own too.
+        if ($registration->wasRecentlyCreated && $size) {
+            $company->syncBoothSize($size);
+        }
+
+        $event->joinRequests()->where('company_id', $company->id)->where('status', 'pending')->get()
+            ->each->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
+
+        return $registration->wasRecentlyCreated;
+    }
+
+    /** Approve a join request: the company goes on the draw list with this code and size. */
+    public function approve(Request $request, Event $event, EventJoinRequest $joinRequest)
+    {
+        EventVisibility::authorize($event);
+        $this->authorizeCompany($request, $joinRequest->company);
+        abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
+
+        $data = $request->validate([
+            'code' => ['nullable', 'string', 'max:50'],
+            'plot_size' => ['nullable', Rule::in(PlotSizes::all())],
+        ]);
+
+        DB::transaction(fn () => $this->addToList($event, $joinRequest->company, $data['code'] ?? null, $data['plot_size'] ?? null));
+
+        return back()->with('success', "{$joinRequest->company->name} added to the draw list.");
+    }
+
+    /** Reject a join request. The reason is shown to the participant, who may ask again. */
+    public function reject(Request $request, Event $event, EventJoinRequest $joinRequest)
+    {
+        EventVisibility::authorize($event);
+        $this->authorizeCompany($request, $joinRequest->company);
+        abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
+
+        $data = $request->validate(['reject_reason' => ['required', 'string', 'max:1000']]);
+
+        $joinRequest->update($data + [
+            'status' => 'rejected',
+            'reviewed_by' => $request->user('admin')->id,
+            'reviewed_at' => now(),
+        ]);
+
+        return back()->with('success', "Request from {$joinRequest->company->name} rejected.");
     }
 
     /** Set this row's craft code or booth size. */
@@ -337,10 +394,15 @@ class EntRegistrationController extends Controller
 
     private function authorizeScope(Request $request, EventRegistration $registration): void
     {
+        $this->authorizeCompany($request, $registration->company);
+    }
+
+    private function authorizeCompany(Request $request, Company $company): void
+    {
         $admin = $request->user('admin');
 
         abort_if(
-            ! $admin->hasGlobalAccess() && $registration->company->state !== $admin->state,
+            ! $admin->hasGlobalAccess() && $company->state !== $admin->state,
             403,
             'That company is administered by another zone.'
         );

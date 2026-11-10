@@ -10,10 +10,9 @@ class HomeController extends Controller
     /**
      * The public landing page: every published event, upcoming first.
      *
-     * Read-only for everyone. There is no self-registration — the office puts a
-     * company into a draw — so the page invites a participant to sign in to
-     * confirm a lot, never to register. How many lots an event holds stays off
-     * it, as it does everywhere a participant looks.
+     * Read-only for everyone. A participant asks to join from the event's own
+     * page; the office approves. How many lots an event holds stays off it, as
+     * it does everywhere a participant looks.
      */
     public function index(Request $request)
     {
@@ -46,7 +45,16 @@ class HomeController extends Controller
     {
         abort_if($event->status === 'draft', 404);
 
-        return view('events.show', ['event' => $event]);
+        // What a signed-in participant's company has to do with this event: on
+        // the draw list, a join request in flight, or neither.
+        $company = auth('web')->user()?->company;
+
+        return view('events.show', [
+            'event' => $event,
+            'company' => $company,
+            'onList' => $company && $event->registrations()->where('company_id', $company->id)->exists(),
+            'joinRequest' => $company ? $event->joinRequests()->where('company_id', $company->id)->first() : null,
+        ]);
     }
 
     /**

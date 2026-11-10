@@ -17,7 +17,7 @@
             <h2>Draw List</h2>
             <p class="mac-muted mb-0">
                 {{ $event->title }} — {{ $event->start_date->format('d M Y') }}.
-                Being on this list is being in the draw; there is nothing further to approve.
+                Being on this list is being in the draw. Approving a join request adds the company here.
             </p>
         </div>
 
@@ -31,6 +31,76 @@
             </form>
         @endif
     </div>
+
+    @if($joinRequests->isNotEmpty())
+        <div class="mac-card mb-3" id="join-requests">
+            <div class="mac-card-padded pb-0">
+                <h3 class="mac-card-title">Join requests ({{ $joinRequests->count() }})</h3>
+                <p class="mac-muted mac-text-sm mb-0">Open the files the company sent, then approve with a craft code and booth, or reject with a reason the company will see.</p>
+            </div>
+            <div class="table-responsive">
+                <table class="mac-table">
+                    <thead>
+                        <tr>
+                            <th>Company</th>
+                            <th>Payment</th>
+                            <th>Documents</th>
+                            <th style="width:300px;">Approve</th>
+                            <th style="width:280px;">Reject</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($joinRequests as $jr)
+                            <tr>
+                                <td>
+                                    <strong>{{ $jr->company->name }}</strong>
+                                    <div class="mac-text-sm mac-muted">{{ $jr->company->state }} · sent {{ $jr->updated_at->format('d M Y') }}</div>
+                                </td>
+                                <td class="mac-text-sm">
+                                    {{ \App\Models\EventJoinRequest::PAYMENT_METHODS[$jr->payment_method] ?? '—' }}
+                                </td>
+                                <td class="mac-text-sm">
+                                    @forelse($jr->documents ?? [] as $i => $doc)
+                                        <div><a href="{{ route('join-requests.document', [$jr, $i]) }}" target="_blank" rel="noopener"><i class="bi bi-file-earmark me-1"></i>{{ $doc['name'] }}</a></div>
+                                    @empty
+                                        <span class="mac-muted">No files</span>
+                                    @endforelse
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.events.registrations.approve', [$event, $jr]) }}" class="d-flex gap-1">
+                                        @csrf
+                                        <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
+                                            <option value="">{{ $jr->company->kraf_code ? 'Own: '.$jr->company->kraf_code : '— None —' }}</option>
+                                            @foreach($codes as $code)
+                                                <option value="{{ $code->code }}">{{ $code->code }}</option>
+                                            @endforeach
+                                        </select>
+                                        <select name="plot_size" class="mac-select mac-action-btn-field" aria-label="Booth">
+                                            @foreach($plotSizes as $size)
+                                                <option value="{{ $size }}" @selected(($jr->company->plot_size ?? '3x3') === $size)>{{ $size }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="mac-action-btn" title="Approve and add to the draw list">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                                <td>
+                                    <form method="POST" action="{{ route('admin.events.registrations.reject', [$event, $jr]) }}" class="d-flex gap-1">
+                                        @csrf
+                                        <input type="text" name="reject_reason" class="mac-form-control mac-action-btn-field" placeholder="Reason" aria-label="Reason for rejecting" required maxlength="1000">
+                                        <button type="submit" class="mac-action-btn mac-action-btn-danger" title="Reject">
+                                            <i class="bi bi-x-lg"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
 
     <div class="mac-card mac-card-padded mb-3">
         <h3 class="mac-card-title">Add companies</h3>
