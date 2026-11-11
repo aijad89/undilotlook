@@ -76,8 +76,8 @@ class HomeController extends Controller
             ->reject(fn ($r) => $r->event->polling_status === 'cancelled')
             // An event that has ended is on Past events, not here.
             ->reject(fn ($r) => $r->event->end_date->isPast())
-            // Dated windows first, soonest first; undated ones after.
-            ->sortBy(fn ($r) => $r->event->polling_start_date?->timestamp ?? PHP_INT_MAX)
+            // Latest event first; on the same day, the newer event first.
+            ->sortBy([fn ($a, $b) => [$b->event->start_date->timestamp, $b->event_id] <=> [$a->event->start_date->timestamp, $a->event_id]])
             ->values();
 
         // Requests not yet in a draw: what was sent, and where it stands. An

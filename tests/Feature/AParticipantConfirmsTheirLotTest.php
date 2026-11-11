@@ -145,9 +145,9 @@ it('refuses Confirm when the draw is not open, past its deadline, or the code is
 });
 
 it('lists every draw on the dashboard with what is left to do in each', function () {
-    $open = openDraw(['title' => 'Open Fair']);
-    $soon = openDraw(['title' => 'Coming Fair', 'polling_status' => 'draft', 'polling_start_date' => now()->addWeek()]);
-    $planning = openDraw(['title' => 'Planning Fair', 'polling_status' => 'draft', 'polling_start_date' => null]);
+    $open = openDraw(['title' => 'Open Fair', 'start_date' => now()->addMonth(), 'end_date' => now()->addMonth()->addDays(2)]);
+    $soon = openDraw(['title' => 'Coming Fair', 'polling_status' => 'draft', 'polling_start_date' => now()->addWeek(), 'start_date' => now()->addMonths(2), 'end_date' => now()->addMonths(2)->addDays(2)]);
+    $planning = openDraw(['title' => 'Planning Fair', 'polling_status' => 'draft', 'polling_start_date' => null, 'start_date' => now()->addMonths(3), 'end_date' => now()->addMonths(3)->addDays(2)]);
     $cancelled = openDraw(['title' => 'Called Off Fair', 'polling_status' => 'cancelled']);
 
     $company = Company::factory()->create();
@@ -158,7 +158,8 @@ it('lists every draw on the dashboard with what is left to do in each', function
     // On the list but undated is still "you are in this draw", never an empty page.
     $this->actingAs($company->user)->get(route('dashboard'))
         ->assertOk()
-        ->assertSeeInOrder(['Open Fair', 'Coming Fair', 'Planning Fair'])
+        // Latest event first.
+        ->assertSeeInOrder(['Planning Fair', 'Coming Fair', 'Open Fair'])
         ->assertSee(route('zvote.index', $open))
         ->assertSee('The draw date has not been set yet')
         ->assertDontSee('Called Off Fair');
