@@ -33,6 +33,7 @@ class CompanyFactory extends Factory
             'entrepreneur_category' => 'Micro, Small & Medium (MSM)',
             'kraf_code' => null,
             'plot_size' => null,
+            'credentials' => null,
             'is_active' => true,
         ];
     }

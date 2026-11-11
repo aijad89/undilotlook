@@ -55,6 +55,28 @@
                                 <td>
                                     <strong>{{ $jr->company->name }}</strong>
                                     <div class="mac-text-sm mac-muted">{{ $jr->company->state }} · sent {{ $jr->updated_at->format('d M Y') }}</div>
+                                    {{-- As the company declared it with this request. --}}
+                                    @if($a = $jr->answers)
+                                        <div class="mac-text-sm mt-1">
+                                            <div>Recognition: {{ \App\Models\Company::RECOGNITIONS[$a['recognition']] ?? '—' }}</div>
+                                            <div>Classification certificate:
+                                                @if($c = $a['classification_cert'])
+                                                    {{ $c['number'] }}, valid until {{ \Illuminate\Support\Carbon::parse($c['end'])->format('d M Y') }}
+                                                @else
+                                                    none
+                                                @endif
+                                            </div>
+                                            @if($a['quality'])
+                                                <div>Quality compliance:
+                                                    @if($q = $a['quality_cert'])
+                                                        {{ \App\Models\Company::QUALITY_STANDARDS[$a['quality']] ?? $a['quality'] }}, {{ $q['number'] }}, valid until {{ \Illuminate\Support\Carbon::parse($q['end'])->format('d M Y') }}
+                                                    @else
+                                                        not applicable
+                                                    @endif
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
                                 </td>
                                 <td class="mac-text-sm">
                                     {{ \App\Models\EventJoinRequest::PAYMENT_METHODS[$jr->payment_method] ?? '—' }}

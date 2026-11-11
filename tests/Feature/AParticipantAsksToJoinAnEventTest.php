@@ -18,10 +18,16 @@ function joinable(array $attributes = []): Event
     return Event::factory()->create($attributes);
 }
 
-/** A valid join: how they paid, and the receipt. */
+/** Recognition and certificates, at their plainest: none of either. */
+function credentials(): array
+{
+    return ['recognition' => 'none', 'classification' => 'no'];
+}
+
+/** A valid join: declared, credentials, how they paid, and the receipt. */
 function payment(string $method = 'transfer'): array
 {
-    return ['declaration' => 1, 'payment_method' => $method, 'receipt' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')];
+    return ['declaration' => 1, 'payment_method' => $method, 'receipt' => UploadedFile::fake()->create('slip.pdf', 100, 'application/pdf')] + credentials();
 }
 
 it('needs how they paid and a receipt, and keeps nothing else from a paid request', function () {
@@ -184,10 +190,15 @@ it('puts the steps in one form, declaration first, and opens on the step that fa
         ->assertSeeInOrder(['data-step="1"', 'I want to join this event, and I declare', 'data-step="2"', 'How did you pay?'], false)
         ->assertSee('data-start="1"', false);
 
-    // Declared but no payment: back on the payment step.
+    // Declared, nothing else: back on the credentials step.
     $this->from(route('events.show', $event))->followingRedirects()
         ->post(route('events.join', $event), ['declaration' => 1])
         ->assertSee('data-start="2"', false);
+
+    // Declared and credentials given, no payment: back on the payment step.
+    $this->from(route('events.show', $event))->followingRedirects()
+        ->post(route('events.join', $event), ['declaration' => 1] + credentials())
+        ->assertSee('data-start="3"', false);
 
     // Not declared: back on the declaration, whatever else is wrong.
     $this->from(route('events.show', $event))->followingRedirects()
@@ -226,7 +237,7 @@ it('takes a fee waiver instead of a receipt, with a certificate where the catego
     $this->post(route('events.join', $event), [
         'declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'first_time',
         'documents' => [UploadedFile::fake()->create('letter.pdf', 100, 'application/pdf')],
-    ])->assertSessionHas('success');
+    ] + credentials())->assertSessionHas('success');
 
     $request = EventJoinRequest::sole();
     expect($request->payment_method)->toBe('waiver')
@@ -248,11 +259,125 @@ it('takes the OKU certificate from Supporting documents, and drops a category se
     $this->post(route('events.join', $event), [
         'declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'disabled',
         'documents' => [UploadedFile::fake()->create('oku.pdf', 100, 'application/pdf')],
-    ])->assertSessionHas('success');
+    ] + credentials())->assertSessionHas('success');
 
     expect(array_column(EventJoinRequest::sole()->documents, 'name'))->toBe(['oku.pdf']);
 
     $other = joinable();
     $this->post(route('events.join', $other), payment('cash') + ['waiver_category' => 'award'])->assertSessionHas('success');
     expect(EventJoinRequest::where('event_id', $other->id)->sole()->waiver_category)->toBeNull();
+});
+
+/** A certificate as the form sends it. */
+function certificate(string $field, string $number = 'PKT-001', ?string $end = null, bool $file = true): array
+{
+    return [
+        "{$field}_number" => $number,
+        "{$field}_start" => now()->subYear()->toDateString(),
+        "{$field}_end" => $end ?? now()->addYear()->toDateString(),
+    ] + ($file ? ["{$field}_file" => UploadedFile::fake()->create("{$field}.pdf", 100, 'application/pdf')] : []);
+}
+
+it('asks for recognition and the classification certificate, and refuses an expired one', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    $this->post(route('events.join', $event), ['recognition' => null, 'classification' => null] + payment())
+        ->assertSessionHasErrors(['recognition', 'classification']);
+    $this->post(route('events.join', $event), ['recognition' => 'both', 'classification' => 'maybe'] + payment())
+        ->assertSessionHasErrors(['recognition', 'classification']);
+
+    // Yes: number, dates and the file.
+    $this->post(route('events.join', $event), ['classification' => 'yes'] + payment())
+        ->assertSessionHasErrors(['classification_number', 'classification_start', 'classification_end', 'classification_file']);
+
+    $this->post(route('events.join', $event), ['classification' => 'yes'] + certificate('classification', end: now()->subDay()->toDateString()) + payment())
+        ->assertSessionHasErrors(['classification_end' => 'This certificate has expired. Renew it before joining.']);
+
+    expect(EventJoinRequest::count())->toBe(0);
+
+    $this->post(route('events.join', $event), ['recognition' => 'adiguru', 'classification' => 'yes'] + certificate('classification') + payment())
+        ->assertSessionHas('success');
+
+    $request = EventJoinRequest::sole();
+    expect($request->answers['recognition'])->toBe('adiguru')
+        ->and($request->answers['classification_cert']['number'])->toBe('PKT-001')
+        ->and(array_column($request->documents, 'name'))->toBe(['Payment receipt', 'Classification certificate'])
+        ->and($company->fresh()->credentials)->toBe($request->answers);
+
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->get(route('admin.events.registrations.index', $event))
+        ->assertSee('Recognition: Adiguru Kraf')
+        ->assertSee('PKT-001');
+});
+
+it('fills in what the company said last time, and keeps the certificate on file while it is the same one', function () {
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    $first = joinable();
+    $this->post(route('events.join', $first), ['recognition' => 'tokoh', 'classification' => 'yes'] + certificate('classification') + payment())
+        ->assertSessionHas('success');
+    $path = $company->fresh()->credentials['classification_cert']['path'];
+
+    $second = joinable();
+    $this->get(route('events.show', $second))
+        ->assertSee('Filled in from your last request')
+        ->assertSee('value="PKT-001"', false)
+        ->assertSee('On file: classification.pdf');
+
+    // Renewed (a new end date): its new file is needed.
+    $this->post(route('events.join', $second), ['recognition' => 'tokoh', 'classification' => 'yes'] + certificate('classification', end: now()->addYears(2)->toDateString(), file: false) + payment())
+        ->assertSessionHasErrors('classification_file');
+
+    // The same certificate: no file sent, the one on file is kept.
+    $this->post(route('events.join', $second), ['recognition' => 'tokoh', 'classification' => 'yes'] + certificate('classification', file: false) + payment())
+        ->assertSessionHas('success');
+
+    $docs = EventJoinRequest::where('event_id', $second->id)->sole()->documents;
+    expect($docs[1]['path'])->toBe($path);
+    Storage::disk('local')->assertExists($path);
+});
+
+it('asks the quality question of Batik, Songket and Tenun only, offering their own standard', function () {
+    App\Models\KrafBidang::factory()->code('TTN')->create(['pecahan_bidang' => 'TENUN']);
+    App\Models\KrafBidang::factory()->code('TTH')->create(['pecahan_bidang' => 'TEKATAN']);
+    $event = joinable();
+
+    $tenun = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TTN']);
+    $this->actingAs($tenun->user, 'web');
+    $this->get(route('events.show', $event))
+        ->assertSee('Quality compliance certificate')
+        ->assertSee('Songket / Tenunan Standard entrepreneur')
+        ->assertDontSee('Batik Standard entrepreneur');
+
+    $this->post(route('events.join', $event), payment())->assertSessionHasErrors('quality');
+    $this->post(route('events.join', $event), ['quality' => 'batik'] + payment())->assertSessionHasErrors('quality');
+    $this->post(route('events.join', $event), ['quality' => 'songket_tenun'] + payment())->assertSessionHasErrors('quality_number');
+    $this->post(route('events.join', $event), ['quality' => 'songket_tenun'] + certificate('quality', 'SPK-9') + payment())
+        ->assertSessionHas('success');
+    expect(array_column(EventJoinRequest::sole()->documents, 'name'))->toBe(['Payment receipt', 'Quality compliance certificate']);
+
+    // Tekatan has no standard: not asked.
+    auth()->forgetGuards();
+    $tekat = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TTH']);
+    $this->actingAs($tekat->user, 'web');
+    $this->get(route('events.show', $event))->assertDontSee('Quality compliance certificate');
+    $this->post(route('events.join', $event), payment())->assertSessionHas('success');
+});
+
+it('keeps the company certificate when a rejected request is sent again', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), ['classification' => 'yes'] + certificate('classification') + payment());
+    $path = $company->fresh()->credentials['classification_cert']['path'];
+    EventJoinRequest::sole()->update(['status' => 'rejected']);
+
+    $this->post(route('events.join', $event), ['classification' => 'yes'] + certificate('classification', file: false) + payment())
+        ->assertSessionHas('success');
+
+    Storage::disk('local')->assertExists($path);
 });

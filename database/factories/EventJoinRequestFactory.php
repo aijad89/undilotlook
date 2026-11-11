@@ -24,6 +24,7 @@ class EventJoinRequestFactory extends Factory
             'payment_method' => 'transfer',
             'waiver_category' => null,
             'documents' => [],
+            'answers' => null,
             'status' => 'pending',
             'reject_reason' => null,
             'reviewed_by' => null,

@@ -214,6 +214,11 @@ return new class extends Migration
             // company is added to a draw list, where it can still be changed.
             $table->string('plot_size')->nullable();
 
+            // What the participant last said about the company's recognition and
+            // certificates, filled into the next join request so a returning
+            // company only confirms it. Company::credentials() names the keys.
+            $table->json('credentials')->nullable();
+
             $table->boolean('is_active')->default(true);
             $table->timestamps();
 
@@ -434,6 +439,10 @@ return new class extends Migration
             // supporting documents. Files on the `local` disk, served through a
             // controller that asks who is reading.
             $table->json('documents')->nullable();
+
+            // The company's credentials as they were sent with this request: a
+            // copy, so a later renewal does not rewrite what the office reviewed.
+            $table->json('answers')->nullable();
 
             $table->string('status', 20)->default('pending');
             $table->text('reject_reason')->nullable();

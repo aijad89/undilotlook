@@ -54,6 +54,9 @@
     /* The steps and buttons set their own display; hidden has to win. */
     .evd-join-card [hidden], [data-join-submit][hidden] { display: none !important; }
     .evd-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+    .evd-input { min-height: 44px; padding: 0 12px; border: 1px solid var(--ui-border); border-radius: var(--ui-r); background: var(--ui-surface); color: var(--ui-text); font: inherit; font-size: 1rem; }
+    .evd-dates { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .evd-dates > div { display: flex; flex-direction: column; gap: 6px; }
     @media (max-width: 860px) { .evd-grid { grid-template-columns: 1fr; gap: 24px; } }
     @media (max-width: 640px) {
         .ev-page { padding-top: 16px; }
@@ -67,6 +70,13 @@
 @php
     // Whether this participant may still ask to join; the steps are in the form.
     $canJoin = $company && ! $onList && $joinRequest?->status !== 'pending' && $event->acceptsJoinRequests();
+    // Back after an error: open on the first step that has one.
+    $stepOf = fn ($key) => match (true) {
+        $key === 'declaration' => 1,
+        (bool) preg_match('/^(recognition|classification|quality)/', $key) => 2,
+        default => 3,
+    };
+    $startStep = $errors->any() ? min(array_map($stepOf, $errors->keys())) : 1;
     $drawOpen =$event->polling_status === 'polling' && $event->polling_deadline && ! $event->polling_deadline->isPast();
 @endphp
 
@@ -106,7 +116,7 @@
             @if($canJoin)
                 <form method="POST" action="{{ route('events.join', $event) }}" enctype="multipart/form-data"
                       class="evd-card evd-join-card" id="join-form"
-                      data-start="{{ ! $errors->has('declaration') && $errors->hasAny(['payment_method', 'receipt', 'waiver_category', 'documents', 'documents.*']) ? 2 : 1 }}">
+                      data-start="{{ $startStep }}">
                     @csrf
                     <p class="evd-step-count" data-step-count hidden></p>
 
@@ -119,7 +129,64 @@
                         @error('declaration')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                     </div>
 
+                    {{-- What the company said last time is filled in; a returning
+                         participant only confirms it. --}}
+                    @php
+                        $held = $company->credentials ?? [];
+                        $standard = $company->qualityStandard();
+                    @endphp
                     <div class="evd-join" data-step="2">
+                        <h2 class="evd-join-title">Recognition and certificates</h2>
+                        @if($held)
+                            <p class="evd-note" style="margin-top:0;">Filled in from your last request. Change anything that is no longer right.</p>
+                        @endif
+
+                        <fieldset class="evd-step">
+                            <legend class="evd-question">Recognition received</legend>
+                            <div class="evd-pay">
+                                @foreach(\App\Models\Company::RECOGNITIONS as $key => $label)
+                                    <label class="evd-pay-option">
+                                        <input type="radio" name="recognition" value="{{ $key }}" @checked(old('recognition', $held['recognition'] ?? null) === $key) required>
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('recognition')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                        </fieldset>
+
+                        <fieldset class="evd-step">
+                            <legend class="evd-question">Do you hold a Malaysian Handicraft Industry Classification Certificate?</legend>
+                            <div class="evd-pay">
+                                @foreach(['yes' => 'Yes', 'no' => 'No'] as $key => $label)
+                                    <label class="evd-pay-option">
+                                        <input type="radio" name="classification" value="{{ $key }}" @checked(old('classification', $held['classification'] ?? null) === $key) required>
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('classification')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                        </fieldset>
+                        @include('events._certificate', ['field' => 'classification', 'when' => 'classification:yes', 'onFile' => $held['classification_cert'] ?? null])
+
+                        {{-- Only for a craft with a standard: Batik, Songket, Tenun. --}}
+                        @if($standard)
+                            <fieldset class="evd-step">
+                                <legend class="evd-question">Quality compliance certificate</legend>
+                                <div class="evd-pay">
+                                    @foreach([$standard => \App\Models\Company::QUALITY_STANDARDS[$standard], 'none' => 'Not applicable'] as $key => $label)
+                                        <label class="evd-pay-option">
+                                            <input type="radio" name="quality" value="{{ $key }}" @checked(old('quality', $held['quality'] ?? null) === $key) required>
+                                            {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                                @error('quality')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                            </fieldset>
+                            @include('events._certificate', ['field' => 'quality', 'when' => 'quality:'.$standard, 'onFile' => $held['quality_cert'] ?? null])
+                        @endif
+                    </div>
+
+                    <div class="evd-join" data-step="3">
                         <fieldset class="evd-step">
                             <legend class="evd-question">How did you pay?</legend>
                             <div class="evd-pay">
@@ -135,13 +202,13 @@
 
                         {{-- Paid: the receipt only. Waiver: which category, and Supporting documents for any proof.
                              The script shows the one that applies and switches the other off. --}}
-                        <div class="evd-join" data-when="paid">
+                        <div class="evd-join" data-if="payment_method:cash cheque transfer">
                             <label class="evd-question" for="receipt">Payment receipt</label>
                             <input type="file" id="receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" data-required>
                             @error('receipt')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                         </div>
 
-                        <div class="evd-join" data-when="waiver">
+                        <div class="evd-join" data-if="payment_method:waiver">
                             <fieldset class="evd-step">
                                 <legend class="evd-question">Which waiver applies to you?</legend>
                                 <div class="evd-waivers">
@@ -210,14 +277,15 @@
                     });
                     prev.addEventListener('click', function () { show(current - 1); });
 
-                    // Paid or waived: show the block that applies; switch the other
-                    // off, so it is neither checked nor sent. What the shown block
-                    // marks data-required becomes required.
-                    function payment() {
-                        var method = form.querySelector('input[name=payment_method]:checked');
-                        var waived = method && method.value === 'waiver';
-                        form.querySelectorAll('[data-when]').forEach(function (block) {
-                            var on = method && (block.dataset.when === 'waiver') === waived;
+                    // A block marked data-if="field:a b" shows only while that radio
+                    // is on a or b. A hidden block is switched off, so it is neither
+                    // checked nor sent; in a shown one, what is marked data-required
+                    // becomes required.
+                    function toggle() {
+                        form.querySelectorAll('[data-if]').forEach(function (block) {
+                            var rule = block.dataset.if.split(':');
+                            var picked = form.querySelector('input[name="' + rule[0] + '"]:checked');
+                            var on = !!picked && rule[1].split(' ').indexOf(picked.value) !== -1;
                             block.hidden = !on;
                             block.querySelectorAll('input').forEach(function (input) {
                                 input.disabled = !on;
@@ -227,10 +295,10 @@
                     }
 
                     form.addEventListener('change', function (e) {
-                        if (e.target.name === 'payment_method') payment();
+                        toggle();
                         if (e.target === declaration) next.disabled = blocked();
                     });
-                    payment();
+                    toggle();
 
                     count.hidden = false;
                     form.querySelector('[data-nav]').hidden = false;

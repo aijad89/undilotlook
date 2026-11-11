@@ -46,6 +46,7 @@ class EventJoinRequest extends Model
         'payment_method',
         'waiver_category',
         'documents',
+        'answers',
         'status',
         'reject_reason',
         'reviewed_by',
@@ -54,6 +55,7 @@ class EventJoinRequest extends Model
 
     protected $casts = [
         'documents' => 'array',
+        'answers' => 'array',
         'reviewed_at' => 'datetime',
     ];
 
