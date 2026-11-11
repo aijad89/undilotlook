@@ -41,7 +41,8 @@
                         @php
                             $event = $entry->event;
                             // As the company answered when it asked to join this event.
-                            $a = $answers[$event->id] ?? null;
+                            $jr = $requests[$event->id] ?? null;
+                            $a = $jr?->answers;
                             $cert = fn ($c) => ! empty($c['number'])
                                 ? $c['number'].(! empty($c['end']) ? ', until '.\Illuminate\Support\Carbon::parse($c['end'])->format('d M Y') : '')
                                 : null;
@@ -58,7 +59,7 @@
                             <td data-label="Lot">
                                 @if($entry->plot)
                                     {{-- One unit, so a phone's label-and-value line keeps them together. --}}
-                                    <span><span class="ap-lot-code">{{ $entry->plot->plot_code }}</span>@if(isset($drawn[$event->id])) · <a href="{{ route('zvote.slip', $event) }}">Slip</a>@endif</span>
+                                    <span><span class="ap-lot-code">{{ $entry->plot->plot_code }}</span>@if(isset($drawn[$event->id])) · <a href="{{ route('zvote.slip', $event) }}" target="_blank" rel="noopener">Slip<span class="visually-hidden"> (PDF, opens in a new tab)</span></a>@endif</span>
                                 @else
                                     <span class="ap-muted">No lot</span>
                                 @endif
@@ -76,7 +77,14 @@
                                         @endif
                                     </span>
                                 </td>
-                                <td data-label="Photos" class="ap-tabular">{{ count($a['product_images'] ?? []) ?: '—' }}</td>
+                                <td data-label="Photos" class="ap-tabular">
+                                    @if($count = count($a['product_images'] ?? []))
+                                        {{-- Opens in a new tab, so this list stays where it was. --}}
+                                        <a href="{{ route('join-requests.photos', $jr) }}" target="_blank" rel="noopener">{{ $count }}<span class="visually-hidden"> photos (opens in a new tab)</span></a>
+                                    @else
+                                        —
+                                    @endif
+                                </td>
                             @else
                                 {{-- No request: the office put the company on the list itself. --}}
                                 <td data-label="Answers" colspan="4"><span class="ap-muted">Added by the office, no answers sent</span></td>

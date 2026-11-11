@@ -16,8 +16,8 @@ use Illuminate\Database\Seeder;
  *
  * Plants, in order: a sample craft hierarchy, 14 state admins + 1 HQ, 14
  * participants with a company each, and two events — one with its draw list
- * filled from those companies. Re-runnable: everything is matched by name or
- * email first.
+ * filled from those companies; then DemoEventsSeeder's open, coming and past
+ * events. Re-runnable: everything is matched by name or email first.
  */
 class DemoSeeder extends Seeder
 {
@@ -48,6 +48,7 @@ class DemoSeeder extends Seeder
         $this->hierarchy();
         $this->call([DemoAdminSeeder::class, DemoUserSeeder::class]);
         $this->events();
+        $this->call(DemoEventsSeeder::class);
     }
 
     private function hierarchy(): void

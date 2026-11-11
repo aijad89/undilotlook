@@ -281,6 +281,14 @@ a.ap-todo-info:hover { color: var(--ui-blue-text); }
     .ap-table-stack tbody td:first-child::before { content: none; }
 }
 
+/* A request's product photos: square tiles, each opening full size. */
+.ap-photo-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 0; padding: 0; list-style: none; }
+.ap-photo { display: block; overflow: hidden; background: var(--ui-surface); border: 1px solid var(--ui-border); border-radius: var(--ui-r-lg); box-shadow: var(--ui-shadow-1); color: var(--ui-text-2); text-decoration: none; transition: border-color 140ms var(--ui-ease), box-shadow 140ms var(--ui-ease); }
+.ap-photo:hover { border-color: var(--ui-border-hover); box-shadow: var(--ui-shadow-2); color: var(--ui-text); }
+.ap-photo img { display: block; width: 100%; aspect-ratio: 1; object-fit: cover; background: var(--ui-surface-2); }
+.ap-photo-name { display: block; padding: 10px 14px; font-size: 0.875rem; font-weight: 600; }
+@media (max-width: 576px) { .ap-photo-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+
 /* The profile: facts and the password form beside the record, half and half. */
 .ap-profile-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 0; }
 .ap-field { margin-bottom: 16px; }

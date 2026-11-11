@@ -303,9 +303,35 @@ class JoinRequestController extends Controller
      */
     public function document(Request $request, EventJoinRequest $joinRequest, int $index)
     {
-        $path = $joinRequest->documents[$index]['path'] ?? null;
-        abort_unless($path && Storage::disk('local')->exists($path), 404);
+        return $this->serve($request, $joinRequest, $joinRequest->documents[$index] ?? null);
+    }
 
+    /**
+     * One product photo as the request carries it in its answers: the photos
+     * it was sent with, which stay with it after the company sends new ones.
+     */
+    public function photo(Request $request, EventJoinRequest $joinRequest, int $index)
+    {
+        return $this->serve($request, $joinRequest, $joinRequest->answers['product_images'][$index] ?? null);
+    }
+
+    /** The photos a request was sent with, on a page of their own. */
+    public function photos(Request $request, EventJoinRequest $joinRequest)
+    {
+        abort_unless($request->user()->company?->id === $joinRequest->company_id, 403);
+
+        return view('request-photos', [
+            'joinRequest' => $joinRequest->load('event'),
+            'photos' => $joinRequest->answers['product_images'] ?? [],
+        ]);
+    }
+
+    /**
+     * A file of a request, for its own company or an admin of that company's
+     * zone; nobody else learns whether it exists.
+     */
+    private function serve(Request $request, EventJoinRequest $joinRequest, ?array $file)
+    {
         $admin = $request->user('admin');
         $user = $request->user('web');
 
@@ -315,6 +341,8 @@ class JoinRequestController extends Controller
             403
         );
 
-        return Storage::disk('local')->response($path, $joinRequest->documents[$index]['original']);
+        abort_unless(! empty($file['path']) && Storage::disk('local')->exists($file['path']), 404);
+
+        return Storage::disk('local')->response($file['path'], $file['original'] ?? basename($file['path']));
     }
 }

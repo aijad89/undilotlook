@@ -50,6 +50,9 @@ it('lists the ended events the company was in, latest first, with the lot and it
         ->assertDontSee('Bukan Kami')
         ->assertSee('Your company on record');
 
+    // The slip opens in a new tab, as it does from the lot page.
+    $this->get(route('past-events'))->assertSee('<a href="'.route('zvote.slip', $recent).'" target="_blank" rel="noopener">Slip', false);
+
     // No slip for a lot the participant did not confirm.
     expect(substr_count($this->get(route('past-events'))->getContent(), '/lot/slip'))->toBe(1);
 
@@ -95,4 +98,46 @@ it('carries what the company answered for each past event, as it was then, not a
         ->assertSeeInOrder(['Ditambah Pejabat', 'Added by the office, no answers sent'])
         // Now: the record card, from the company's current answers.
         ->assertSeeInOrder(['Your company on record', 'Ahmad Baharu', 'Tokoh Kraf Negara']);
+});
+
+it('opens the photos a past event was asked with on a page of their own, in a new tab, for that company and its zone office only', function () {
+    Illuminate\Support\Facades\Storage::fake('local');
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $event = endedEvent('Karnival Bergambar', 15);
+    EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+    foreach (range(1, 5) as $i) {
+        Illuminate\Support\Facades\Storage::disk('local')->put("products/{$company->id}/p{$i}.jpg", "jpeg {$i}");
+    }
+    $request = \App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'approved', 'answers' => [
+        'recognition' => 'none', 'classification' => 'no', 'contact_name' => 'Siti',
+        'product_images' => array_map(fn ($i) => ['path' => "products/{$company->id}/p{$i}.jpg", 'original' => "gerai{$i}.jpg"], range(1, 5)),
+    ]]);
+
+    // The count on Past events links to the page, in a new tab.
+    $this->actingAs($company->user, 'web')->get(route('past-events'))
+        ->assertSee('<a href="'.route('join-requests.photos', $request).'" target="_blank" rel="noopener">5', false);
+
+    // The page: five tiles, each opening full size in a new tab.
+    $page = $this->get(route('join-requests.photos', $request))
+        ->assertOk()
+        ->assertSee('Karnival Bergambar')
+        ->assertSee('alt="Product photo 5"', false);
+    expect(substr_count($page->getContent(), 'target="_blank"'))->toBe(5);
+
+    // Each photo is served, by its place in the request.
+    $this->get(route('join-requests.photo', [$request, 2]))->assertOk();
+    expect($this->get(route('join-requests.photo', [$request, 2]))->streamedContent())->toBe('jpeg 3');
+    $this->get(route('join-requests.photo', [$request, 9]))->assertNotFound();
+
+    // Another company: neither the page nor a photo.
+    auth()->forgetGuards();
+    $other = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($other->user, 'web')->get(route('join-requests.photos', $request))->assertForbidden();
+    $this->actingAs($other->user, 'web')->get(route('join-requests.photo', [$request, 0]))->assertForbidden();
+
+    // The office: its own zone may look, another zone may not.
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get(route('join-requests.photo', [$request, 0]))->assertOk();
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Kedah'), 'admin')->get(route('join-requests.photo', [$request, 0]))->assertForbidden();
 });

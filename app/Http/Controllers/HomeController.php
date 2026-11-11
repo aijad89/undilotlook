@@ -138,13 +138,14 @@ class HomeController extends Controller
 
         // What the company answered for each, as it stood when it asked to join:
         // the request keeps its own copy. None means the office added it.
-        $answers = \App\Models\EventJoinRequest::where('company_id', $user->company?->id)
+        $requests = \App\Models\EventJoinRequest::where('company_id', $user->company?->id)
             ->whereIn('event_id', $entries->pluck('event_id'))
-            ->pluck('answers', 'event_id');
+            ->get()
+            ->keyBy('event_id');
 
         return view('past-events', [
             'entries' => $entries,
-            'answers' => $answers,
+            'requests' => $requests,
             'company' => $user->company,
             // A slip is printed only for a lot the participant confirmed.
             'drawn' => \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip(),

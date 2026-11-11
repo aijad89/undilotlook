@@ -46,6 +46,7 @@ Route::get('/events/{event}', [HomeController::class, 'show'])->name('events.sho
 Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
     Route::get('/past-events', [HomeController::class, 'pastEvents'])->name('past-events');
+    Route::get('/join-requests/{joinRequest}/photos', [JoinRequestController::class, 'photos'])->name('join-requests.photos');
 
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
@@ -69,6 +70,10 @@ Route::get('/join-requests/{joinRequest}/documents/{index}', [JoinRequestControl
     ->middleware('auth:web,admin')
     ->whereNumber('index')
     ->name('join-requests.document');
+Route::get('/join-requests/{joinRequest}/photos/{index}', [JoinRequestController::class, 'photo'])
+    ->middleware('auth:web,admin')
+    ->whereNumber('index')
+    ->name('join-requests.photo');
 
 /*
  * An announcement's banner or file: reached from either portal, so either guard
