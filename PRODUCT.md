@@ -12,8 +12,10 @@ web
   work nationally; a **state (zone) admin** sees only their own zone's companies and
   draw rows, though every non-draft event is visible to them so they can fill it.
   They work **at a desk**, for long stretches: building events, putting companies
-  into a draw list with a craft code and booth size, laying out the lot plan,
-  opening and closing voting, assigning the rest, exporting results.
+  into a draw list, laying out the lot plan, opening and closing voting, assigning
+  the rest, exporting results. A zone admin checks each join request's payment
+  proof and approves it; the company comes in with its own craft code and booth
+  size, which only HQ and super can change.
 - **Usahawan (craft entrepreneurs)** — the participants. Mostly **on a phone**. Many
   are **older**, some have **low confidence with apps**. Their job is small and
   high-stakes: see which fair they are in, confirm their lot once, see it revealed,
