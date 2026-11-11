@@ -84,6 +84,10 @@ it('opens the summary of a past event in a new tab, under construction for now, 
     $coming = Event::factory()->create();
     EventRegistration::factory()->create(['event_id' => $coming->id, 'company_id' => $company->id]);
     $this->get(route('past-events.show', $coming))->assertNotFound();
+    // Cancelled: not on Past events, so no summary either.
+    $cancelled = endedEvent('Dibatalkan', 10, ['polling_status' => 'cancelled']);
+    EventRegistration::factory()->create(['event_id' => $cancelled->id, 'company_id' => $company->id]);
+    $this->get(route('past-events.show', $cancelled))->assertNotFound();
 });
 
 it('says so when there is no past event yet, and is for a signed-in participant only', function () {
@@ -155,12 +159,37 @@ it('opens the photos a past event was asked with on a page of their own, in a ne
     // Another company: neither the page nor a photo.
     auth()->forgetGuards();
     $other = Company::factory()->create(['state' => 'Johor']);
-    $this->actingAs($other->user, 'web')->get(route('join-requests.photos', $request))->assertForbidden();
-    $this->actingAs($other->user, 'web')->get(route('join-requests.photo', [$request, 0]))->assertForbidden();
+    // Not even whether it exists: the same 404 as an id that does not.
+    $this->actingAs($other->user, 'web')->get(route('join-requests.photos', $request))->assertNotFound();
+    $this->actingAs($other->user, 'web')->get(route('join-requests.photo', [$request, 0]))->assertNotFound();
 
     // The office: its own zone may look, another zone may not.
     auth()->forgetGuards();
     $this->actingAs(stateAdmin('Johor'), 'admin')->get(route('join-requests.photo', [$request, 0]))->assertOk();
     auth()->forgetGuards();
-    $this->actingAs(stateAdmin('Kedah'), 'admin')->get(route('join-requests.photo', [$request, 0]))->assertForbidden();
+    $this->actingAs(stateAdmin('Kedah'), 'admin')->get(route('join-requests.photo', [$request, 0]))->assertNotFound();
+});
+
+it('shows the answers of the request that got the company in, not a rejected or draft one', function () {
+    $company = Company::factory()->create();
+    $event = endedEvent('Ditolak Dahulu', 20);
+    // Rejected, then put on the list by the office.
+    EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+    \App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'rejected', 'answers' => [
+        'recognition' => 'none', 'classification' => 'no', 'contact_name' => 'Jawapan Ditolak', 'product_images' => [],
+    ]]);
+
+    $this->actingAs($company->user, 'web')->get(route('past-events'))
+        ->assertSeeInOrder(['Ditolak Dahulu', 'Added by the office, no answers sent'])
+        ->assertDontSee('Jawapan Ditolak');
+});
+
+it('takes a request off the dashboard once its event has ended', function () {
+    $company = Company::factory()->create();
+    $event = endedEvent('Lama Ditolak', 30);
+    \App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'rejected']);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertOk()
+        ->assertDontSee('Lama Ditolak');
 });

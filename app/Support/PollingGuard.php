@@ -25,11 +25,20 @@ class PollingGuard
 {
     public static function blocker(Event $event): ?string
     {
-        return static::noPlots($event)
+        return static::noWindow($event)
+            ?? static::noPlots($event)
             ?? static::missingAccounts($event)
             ?? static::missingCodes($event)
             ?? static::codesWithNoPlot($event)
             ?? static::sizesWithTooFewLots($event);
+    }
+
+    /** Every screen a participant sees names when the draw closes. */
+    private static function noWindow(Event $event): ?string
+    {
+        return $event->polling_deadline
+            ? null
+            : 'Cannot start polling: the draw has no end date. Set the voting window in the lot plan first.';
     }
 
     private static function noPlots(Event $event): ?string

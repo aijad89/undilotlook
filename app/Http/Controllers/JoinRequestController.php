@@ -318,7 +318,8 @@ class JoinRequestController extends Controller
     /** The photos a request was sent with, on a page of their own. */
     public function photos(Request $request, EventJoinRequest $joinRequest)
     {
-        abort_unless($request->user()->company?->id === $joinRequest->company_id, 403);
+        // 404, not 403: another company's request does not exist from here.
+        abort_unless($request->user()->company?->id === $joinRequest->company_id, 404);
 
         return view('request-photos', [
             'joinRequest' => $joinRequest->load('event'),
@@ -328,7 +329,8 @@ class JoinRequestController extends Controller
 
     /**
      * A file of a request, for its own company or an admin of that company's
-     * zone; nobody else learns whether it exists.
+     * zone; nobody else learns whether it exists. A draft is the company's
+     * alone until it is sent: the office sees requests from pending on.
      */
     private function serve(Request $request, EventJoinRequest $joinRequest, ?array $file)
     {
@@ -336,9 +338,10 @@ class JoinRequestController extends Controller
         $user = $request->user('web');
 
         abort_unless(
-            ($admin && ($admin->hasGlobalAccess() || $admin->state === $joinRequest->company->state))
+            ($admin && $joinRequest->status !== 'draft'
+                && ($admin->hasGlobalAccess() || $admin->state === $joinRequest->company->state))
                 || ($user && $user->company?->id === $joinRequest->company_id),
-            403
+            404
         );
 
         abort_unless(! empty($file['path']) && Storage::disk('local')->exists($file['path']), 404);

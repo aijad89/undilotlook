@@ -168,11 +168,11 @@
     if (auth()->check()) {
         // The lot page belongs to the dashboard: every draw is listed there,
         // and the lot is reached from its row.
-        $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*']];
+        $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*'], 'menu' => true];
         $apNav[] = ['label' => 'Past events', 'icon' => 'clock-history', 'route' => 'past-events', 'key' => 'past-events', 'match' => ['past-events', 'past-events.*'], 'drawer' => true];
         // The drawer only: the bar has its bell.
         $apNav[] = ['label' => 'Notifications', 'icon' => 'bell', 'route' => 'notifications.index', 'key' => 'notifications', 'match' => ['notifications.*'], 'drawer' => true, 'count' => $unreadNotificationCount];
-        $apNav[] = ['label' => 'Profile', 'icon' => 'person', 'route' => 'profile', 'key' => 'profile', 'match' => ['profile', 'profile.*'], 'drawer' => true];
+        $apNav[] = ['label' => 'Profile', 'icon' => 'person', 'route' => 'profile', 'key' => 'profile', 'match' => ['profile', 'profile.*'], 'drawer' => true, 'menu' => true];
     }
     $apHome = auth()->check() ? route('dashboard') : route('home');
 @endphp
@@ -268,16 +268,13 @@
                     <span class="d-none d-md-inline text-truncate" style="max-width:120px;">{{ Auth::user()->name }}</span>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-end ap-dropdown-menu">
+                    @foreach(array_filter($apNav, fn ($i) => $i['menu'] ?? false) as $apItem)
                     <li>
-                        <a class="dropdown-item" href="{{ route('dashboard') }}">
-                            <i class="bi bi-house-door"></i> Dashboard
+                        <a class="dropdown-item" href="{{ route($apItem['route']) }}">
+                            <i class="bi bi-{{ $apItem['icon'] }}"></i> {{ $apItem['label'] }}
                         </a>
                     </li>
-                    <li>
-                        <a class="dropdown-item" href="{{ route('profile') }}">
-                            <i class="bi bi-person"></i> Profile
-                        </a>
-                    </li>
+                    @endforeach
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">

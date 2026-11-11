@@ -69,6 +69,8 @@ class HomeController extends Controller
     public function dashboard(Request $request)
     {
         $user = $request->user();
+        $company = $user->company;
+        $onList = $user->registrations()->pluck('event_registrations.event_id');
 
         $entries = $user->registrations()
             ->with(['event', 'plot.plotSize'])
@@ -87,23 +89,24 @@ class HomeController extends Controller
         // unpublished event drops out while its registration is still running;
         // after it closed, the request stays to say the event was called off.
         $requests = \App\Models\EventJoinRequest::with('event')
-            ->where('company_id', $user->company?->id)
+            ->where('company_id', $company?->id)
             ->whereIn('status', ['draft', 'pending', 'rejected', 'approved'])
-            ->whereNotIn('event_id', $user->registrations()->pluck('event_registrations.event_id'))
+            ->whereNotIn('event_id', $onList)
             ->latest('updated_at')
             ->get()
             ->reject(fn ($jr) => $jr->event->isCalledOff() && ! $jr->event->registration_close_at?->isPast())
+            // An ended event is done with, as for the draw entries above.
+            ->reject(fn ($jr) => $jr->event->end_date->isPast())
             ->values();
 
         $drawn = \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip();
-        $company = $user->company;
 
         // Open for registration and not yet touched: no request of any kind, and
         // not on the list. Soonest to close first.
         $openEvents = $company
             ? Event::where('status', 'open')->where('polling_status', 'draft')
                 ->where('registration_open_at', '<=', now())->where('registration_close_at', '>=', now())
-                ->whereNotIn('id', $user->registrations()->pluck('event_registrations.event_id'))
+                ->whereNotIn('id', $onList)
                 ->whereNotIn('id', \App\Models\EventJoinRequest::where('company_id', $company->id)->pluck('event_id'))
                 ->orderBy('registration_close_at')
                 ->get()
@@ -137,8 +140,11 @@ class HomeController extends Controller
             ->values();
 
         // What the company answered for each, as it stood when it asked to join:
-        // the request keeps its own copy. None means the office added it.
+        // the request keeps its own copy. Only an approved request put the
+        // company on the list; a rejected or draft one did not, and none
+        // approved means the office added it.
         $requests = \App\Models\EventJoinRequest::where('company_id', $user->company?->id)
+            ->where('status', 'approved')
             ->whereIn('event_id', $entries->pluck('event_id'))
             ->get()
             ->keyBy('event_id');
@@ -161,7 +167,7 @@ class HomeController extends Controller
         $company = $request->user()->company;
 
         abort_unless(
-            $company && $event->end_date->isPast()
+            $company && $event->end_date->isPast() && $event->polling_status !== 'cancelled'
                 && $event->registrations()->where('company_id', $company->id)->exists(),
             404
         );

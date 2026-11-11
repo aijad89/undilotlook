@@ -162,11 +162,19 @@ it('serves a document to its own company and the zone office only', function () 
     ]);
     $url = route('join-requests.document', [$request, 0]);
 
-    $this->actingAs(Company::factory()->create()->user, 'web')->get($url)->assertForbidden();
+    // Nobody else learns it exists: the same 404 as an id that does not.
+    $this->actingAs(Company::factory()->create()->user, 'web')->get($url)->assertNotFound();
     auth()->forgetGuards();
-    $this->actingAs(stateAdmin('Kedah'), 'admin')->get($url)->assertForbidden();
+    $this->actingAs(stateAdmin('Kedah'), 'admin')->get($url)->assertNotFound();
     auth()->forgetGuards();
     $this->actingAs(stateAdmin('Johor'), 'admin')->get($url)->assertOk();
+    // A draft is the company's alone until it is sent, zone office included.
+    $request->update(['status' => 'draft']);
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get($url)->assertNotFound();
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get($url)->assertOk();
+    $request->update(['status' => 'pending']);
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')->get($url)->assertOk();
 });
@@ -925,4 +933,12 @@ it('warns on the dashboard of a certificate that runs out within two months', fu
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertSee('Your classification certificate expires on '.now()->addMonth()->format('d M Y'));
     $this->get(route('past-events'))->assertSee('Expires soon');
+});
+
+
+it('builds the user menu from the nav list', function () {
+    $company = Company::factory()->create();
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSeeInOrder(['ap-dropdown-menu', 'href="'.route('dashboard').'"', 'Dashboard', 'href="'.route('profile').'"', 'Profile', 'Sign Out'], false);
 });

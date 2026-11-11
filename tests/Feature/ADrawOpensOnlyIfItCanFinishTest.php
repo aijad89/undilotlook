@@ -14,7 +14,7 @@ use App\Support\PollingGuard;
  */
 function guardedEvent(): array
 {
-    $event = Event::factory()->create();
+    $event = Event::factory()->create(['polling_start_date' => now()->addDay(), 'polling_deadline' => now()->addDays(2)]);
     $rkp = KrafBidang::factory()->code('RKP')->create();
     $size = PlotSize::factory()->create(['event_id' => $event->id, 'size' => '3x3']);
 
@@ -101,4 +101,13 @@ it('ignores a company already holding a lot, whatever its code', function () {
     drawEntry($event, 'TBPS', '3x3', ['plot_id' => $held->id]);
 
     expect(PollingGuard::blocker($event))->toBeNull();
+});
+
+it('refuses a draw with no end date, which every participant screen names', function () {
+    [$event, $rkp, $size] = guardedEvent();
+    Plot::factory()->count(2)->on($size)->coded($rkp)->create();
+    drawEntry($event);
+    $event->update(['polling_deadline' => null]);
+
+    expect(PollingGuard::blocker($event))->toContain('no end date');
 });

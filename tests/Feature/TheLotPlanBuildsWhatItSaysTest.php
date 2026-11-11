@@ -217,7 +217,7 @@ it('clears a plan back to draft and says what went', function () {
 /* ── The stages ─────────────────────────────────────────────────────────── */
 
 it('will not open voting past the guard, and opens it once the guard is satisfied', function () {
-    $event = Event::factory()->create();
+    $event = Event::factory()->create(["polling_start_date" => now(), "polling_deadline" => now()->addDay()]);
     $admin = superAdmin();
 
     $this->actingAs($admin, 'admin')
