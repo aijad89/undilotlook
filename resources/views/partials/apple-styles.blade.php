@@ -257,6 +257,36 @@ a.ap-todo-info:hover { color: var(--ui-blue-text); }
 .ap-facts dd:last-child { margin-bottom: 0; }
 .ap-tabular { font-variant-numeric: tabular-nums; }
 .ap-side-note { font-size: 0.875rem; line-height: 1.5; color: var(--ui-muted); }
+/* Past events: a table on a desk; on a phone each row is a block of
+   label-and-value lines, the label taken from data-label. */
+.ap-table-card { padding: 0; }
+.ap-table-card .ap-table td:first-child { font-weight: 600; }
+/* Short values stay on one line; words wrap. */
+.ap-past-table td[data-label="Booth"], .ap-past-table td[data-label="Lot"], .ap-past-table td[data-label="Photos"] { white-space: nowrap; }
+.ap-past-table td:first-child { min-width: 220px; }
+.ap-table td.ap-tabular, .ap-table .ap-tabular { font-variant-numeric: tabular-nums; }
+.ap-past-table td { vertical-align: top; }
+.ap-past-meta { display: block; margin-top: 2px; font-size: 0.875rem; font-weight: 400; color: var(--ui-muted); }
+.ap-lot-code { font-weight: 700; color: var(--ui-gold-text); font-variant-numeric: tabular-nums; }
+.ap-table .ap-muted { color: var(--ui-muted); }
+@media (max-width: 640px) {
+    .ap-table-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .ap-table-stack, .ap-table-stack tbody, .ap-table-stack tr, .ap-table-stack td { display: block; }
+    .ap-table-stack tr { padding: 14px 18px; border-bottom: 1px solid var(--ui-sep); }
+    .ap-table-stack tr:last-child { border-bottom: 0; }
+    .ap-table-stack tbody td { display: flex; justify-content: space-between; gap: 16px; padding: 4px 0; border: 0; white-space: normal; text-align: right; }
+    .ap-table-stack tbody td::before { content: attr(data-label); flex-shrink: 0; font-size: 0.875rem; font-weight: 600; color: var(--ui-muted); text-align: left; }
+    .ap-table-stack tbody td:first-child { display: block; min-width: 0; padding-bottom: 6px; font-size: 1.125rem; text-align: left; }
+    .ap-table-stack tbody td > * { min-width: 0; overflow-wrap: anywhere; }
+    .ap-table-stack tbody td:first-child::before { content: none; }
+}
+
+/* The profile: facts and the password form beside the record, half and half. */
+.ap-profile-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); margin-top: 0; }
+.ap-field { margin-bottom: 16px; }
+.ap-field-hint { margin: 6px 0 0; font-size: 0.875rem; color: var(--ui-muted); }
+.ap-field-error { margin: 6px 0 0; font-size: 0.875rem; font-weight: 600; color: var(--ui-bad-text); }
+.ap-input[aria-invalid="true"] { border-color: var(--ui-bad); }
 @media (max-width: 860px) {
     .ap-dash-grid { grid-template-columns: minmax(0, 1fr); }
 }

@@ -126,7 +126,10 @@
 
         /* The window's width no longer says how much room the page has, so the
            column keeps a gutter beside the rail, 24px as in the office. */
-        body.ap-with-rail { --ui-page-pad: 24px; --ui-page-max: calc(var(--ui-page-w) + 2 * 24px); padding-left: var(--ap-rail-w); transition: padding-left 0.28s var(--ui-ease); }
+        body.ap-with-rail { --ui-page-pad: 24px; --ui-page-max: calc(var(--ui-page-w) + 2 * 24px); padding-left: var(--ap-rail-w); }
+        /* Animated only when the button moves it: these styles arrive after
+           <body> opens, so a transition here would slide every page in on load. */
+        body.ap-with-rail.ap-rail-moving { transition: padding-left 0.28s var(--ui-ease); }
         body.ap-with-rail .ap-sidebar { z-index: 950; width: var(--ap-rail-w); max-width: none; transform: none; visibility: visible; box-shadow: none; transition: transform 0.28s var(--ui-ease); }
         body.ap-with-rail #apSidebarClose, body.ap-with-rail .ap-overlay { display: none !important; }
         body.ap-with-rail .ap-topbar .ap-brand, body.ap-with-rail .ap-topnav { display: none; }
@@ -135,7 +138,7 @@
         body.ap-with-rail.ap-rail-hidden .ap-sidebar { transform: translateX(-100%); visibility: hidden; transition: transform 0.28s var(--ui-ease), visibility 0s linear 0.28s; }
     }
     @media (min-width: 992px) and (prefers-reduced-motion: reduce) {
-        body.ap-with-rail, body.ap-with-rail .ap-sidebar, body.ap-with-rail.ap-rail-hidden .ap-sidebar { transition: none; }
+        body.ap-with-rail.ap-rail-moving, body.ap-with-rail .ap-sidebar, body.ap-with-rail.ap-rail-hidden .ap-sidebar { transition: none; }
     }
     @media (max-width: 991.98px) {
         .ap-topnav, .ap-topbar .ap-brand { display: none; }
@@ -166,8 +169,10 @@
         // The lot page belongs to the dashboard: every draw is listed there,
         // and the lot is reached from its row.
         $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*']];
+        $apNav[] = ['label' => 'Past events', 'icon' => 'clock-history', 'route' => 'past-events', 'key' => 'past-events', 'match' => ['past-events'], 'drawer' => true];
         // The drawer only: the bar has its bell.
         $apNav[] = ['label' => 'Notifications', 'icon' => 'bell', 'route' => 'notifications.index', 'key' => 'notifications', 'match' => ['notifications.*'], 'drawer' => true, 'count' => $unreadNotificationCount];
+        $apNav[] = ['label' => 'Profile', 'icon' => 'person', 'route' => 'profile', 'key' => 'profile', 'match' => ['profile', 'profile.*'], 'drawer' => true];
     }
     $apHome = auth()->check() ? route('dashboard') : route('home');
 @endphp
@@ -268,6 +273,11 @@
                             <i class="bi bi-house-door"></i> Dashboard
                         </a>
                     </li>
+                    <li>
+                        <a class="dropdown-item" href="{{ route('profile') }}">
+                            <i class="bi bi-person"></i> Profile
+                        </a>
+                    </li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
                         <form method="POST" action="{{ route('logout') }}">
@@ -320,6 +330,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
     toggle.addEventListener('click', () => {
         if (railed()) {
+            document.body.classList.add('ap-rail-moving');
             document.body.classList.toggle('ap-rail-hidden');
             syncExpanded();
             return;

@@ -19,6 +19,7 @@ use App\Http\Controllers\HomeController;
 use App\Http\Controllers\JoinRequestController;
 use App\Http\Controllers\LotDrawController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -44,11 +45,19 @@ Route::get('/events/{event}', [HomeController::class, 'show'])->name('events.sho
 
 Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
+    Route::get('/past-events', [HomeController::class, 'pastEvents'])->name('past-events');
 
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
     Route::post('/events/{event}/lot', [LotDrawController::class, 'submit'])->name('zvote.submit');
     Route::get('/events/{event}/lot/slip', [LotDrawController::class, 'slip'])->name('zvote.slip');
     Route::post('/events/{event}/join', [JoinRequestController::class, 'store'])->name('events.join');
+
+    // Read-only account facts, and the password. Throttled: the current
+    // password is checked here, and must not be guessable by repetition.
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
+    Route::put('/profile/password', [ProfileController::class, 'password'])
+        ->middleware('throttle:6,1')
+        ->name('profile.password');
 
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
     Route::post('/notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');

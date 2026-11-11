@@ -37,12 +37,21 @@ test('on a desk the menu is a rail that stays, and the button hides and shows it
     await expect(rail.getByRole('link', { name: 'Notifications' })).toBeVisible();
 
     // The same rail on the public pages, so the frame holds from page to page.
-    await rail.getByRole('link', { name: 'Events' }).click();
+    await rail.getByRole('link', { name: 'Events', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(rail.getByRole('link', { name: 'Events' })).toHaveAttribute('aria-current', 'page');
+    await expect(rail.getByRole('link', { name: 'Events', exact: true })).toHaveAttribute('aria-current', 'page');
 
     await Promise.all([page.waitForNavigation(), rail.getByRole('link', { name: 'Notifications' }).click()]);
     await expect(page).toHaveURL(/\/notifications$/);
+
+    await Promise.all([page.waitForNavigation(), rail.getByRole('link', { name: 'Past events' }).click()]);
+    await expect(page).toHaveURL(/\/past-events$/);
+    await expect(page.getByRole('heading', { name: 'Your company on record' })).toBeVisible();
+
+    await Promise.all([page.waitForNavigation(), rail.getByRole('link', { name: 'Profile' }).click()]);
+    await expect(page).toHaveURL(/\/profile$/);
+    await expect(rail.getByRole('link', { name: 'Profile' })).toHaveAttribute('aria-current', 'page');
+    await expect(page.getByRole('heading', { name: 'Change password' })).toBeVisible();
     expect(errors).toEqual([]);
 });
 
@@ -83,7 +92,7 @@ test('signed out on a desk there is no rail: the nav sits in the bar', async ({ 
     await page.goto('/');
 
     await expect(page.getByRole('button', { name: 'Open menu' })).toBeHidden();
-    await expect(page.locator('#apSidebar').getByRole('link', { name: 'Events' })).toBeHidden();
+    await expect(page.locator('#apSidebar').getByRole('link', { name: 'Events', exact: true })).toBeHidden();
     await expect(page.locator('.ap-topnav').getByRole('link', { name: 'Events' })).toBeVisible();
     expect((await page.locator('#main-content').boundingBox()).x).toBe(0);
 });

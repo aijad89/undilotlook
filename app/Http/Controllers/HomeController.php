@@ -74,6 +74,8 @@ class HomeController extends Controller
             ->with(['event', 'plot.plotSize'])
             ->get()
             ->reject(fn ($r) => $r->event->polling_status === 'cancelled')
+            // An event that has ended is on Past events, not here.
+            ->reject(fn ($r) => $r->event->end_date->isPast())
             // Dated windows first, soonest first; undated ones after.
             ->sortBy(fn ($r) => $r->event->polling_start_date?->timestamp ?? PHP_INT_MAX)
             ->values();
@@ -115,6 +117,37 @@ class HomeController extends Controller
             'drawn' => $drawn,
             'openEvents' => $openEvents,
             'todo' => $this->todo($entries, $requests, $drawn, $company),
+        ]);
+    }
+
+    /**
+     * The events the company took part in that have ended, latest first: the
+     * lot it had, and what it answered when it asked to join each; then the
+     * answers its next request starts from.
+     */
+    public function pastEvents(Request $request)
+    {
+        $user = $request->user();
+
+        $entries = $user->registrations()
+            ->with(['event', 'plot'])
+            ->get()
+            ->filter(fn ($r) => $r->event->end_date->isPast() && $r->event->polling_status !== 'cancelled')
+            ->sortByDesc(fn ($r) => $r->event->start_date->timestamp)
+            ->values();
+
+        // What the company answered for each, as it stood when it asked to join:
+        // the request keeps its own copy. None means the office added it.
+        $answers = \App\Models\EventJoinRequest::where('company_id', $user->company?->id)
+            ->whereIn('event_id', $entries->pluck('event_id'))
+            ->pluck('answers', 'event_id');
+
+        return view('past-events', [
+            'entries' => $entries,
+            'answers' => $answers,
+            'company' => $user->company,
+            // A slip is printed only for a lot the participant confirmed.
+            'drawn' => \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip(),
         ]);
     }
 

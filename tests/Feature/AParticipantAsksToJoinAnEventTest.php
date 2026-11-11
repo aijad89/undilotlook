@@ -892,7 +892,11 @@ it('puts what to do first on the dashboard, beside what is open and what is on r
             'Your lot draws',
         ])
         // Open, not yet asked for; neither the one asked for nor a closed one.
-        ->assertSeeInOrder(['Open for registration', 'Ekspo Seramik Johor', 'View and join', 'Your company on record'])
+        ->assertSeeInOrder(['Open for registration', 'Ekspo Seramik Johor', 'View and join'])
+        // The record is on Past events now, not here.
+        ->assertDontSee('Your company on record');
+
+    $this->get(route('past-events'))
         ->assertSeeInOrder(['Your company on record', 'Siti Aminah', 'Tokoh Kraf Negara', 'PKT-555', 'Expired', 'None yet']);
 
     expect(substr_count($page->getContent(), 'Karnival Batik'))->toBe(2) // the to-do and its request card
@@ -906,8 +910,8 @@ it('says nothing is waiting when nothing is, and that no company record exists y
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertSee('Nothing is waiting on you right now.')
         ->assertSee('You are not in a lot draw yet')
-        ->assertSee('Nothing on record yet.')
         ->assertSee('No other event is open for registration right now.');
+    $this->get(route('past-events'))->assertSee('Nothing on record yet.');
 });
 
 it('warns on the dashboard of a certificate that runs out within two months', function () {
@@ -917,6 +921,6 @@ it('warns on the dashboard of a certificate that runs out within two months', fu
     ]]);
 
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
-        ->assertSee('Your classification certificate expires on '.now()->addMonth()->format('d M Y'))
-        ->assertSee('Expires soon');
+        ->assertSee('Your classification certificate expires on '.now()->addMonth()->format('d M Y'));
+    $this->get(route('past-events'))->assertSee('Expires soon');
 });
