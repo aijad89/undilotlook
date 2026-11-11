@@ -93,11 +93,77 @@ class HomeController extends Controller
             ->reject(fn ($jr) => $jr->event->isCalledOff() && ! $jr->event->registration_close_at?->isPast())
             ->values();
 
+        $drawn = \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip();
+        $company = $user->company;
+
+        // Open for registration and not yet touched: no request of any kind, and
+        // not on the list. Soonest to close first.
+        $openEvents = $company
+            ? Event::where('status', 'open')->where('polling_status', 'draft')
+                ->where('registration_open_at', '<=', now())->where('registration_close_at', '>=', now())
+                ->whereNotIn('id', $user->registrations()->pluck('event_registrations.event_id'))
+                ->whereNotIn('id', \App\Models\EventJoinRequest::where('company_id', $company->id)->pluck('event_id'))
+                ->orderBy('registration_close_at')
+                ->get()
+            : collect();
+
         return view('dashboard', [
             'user' => $user,
+            'company' => $company,
             'entries' => $entries,
             'requests' => $requests,
-            'drawn' => \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip(),
+            'drawn' => $drawn,
+            'openEvents' => $openEvents,
+            'todo' => $this->todo($entries, $requests, $drawn, $company),
         ]);
+    }
+
+    /**
+     * What is waiting on the participant, most pressing first: a lot to
+     * confirm, a request to finish or send again, a certificate running out.
+     * Each item is [tone, sentence, link or null, link words].
+     */
+    private function todo($entries, $requests, $drawn, $company): array
+    {
+        $todo = [];
+
+        foreach ($entries as $entry) {
+            $event = $entry->event;
+            if ($event->polling_status === 'polling' && ! $event->polling_deadline?->isPast() && ! isset($drawn[$event->id])) {
+                $todo[] = ['bad', "Confirm your lot for {$event->title} before {$event->polling_deadline->format('d M Y, h:i A')}.", route('zvote.index', $event), 'Confirm Lot'];
+            }
+        }
+
+        foreach ($requests as $jr) {
+            if (! $jr->event->acceptsJoinRequests()) {
+                continue;
+            }
+            $closes = $jr->event->registration_close_at->format('d M Y');
+            $todo[] = match ($jr->status) {
+                'draft' => ['warn', "Finish your request to join {$jr->event->title}. Registration closes {$closes}.", route('events.show', $jr->event), 'Finish and send'],
+                'rejected' => ['warn', "The office did not approve your request to join {$jr->event->title}. Change it and send it again by {$closes}.", route('events.show', $jr->event), 'Change and send again'],
+                'approved' => ['warn', "Your company was taken off the draw list for {$jr->event->title}. You may ask to join again by {$closes}.", route('events.show', $jr->event), 'Ask to join again'],
+                default => null,
+            };
+        }
+
+        // A certificate on record: expired, or within two months of it.
+        foreach (['classification_cert' => 'classification certificate', 'quality_cert' => 'quality compliance certificate'] as $key => $name) {
+            $end = $company?->credentials[$key]['end'] ?? null;
+            if (! $end) {
+                continue;
+            }
+            $end = \Illuminate\Support\Carbon::parse($end)->endOfDay();
+            if ($end->isPast()) {
+                $todo[] = ['bad', "Your {$name} expired on {$end->format('d M Y')}. Renew it before you next ask to join an event.", null, null];
+            } elseif ($end->lte(now()->addMonths(2))) {
+                $todo[] = ['warn', "Your {$name} expires on {$end->format('d M Y')}. Renew it in time for your next event.", null, null];
+            }
+        }
+
+        // Most pressing first; the order within a tone is kept.
+        $rank = ['bad' => 0, 'warn' => 1, 'info' => 2];
+
+        return collect(array_filter($todo))->sortBy(fn ($item) => $rank[$item[0]])->values()->all();
     }
 }

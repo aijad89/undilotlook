@@ -114,7 +114,8 @@ test('voting opens through its guard', async ({ page }) => {
 test('two participants confirm, and each sees a lot of their own code revealed', async ({ page }) => {
     for (const [email, code] of [['tenun@e2e.test', 'TTN'], ['logam@e2e.test', 'LEH']]) {
         await signInAs(page, email);
-        await page.getByRole('link', { name: /Confirm Lot/ }).click();
+        // The draw card's own button; the to-do row above it goes to the same page.
+        await page.getByRole('link', { name: 'Confirm Lot', exact: true }).click();
 
         await page.check('#agree');
         await Promise.all([page.waitForNavigation(), page.getByRole('button', { name: /Confirm Lot/ }).click()]);

@@ -3,10 +3,13 @@
     (layouts.public) both include this, so a usahawan walking from Upcoming Events
     to their dashboard and back never sees the bar change.
 
-    Navy, on the 1000px column. On a desk the nav sits in the bar; on a phone it is
-    a drawer, and the bar keeps only what a thumb needs. Signed out it offers
-    Events, the text size and Sign In; signed in, Events, Dashboard, the bell and
-    the user menu.
+    Navy, on the 1000px column. Signed in, the nav lives in a navy rail down the
+    left that looks exactly like the office's: fixed on a desk (the menu button
+    hides and shows it), a drawer on a phone. It holds the nav, Notifications and
+    Sign Out; the bar keeps the page title, text size, the bell and the user
+    menu. The layouts mark a signed-in body `ap-with-rail` to make room for it.
+    Signed out there is no rail: on a desk the nav sits in the bar, on a phone
+    it is the drawer, with Events, the text size and Sign In.
 
     Reads $unreadNotificationCount, so it is named in AppServiceProvider's view
     composer list.
@@ -16,26 +19,48 @@
 <style>
     :root { --topbar-h: 64px; }
 
-    /* ── Drawer (phone) ──────────────────────── */
+    /* ── Drawer (every screen) ───────────────── */
+    /* Hidden is `visibility: hidden` as well as off-screen, so a closed drawer's
+       links are out of the tab order; it waits for the slide before hiding. */
     .ap-sidebar {
-        position: fixed; inset: 0 auto 0 0; z-index: 1000; width: 280px;
-        display: flex; flex-direction: column; overflow-y: auto;
+        position: fixed; inset: 0 auto 0 0; z-index: 1000; width: 264px; max-width: 86vw;
+        display: flex; flex-direction: column; overflow-y: auto; overscroll-behavior: contain;
         background: var(--ui-navy-900); color: #fff;
-        transform: translateX(-100%); transition: transform 0.28s var(--ui-ease);
+        transform: translateX(-100%); visibility: hidden;
+        transition: transform 0.28s var(--ui-ease), visibility 0s linear 0.28s;
     }
-    .ap-sidebar.open { transform: translateX(0); box-shadow: var(--ui-shadow-pop); }
-    .ap-sidebar-header { padding: 18px 18px 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
-    .ap-sidebar-label { padding: 18px 20px 6px; font-size: 0.8125rem; font-weight: 600; color: var(--ui-on-navy-dim); }
+    .ap-sidebar.open { transform: translateX(0); visibility: visible; box-shadow: var(--ui-shadow-pop); transition: transform 0.28s var(--ui-ease); }
+    .ap-sidebar { scrollbar-color: rgba(255, 255, 255, 0.2) transparent; }
+    /* From here down, the office rail (layouts.admin #sidebar), value for value:
+       one menu, whichever side of the counter you sit. */
+    .ap-sidebar-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 20px 12px 18px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+    .ap-sidebar .ap-brand { gap: 12px; }
+    .ap-sidebar .ap-brand-icon { width: 36px; height: 36px; font-size: 1rem; }
+    .ap-sidebar .ap-brand-name { display: block; font-size: 1rem; line-height: 1.2; }
+    .ap-brand-sub { display: block; font-size: 0.8125rem; color: var(--ui-on-navy-2); line-height: 1.3; }
+    .ap-sidebar-nav { list-style: none; margin: 4px 0 0; padding: 0; }
     .ap-nav-item {
-        display: flex; align-items: center; gap: 12px; min-height: 52px;
-        margin: 2px 10px; padding: 10px 12px; border-radius: var(--ui-r);
-        color: var(--ui-on-navy-3); font-size: 1rem; font-weight: 500; text-decoration: none;
+        position: relative; display: flex; align-items: center; gap: 12px;
+        margin: 2px 10px; padding: 9px 12px; min-height: 40px; border-radius: var(--ui-r);
+        color: var(--ui-on-navy-3); font-size: 0.875rem; font-weight: 500; text-decoration: none;
+        transition: background-color var(--ui-fast) var(--ui-ease), color var(--ui-fast) var(--ui-ease);
     }
+    .ap-nav-item i { width: 18px; flex-shrink: 0; text-align: center; font-size: 1rem; color: var(--ui-on-navy-icon); transition: color var(--ui-fast) var(--ui-ease); }
     .ap-nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
-    .ap-nav-item.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; box-shadow: inset 3px 0 0 var(--ui-gold); }
-    .ap-nav-item .ap-nav-icon { width: 22px; display: grid; place-items: center; font-size: 1.125rem; color: var(--ui-on-navy-icon); }
-    .ap-nav-item.active .ap-nav-icon { color: var(--ui-gold); }
-    .ap-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(7, 26, 51, 0.5); }
+    .ap-nav-item:hover i { color: #fff; }
+    .ap-nav-item.active { background: var(--ui-navy-700); color: #fff; font-weight: 600; }
+    .ap-nav-item.active i { color: var(--ui-gold); }
+    /* Gold is "you are here": a bar on the active item, nowhere else. */
+    .ap-nav-item.active::before { content: ""; position: absolute; left: -10px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: var(--ui-gold); }
+    .ap-nav-count { margin-left: auto; padding: 2px 7px; border-radius: 999px; background: var(--ui-bad); color: #fff; font-size: 0.75rem; font-weight: 700; line-height: 1.3; font-variant-numeric: tabular-nums; }
+    /* Sign Out is the quieter one, as in the office. */
+    button.ap-nav-item { width: calc(100% - 20px); border: 0; background: transparent; font-family: inherit; text-align: left; color: var(--ui-on-navy-soft); cursor: pointer; }
+    button.ap-nav-item:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+    html.ap-drawer-open { overflow: hidden; }
+    @media (prefers-reduced-motion: reduce) {
+        .ap-sidebar, .ap-sidebar.open { transition: none; }
+    }
+    .ap-overlay { display: none; position: fixed; inset: 0; z-index: 999; background: rgba(7, 26, 51, 0.45); }
     .ap-overlay.show { display: block; }
 
     /* ── Brand ───────────────────────────────── */
@@ -89,10 +114,28 @@
     .ap-dropdown-menu .dropdown-item.text-danger:hover { background: var(--ui-bad-tint); }
     .ap-dropdown-menu hr { margin: 4px 0; border-color: var(--ui-sep); }
 
-    /* ── Desk widths: the bar carries the nav, no drawer ── */
+    /* ── Desk widths ── */
+    /* Signed out: the nav sits in the bar, and the menu button is the drawer's.
+       Signed in: the drawer stands as a fixed rail and the page moves over for
+       it; the button hides and shows it, as the office's does. */
     @media (min-width: 992px) {
-        .ap-sidebar, .ap-overlay, #apSidebarToggle { display: none !important; }
+        :root { --ap-rail-w: 264px; }
         .ap-topbar-title { display: none; }
+        #apSidebarToggle { margin-right: 6px; }
+        body:not(.ap-with-rail) #apSidebarToggle { display: none; }
+
+        /* The window's width no longer says how much room the page has, so the
+           column keeps a gutter beside the rail, 24px as in the office. */
+        body.ap-with-rail { --ui-page-pad: 24px; --ui-page-max: calc(var(--ui-page-w) + 2 * 24px); padding-left: var(--ap-rail-w); transition: padding-left 0.28s var(--ui-ease); }
+        body.ap-with-rail .ap-sidebar { z-index: 950; width: var(--ap-rail-w); max-width: none; transform: none; visibility: visible; box-shadow: none; transition: transform 0.28s var(--ui-ease); }
+        body.ap-with-rail #apSidebarClose, body.ap-with-rail .ap-overlay { display: none !important; }
+        body.ap-with-rail .ap-topbar .ap-brand, body.ap-with-rail .ap-topnav { display: none; }
+        body.ap-with-rail .ap-topbar-title { display: block; }
+        body.ap-with-rail.ap-rail-hidden { padding-left: 0; }
+        body.ap-with-rail.ap-rail-hidden .ap-sidebar { transform: translateX(-100%); visibility: hidden; transition: transform 0.28s var(--ui-ease), visibility 0s linear 0.28s; }
+    }
+    @media (min-width: 992px) and (prefers-reduced-motion: reduce) {
+        body.ap-with-rail, body.ap-with-rail .ap-sidebar, body.ap-with-rail.ap-rail-hidden .ap-sidebar { transition: none; }
     }
     @media (max-width: 991.98px) {
         .ap-topnav, .ap-topbar .ap-brand { display: none; }
@@ -117,33 +160,62 @@
      * Deliberately narrow — this is a lot draw, not a profile system.
      */
     $apNav = [
-        ['label' => 'Events', 'icon' => 'calendar-event-fill', 'route' => 'home', 'key' => 'events', 'match' => ['home', 'events.show']],
+        ['label' => 'Events', 'icon' => 'calendar-event', 'route' => 'home', 'key' => 'events', 'match' => ['home', 'events.show']],
     ];
     if (auth()->check()) {
         // The lot page belongs to the dashboard: every draw is listed there,
         // and the lot is reached from its row.
-        $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door-fill', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*']];
+        $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*']];
+        // The drawer only: the bar has its bell.
+        $apNav[] = ['label' => 'Notifications', 'icon' => 'bell', 'route' => 'notifications.index', 'key' => 'notifications', 'match' => ['notifications.*'], 'drawer' => true, 'count' => $unreadNotificationCount];
     }
     $apHome = auth()->check() ? route('dashboard') : route('home');
 @endphp
 
-{{-- ── Drawer (phone) ───────────────────────────────────────────── --}}
-<aside class="ap-sidebar" id="apSidebar">
+{{-- ── Drawer (every screen) ─────────────────────────────────────── --}}
+<aside class="ap-sidebar" id="apSidebar" aria-label="Menu">
     <div class="ap-sidebar-header">
         <a href="{{ $apHome }}" class="ap-brand">
             <span class="ap-brand-icon" aria-hidden="true"><i class="bi bi-grid-3x3-gap-fill"></i></span>
-            <span class="ap-brand-name">undilot</span>
+            <span>
+                <span class="ap-brand-name">undilot</span>
+                <span class="ap-brand-sub">Participant Portal</span>
+            </span>
         </a>
+        <button class="ap-icon-btn" id="apSidebarClose" type="button" aria-label="Close menu">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+        </button>
     </div>
-    <nav>
-        <div class="ap-sidebar-label">Main</div>
-        @foreach($apNav as $apItem)
-            <a href="{{ route($apItem['route']) }}" data-icon="{{ $apItem['key'] }}"
-               class="ap-nav-item {{ request()->routeIs($apItem['match']) ? 'active' : '' }}">
-                <span class="ap-nav-icon"><i class="bi bi-{{ $apItem['icon'] }}"></i></span>
-                {{ $apItem['label'] }}
-            </a>
-        @endforeach
+    <nav aria-label="Main">
+        <ul class="ap-sidebar-nav">
+            @foreach($apNav as $apItem)
+                @php $apActive = request()->routeIs($apItem['match']); @endphp
+                <li>
+                    <a href="{{ route($apItem['route']) }}" data-icon="{{ $apItem['key'] }}"
+                       class="ap-nav-item {{ $apActive ? 'active' : '' }}" @if($apActive) aria-current="page" @endif>
+                        <i class="bi bi-{{ $apItem['icon'] }}" aria-hidden="true"></i> {{ $apItem['label'] }}
+                        @if(! empty($apItem['count']))
+                            <span class="ap-nav-count">{{ $apItem['count'] > 99 ? '99+' : $apItem['count'] }}<span class="visually-hidden"> unread</span></span>
+                        @endif
+                    </a>
+                </li>
+            @endforeach
+
+            <li class="mt-2">
+                @auth
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="ap-nav-item">
+                            <i class="bi bi-arrow-right-square" aria-hidden="true"></i> Sign Out
+                        </button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="ap-nav-item">
+                        <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Sign In
+                    </a>
+                @endauth
+            </li>
+        </ul>
     </nav>
 </aside>
 <div class="ap-overlay" id="apOverlay"></div>
@@ -151,7 +223,7 @@
 {{-- ── Bar ──────────────────────────────────────────────────────── --}}
 <header class="ap-topbar">
     <div class="ap-topbar-left">
-        <button class="ap-icon-btn" id="apSidebarToggle" type="button" aria-label="Open menu">
+        <button class="ap-icon-btn" id="apSidebarToggle" type="button" aria-label="Open menu" aria-controls="apSidebar" aria-expanded="false">
             <i class="bi bi-list" aria-hidden="true"></i>
         </button>
         <span class="ap-topbar-title">@yield('page-title', 'undilot')</span>
@@ -161,6 +233,7 @@
         </a>
         <nav class="ap-topnav" aria-label="Main">
             @foreach($apNav as $apItem)
+                @continue(! empty($apItem['drawer']))
                 <a href="{{ route($apItem['route']) }}" class="{{ request()->routeIs($apItem['match']) ? 'active' : '' }}">
                     {{ $apItem['label'] }}
                 </a>
@@ -218,18 +291,52 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // ── Drawer (phone) ──
+    // ── Rail and drawer ──
+    // On a desk, signed in, the menu button hides and shows the fixed rail.
+    // Otherwise it opens the drawer, which closes on its own button, a tap
+    // outside, or Escape, and hands focus back to the menu button.
     const sidebar = document.getElementById('apSidebar');
     const overlay = document.getElementById('apOverlay');
     const toggle  = document.getElementById('apSidebarToggle');
-    const openSidebar  = () => { sidebar.classList.add('open'); overlay.classList.add('show'); };
-    const closeSidebar = () => { sidebar.classList.remove('open'); overlay.classList.remove('show'); };
+    const desk    = window.matchMedia('(min-width: 992px)');
+    const railed  = () => desk.matches && document.body.classList.contains('ap-with-rail');
+    const syncExpanded = () => toggle.setAttribute('aria-expanded',
+        String(railed() ? !document.body.classList.contains('ap-rail-hidden') : sidebar.classList.contains('open')));
+    const isOpen  = () => sidebar.classList.contains('open');
+    const openSidebar = () => {
+        sidebar.classList.add('open');
+        overlay.classList.add('show');
+        document.documentElement.classList.add('ap-drawer-open');
+        toggle.setAttribute('aria-expanded', 'true');
+        (sidebar.querySelector('.ap-nav-item.active') || sidebar.querySelector('.ap-nav-item')).focus();
+    };
+    const closeSidebar = () => {
+        if (!isOpen()) return;
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+        document.documentElement.classList.remove('ap-drawer-open');
+        toggle.setAttribute('aria-expanded', 'false');
+        toggle.focus();
+    };
     toggle.addEventListener('click', () => {
-        if (window.innerWidth > 991) return;
-        sidebar.classList.contains('open') ? closeSidebar() : openSidebar();
+        if (railed()) {
+            document.body.classList.toggle('ap-rail-hidden');
+            syncExpanded();
+            return;
+        }
+        isOpen() ? closeSidebar() : openSidebar();
     });
+    // Across the desk line: a drawer left open becomes the rail, and back.
+    desk.addEventListener('change', () => {
+        sidebar.classList.remove('open');
+        overlay.classList.remove('show');
+        document.documentElement.classList.remove('ap-drawer-open');
+        syncExpanded();
+    });
+    syncExpanded();
+    document.getElementById('apSidebarClose').addEventListener('click', closeSidebar);
     overlay.addEventListener('click', closeSidebar);
-    window.addEventListener('resize', () => { if (window.innerWidth > 991) closeSidebar(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSidebar(); });
 
     // ── Text size (3 levels: 0 normal, 1 large, 2 extra large) ──
     const textSizeBtn = document.getElementById('apTextSizeToggle');

@@ -220,6 +220,53 @@
 .ap-request-body ul { margin: 8px 0 0; padding: 0; list-style: none; }
 .ap-request-body i { margin-right: 4px; }
 .ap-request-body + .ap-draw-next { margin-top: 16px; }
+
+/* ── The dashboard ─────────────────────────────────── */
+/* What to do now on top, the draws and requests beside what is open and what
+   is on record. Rows mirror the office's Needs attention: a state tint, its
+   hairline, the words in its -text, and the one next step at the end. */
+.ap-dash .ap-section-title { margin: 0 0 12px; }
+.ap-todo { margin-bottom: 8px; }
+.ap-todo-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; min-height: 56px; margin: 8px 0 0; padding: 12px 16px; border: 1px solid transparent; border-radius: var(--ui-r); font-size: 1rem; line-height: 1.45; text-decoration: none; transition: border-color 140ms var(--ui-ease); }
+.ap-todo-row > .bi { flex-shrink: 0; font-size: 1.125rem; }
+.ap-todo-text { flex: 1 1 0; min-width: 0; }
+.ap-todo-go { margin-left: auto; font-weight: 600; white-space: nowrap; }
+.ap-todo-go .bi { font-size: 0.875rem; }
+.ap-todo-bad { background: var(--ui-bad-tint); border-color: var(--ui-bad-border); color: var(--ui-bad-text); }
+.ap-todo-warn { background: var(--ui-warn-tint); border-color: var(--ui-warn-border); color: var(--ui-warn-text); }
+.ap-todo-info { background: var(--ui-blue-tint); border-color: var(--ui-info-border); color: var(--ui-blue-text); }
+.ap-todo-ok { background: var(--ui-ok-tint); border-color: var(--ui-ok-border); color: var(--ui-ok-text); }
+a.ap-todo-row:hover { border-color: currentColor; color: inherit; }
+a.ap-todo-bad:hover { color: var(--ui-bad-text); }
+a.ap-todo-warn:hover { color: var(--ui-warn-text); }
+a.ap-todo-info:hover { color: var(--ui-blue-text); }
+.ap-dash-grid { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 24px; align-items: start; margin-top: 28px; }
+.ap-dash-main { display: grid; gap: 36px; min-width: 0; }
+.ap-dash-main .ap-draw-grid { grid-template-columns: minmax(0, 1fr); }
+.ap-dash-side { display: grid; gap: 16px; min-width: 0; }
+.ap-open-row { display: grid; gap: 6px; justify-items: start; padding: 14px 0; border-top: 1px solid var(--ui-sep); }
+.ap-open-row:first-of-type { padding-top: 0; border-top: 0; }
+.ap-open-row:last-child { padding-bottom: 0; }
+.ap-open-title { font-size: 1rem; font-weight: 650; color: var(--ui-text); }
+.ap-open-meta { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 0.875rem; color: var(--ui-muted); font-variant-numeric: tabular-nums; }
+.ap-open-meta .bi { margin-right: 4px; }
+.ap-open-row .ap-btn { margin-top: 4px; }
+.ap-facts { margin: 0 0 14px; }
+.ap-facts dt { font-size: 0.875rem; font-weight: 600; color: var(--ui-muted); }
+.ap-facts dd { margin: 2px 0 12px; font-size: 1rem; color: var(--ui-text); }
+.ap-facts dd:last-child { margin-bottom: 0; }
+.ap-tabular { font-variant-numeric: tabular-nums; }
+.ap-side-note { font-size: 0.875rem; line-height: 1.5; color: var(--ui-muted); }
+@media (max-width: 860px) {
+    .ap-dash-grid { grid-template-columns: minmax(0, 1fr); }
+}
+/* On a phone the next step takes its own line under the sentence, lined up
+   with it, so the sentence keeps the width. */
+@media (max-width: 576px) {
+    .ap-todo-row { align-items: flex-start; }
+    .ap-todo-row > .bi { margin-top: 2px; }
+    .ap-todo-go { flex-basis: 100%; margin-left: 30px; }
+}
 .ap-draw-lot-link { gap: 8px; border-color: var(--ui-gold) !important; background: var(--ui-gold-tint) !important; color: var(--ui-gold-text) !important; font-size: 1rem; }
 .ap-draw-lot-link:hover { background: var(--ui-gold-tint-2) !important; }
 .ap-draw-lot-link i { color: var(--ui-gold); }

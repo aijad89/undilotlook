@@ -25,6 +25,16 @@ class JoinRequestController extends Controller
 
     private const PRODUCT_IMAGES = 5;
 
+    /** What a photo that is not JPG or PNG most often turns out to be. */
+    private const PHOTO_TYPES = [
+        'image/webp' => 'a WebP image',
+        'image/heic' => 'a HEIC image (an iPhone photo)',
+        'image/heif' => 'a HEIF image (an iPhone photo)',
+        'image/avif' => 'an AVIF image',
+        'image/gif' => 'a GIF image',
+        'application/pdf' => 'a PDF',
+    ];
+
     public function store(Request $request, Event $event)
     {
         $company = $request->user()->company;
@@ -90,7 +100,15 @@ class JoinRequestController extends Controller
             'contact_name' => ['required', 'string', 'max:100'],
             'contact_phone' => ['required', 'regex:/^\+?6?01\d[- ]?\d{3,4}[- ]?\d{4}$/'],
             'product_images' => [empty($held['product_images']) ? 'required' : 'nullable', 'array', 'size:'.self::PRODUCT_IMAGES],
-            'product_images.*' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+            // Read from what is inside the file, not its name: a WebP or HEIC
+            // photo saved as .jpg is common, and the message says which one.
+            'product_images.*' => ['bail', 'required', 'file', 'max:5120', function ($attribute, $file, $fail) {
+                $type = $file->getMimeType();
+                if (! in_array($type, ['image/jpeg', 'image/png'], true)) {
+                    $fail($file->getClientOriginalName().' is named like a photo but is really '
+                        .(self::PHOTO_TYPES[$type] ?? $type).'. Save it as JPG, JPEG or PNG (or take a screenshot of it) and pick it again.');
+                }
+            }],
         ];
 
         $rules = [
@@ -129,7 +147,6 @@ class JoinRequestController extends Controller
                 'contact_phone.regex' => 'Enter a Malaysian mobile number, e.g. 012-345 6789.',
                 'product_images.required' => 'Upload '.self::PRODUCT_IMAGES.' photos of your products.',
                 'product_images.size' => 'Upload exactly '.self::PRODUCT_IMAGES.' photos of your products.',
-                'product_images.*.mimes' => 'Product photos must be JPG or PNG.',
             ],
             [
                 'classification_number' => 'certificate number', 'quality_number' => 'certificate number',

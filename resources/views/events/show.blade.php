@@ -215,7 +215,7 @@
                             @if(! empty($held['product_images']))
                                 5 photos on file. Leave empty to keep them, or pick 5 new ones to replace them.
                             @else
-                                Pick 5 photos, JPG or PNG, up to 5 MB each; hold Ctrl to pick several.
+                                Pick 5 photos, JPG, JPEG or PNG, up to 5 MB each; hold Ctrl to pick several.
                             @endif
                         </p>
                         @error('product_images')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror

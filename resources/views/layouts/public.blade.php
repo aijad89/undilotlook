@@ -36,7 +36,7 @@
     </style>
     @stack('styles')
 </head>
-<body>
+<body @auth('web') class="ap-with-rail" @endauth>
 @include('partials.skip-link')
 
 @include('partials.portal-bar')

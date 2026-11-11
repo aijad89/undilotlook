@@ -642,8 +642,7 @@ it('dates a rejected request by its review, says why it cannot be sent again, an
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertSee('Answered '.now()->subDays(2)->format('d M Y'))
         ->assertDontSee('Sent '.now()->format('d M Y'))
-        ->assertSee('Your requests to join an event')
-        ->assertDontSee('There is nothing here yet')
+        ->assertSee('You are not in a lot draw yet')
         ->assertSee('<h2 class="ap-section-title">Requests to join</h2>', false)
         ->assertSee('Change and send again');
 
@@ -840,4 +839,84 @@ it('deletes a replaced certificate or photo once nothing points at it, and not b
         Storage::disk('local')->assertMissing($path);
     }
     Storage::disk('local')->assertExists($secondCert); // the second request's
+});
+
+it('names a product photo that is really another kind of file, whatever it is called', function () {
+    $event = joinable();
+    $company = Company::factory()->create();
+    // A WebP saved as .jpg, and a PDF saved as .png: told apart by what is inside.
+    // Real uploads, not fakes: a fake reports its type from its name.
+    $upload = function (string $name, string $content) {
+        $path = tempnam(sys_get_temp_dir(), 'up');
+        file_put_contents($path, $content);
+
+        return new UploadedFile($path, $name, null, null, true);
+    };
+    $webp = $upload('kedai.jpg', 'RIFF'.pack('V', 30).'WEBPVP8 '.pack('V', 18).str_repeat("\0", 18));
+    $pdf = $upload('katalog.png', "%PDF-1.4\n%\xE2\xE3\xCF\xD3\n");
+    // A real JPEG named .jpeg, as a camera saves it: fine.
+    $drawn = UploadedFile::fake()->image('x.jpg');
+    $jpeg = $upload('gerai.jpeg', file_get_contents($drawn->getPathname()));
+
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), ['product_images' => [...photos(2), $jpeg, $webp, $pdf]] + payment())
+        ->assertSessionHasErrors([
+            'product_images.3' => 'kedai.jpg is named like a photo but is really a WebP image. Save it as JPG, JPEG or PNG (or take a screenshot of it) and pick it again.',
+            'product_images.4' => 'katalog.png is named like a photo but is really a PDF. Save it as JPG, JPEG or PNG (or take a screenshot of it) and pick it again.',
+        ])
+        ->assertSessionDoesntHaveErrors(['product_images.0', 'product_images.1', 'product_images.2']);
+});
+
+it('puts what to do first on the dashboard, beside what is open and what is on record', function () {
+    $company = Company::factory()->create(['name' => 'Seramik Klang Studio', 'state' => 'Selangor', 'credentials' => [
+        'recognition' => 'tokoh', 'classification' => 'yes',
+        'classification_cert' => ['number' => 'PKT-555', 'start' => now()->subYear()->toDateString(), 'end' => now()->subDay()->toDateString()],
+        'quality' => null, 'quality_cert' => null,
+        'contact_name' => 'Siti Aminah', 'contact_phone' => '012-345 6789', 'product_images' => [],
+    ]]);
+    $draw = joinable(['title' => 'Pesta Kraf Utara', 'polling_status' => 'polling', 'polling_deadline' => now()->addDay()]);
+    EventRegistration::factory()->create(['event_id' => $draw->id, 'company_id' => $company->id]);
+    $drafted = joinable(['title' => 'Karnival Batik']);
+    EventJoinRequest::factory()->create(['event_id' => $drafted->id, 'company_id' => $company->id, 'status' => 'draft']);
+    joinable(['title' => 'Ekspo Seramik Johor']);
+    joinable(['title' => 'Yang Sudah Tutup', 'registration_close_at' => now()->subDay()]);
+
+    $page = $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Seramik Klang Studio · Selangor')
+        // Most pressing first: the lot and the expired certificate, then the draft.
+        ->assertSeeInOrder([
+            'What to do now',
+            'Confirm your lot for Pesta Kraf Utara',
+            'Your classification certificate expired on '.now()->subDay()->format('d M Y'),
+            'Finish your request to join Karnival Batik',
+            'Your lot draws',
+        ])
+        // Open, not yet asked for; neither the one asked for nor a closed one.
+        ->assertSeeInOrder(['Open for registration', 'Ekspo Seramik Johor', 'View and join', 'Your company on record'])
+        ->assertSeeInOrder(['Your company on record', 'Siti Aminah', 'Tokoh Kraf Negara', 'PKT-555', 'Expired', 'None yet']);
+
+    expect(substr_count($page->getContent(), 'Karnival Batik'))->toBe(2) // the to-do and its request card
+        ->and($page->getContent())->not->toContain('Yang Sudah Tutup')
+        ->and($page->getContent())->not->toContain('Nothing is waiting on you right now.');
+});
+
+it('says nothing is waiting when nothing is, and that no company record exists yet', function () {
+    $company = Company::factory()->create();
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Nothing is waiting on you right now.')
+        ->assertSee('You are not in a lot draw yet')
+        ->assertSee('Nothing on record yet.')
+        ->assertSee('No other event is open for registration right now.');
+});
+
+it('warns on the dashboard of a certificate that runs out within two months', function () {
+    $company = Company::factory()->create(['credentials' => [
+        'recognition' => 'none', 'classification' => 'yes',
+        'classification_cert' => ['number' => 'PKT-1', 'start' => now()->subYear()->toDateString(), 'end' => now()->addMonth()->toDateString()],
+    ]]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Your classification certificate expires on '.now()->addMonth()->format('d M Y'))
+        ->assertSee('Expires soon');
 });

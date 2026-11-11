@@ -56,7 +56,7 @@
 
     @stack('styles')
 </head>
-<body>
+<body @auth class="ap-with-rail" @endauth>
 @include('partials.skip-link')
 
 @auth
