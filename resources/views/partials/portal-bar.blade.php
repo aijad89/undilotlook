@@ -169,7 +169,7 @@
         // The lot page belongs to the dashboard: every draw is listed there,
         // and the lot is reached from its row.
         $apNav[] = ['label' => 'Dashboard', 'icon' => 'house-door', 'route' => 'dashboard', 'key' => 'dashboard', 'match' => ['dashboard', 'zvote.*']];
-        $apNav[] = ['label' => 'Past events', 'icon' => 'clock-history', 'route' => 'past-events', 'key' => 'past-events', 'match' => ['past-events'], 'drawer' => true];
+        $apNav[] = ['label' => 'Past events', 'icon' => 'clock-history', 'route' => 'past-events', 'key' => 'past-events', 'match' => ['past-events', 'past-events.*'], 'drawer' => true];
         // The drawer only: the bar has its bell.
         $apNav[] = ['label' => 'Notifications', 'icon' => 'bell', 'route' => 'notifications.index', 'key' => 'notifications', 'match' => ['notifications.*'], 'drawer' => true, 'count' => $unreadNotificationCount];
         $apNav[] = ['label' => 'Profile', 'icon' => 'person', 'route' => 'profile', 'key' => 'profile', 'match' => ['profile', 'profile.*'], 'drawer' => true];

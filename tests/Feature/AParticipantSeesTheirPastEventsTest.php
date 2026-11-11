@@ -63,6 +63,29 @@ it('lists the ended events the company was in, latest first, with the lot and it
         ->assertDontSee('Pesta Lama');
 });
 
+it('opens the summary of a past event in a new tab, under construction for now, for a company that took part only', function () {
+    $company = Company::factory()->create();
+    $event = endedEvent('Karnival Ringkasan', 10);
+    EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs($company->user, 'web')->get(route('past-events'))
+        ->assertSee('<a href="'.route('past-events.show', $event).'" target="_blank" rel="noopener">Karnival Ringkasan', false);
+
+    $summary = $this->get(route('past-events.show', $event))
+        ->assertOk()
+        ->assertSee('Karnival Ringkasan')
+        ->assertSee('Page under construction');
+    // Still under Past events in the menu.
+    expect($summary->getContent())->toMatch('/data-icon="past-events"\s+class="ap-nav-item active"/');
+
+    // Not one it took part in, or not over yet: no such page.
+    $theirs = endedEvent('Bukan Kami', 10);
+    $this->get(route('past-events.show', $theirs))->assertNotFound();
+    $coming = Event::factory()->create();
+    EventRegistration::factory()->create(['event_id' => $coming->id, 'company_id' => $company->id]);
+    $this->get(route('past-events.show', $coming))->assertNotFound();
+});
+
 it('says so when there is no past event yet, and is for a signed-in participant only', function () {
     $this->get(route('past-events'))->assertRedirect(route('login'));
 

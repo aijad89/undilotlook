@@ -889,6 +889,8 @@ it('puts what to do first on the dashboard, beside what is open and what is on r
             'Confirm your lot for Pesta Kraf Utara',
             'Your classification certificate expired on '.now()->subDay()->format('d M Y'),
             'Finish your request to join Karnival Batik',
+            // The requests right under, before the draws.
+            'Requests to join',
             'Your lot draws',
         ])
         // Open, not yet asked for; neither the one asked for nor a closed one.

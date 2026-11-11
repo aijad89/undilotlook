@@ -153,6 +153,23 @@ class HomeController extends Controller
     }
 
     /**
+     * One past event's summary, for a company that took part in it. Any other
+     * event, from here, does not exist: 404, as on the lot page.
+     */
+    public function pastEvent(Request $request, Event $event)
+    {
+        $company = $request->user()->company;
+
+        abort_unless(
+            $company && $event->end_date->isPast()
+                && $event->registrations()->where('company_id', $company->id)->exists(),
+            404
+        );
+
+        return view('past-event', ['event' => $event]);
+    }
+
+    /**
      * What is waiting on the participant, most pressing first: a lot to
      * confirm, a request to finish or send again, a certificate running out.
      * Each item is [tone, sentence, link or null, link words].

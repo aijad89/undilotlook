@@ -49,7 +49,8 @@
                         @endphp
                         <tr>
                             <td data-label="Event">
-                                <a href="{{ route('events.show', $event) }}">{{ $event->title }}</a>
+                                {{-- Its summary, in a new tab, as the photos and the slip open. --}}
+                                <a href="{{ route('past-events.show', $event) }}" target="_blank" rel="noopener">{{ $event->title }}<span class="visually-hidden"> (summary, opens in a new tab)</span></a>
                                 <span class="ap-past-meta ap-tabular">
                                     {{ $event->start_date->format('d M Y') }}@unless($event->end_date->isSameDay($event->start_date)) – {{ $event->end_date->format('d M Y') }}@endunless
                                     @if($event->location) · {{ $event->location }}@endif

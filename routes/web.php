@@ -46,6 +46,7 @@ Route::get('/events/{event}', [HomeController::class, 'show'])->name('events.sho
 Route::middleware(['auth', 'user.active'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'dashboard'])->name('dashboard');
     Route::get('/past-events', [HomeController::class, 'pastEvents'])->name('past-events');
+    Route::get('/past-events/{event}', [HomeController::class, 'pastEvent'])->name('past-events.show');
     Route::get('/join-requests/{joinRequest}/photos', [JoinRequestController::class, 'photos'])->name('join-requests.photos');
 
     Route::get('/events/{event}/lot', [LotDrawController::class, 'show'])->name('zvote.index');
