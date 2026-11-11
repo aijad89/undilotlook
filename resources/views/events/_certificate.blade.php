@@ -23,8 +23,8 @@
     @error($field.'_end')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
 
     <label class="evd-question" for="{{ $field }}_file">Upload the certificate</label>
-    <input type="file" id="{{ $field }}_file" name="{{ $field }}_file" accept=".pdf,.jpg,.jpeg,.png" @unless($onFile) data-required @endunless>
-    @if($onFile)
+    <input type="file" id="{{ $field }}_file" name="{{ $field }}_file" accept=".pdf,.jpg,.jpeg,.png" @if(empty($onFile['path'])) data-required @endif>
+    @if(! empty($onFile['path']))
         <p class="evd-note" style="margin-top:0;">On file: {{ $onFile['original'] }}. Leave empty to keep it; a renewed certificate needs its new file.</p>
     @endif
     @error($field.'_file')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror

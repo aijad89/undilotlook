@@ -422,7 +422,8 @@ return new class extends Migration
         /**
          * A participant asking to join an event's draw. Approving it is what
          * puts the company on the draw list; the request stays as the record.
-         * pending | approved | rejected — EventJoinRequest::STATUSES.
+         * draft | pending | approved | rejected — EventJoinRequest::STATUSES.
+         * A draft is the participant's own, unsent; the office sees pending on.
          */
         Schema::create('event_join_requests', function (Blueprint $table) {
             $table->id();

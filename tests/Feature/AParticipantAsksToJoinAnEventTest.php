@@ -430,3 +430,86 @@ it('asks for a contact person, a mobile number and exactly five product photos, 
         ->assertSee('Contact: Siti Aminah, 012-345 6789')
         ->assertSee('Product photo 5');
 });
+
+it('saves a draft with whatever is filled in, which the office does not see', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    // Nothing required, but what is given is still checked for form.
+    $this->post(route('events.join', $event), ['draft' => 1, 'contact_phone' => '03-1234 5678'])
+        ->assertSessionHasErrors('contact_phone');
+    $this->post(route('events.join', $event), ['draft' => 1, 'product_images' => photos(4)])
+        ->assertSessionHasErrors('product_images');
+
+    // An expired certificate can wait in a draft; it is refused on Join.
+    $expired = ['classification' => 'yes'] + certificate('classification', end: now()->subDay()->toDateString());
+    $this->post(route('events.join', $event), ['draft' => 1, 'at' => 'classification', 'recognition' => 'tokoh'] + $expired)
+        ->assertSessionHas('success', 'Draft saved. Come back to finish it any time before registration closes.')
+        ->assertSessionHas('step', 'classification');
+
+    expect(EventJoinRequest::sole()->status)->toBe('draft')
+        ->and($company->fresh()->credentials['recognition'])->toBe('tokoh');
+
+    // Right after: back on the step it was saved from, saying so once.
+    $this->get(route('events.show', $event))
+        ->assertSee('data-start="classification"', false)
+        ->assertSee('Draft saved.')
+        ->assertDontSee('You saved a draft on');
+    // A later visit: filled in, and reminded it was not sent.
+    $this->get(route('events.show', $event))
+        ->assertSee('You saved a draft on')
+        ->assertSee('value="PKT-001"', false);
+
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->get(route('admin.events.registrations.index', $event))
+        ->assertDontSee('Join requests (');
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get(route('admin.dashboard'))->assertDontSee('join request');
+
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), ['recognition' => 'tokoh', 'classification' => 'yes'] + certificate('classification', end: now()->subDay()->toDateString(), file: false) + payment())
+        ->assertSessionHasErrors('classification_end');
+    expect(EventJoinRequest::sole()->status)->toBe('draft');
+});
+
+it('keeps a receipt saved with the draft until Join, and drops a replaced one', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    $this->post(route('events.join', $event), ['draft' => 1, 'payment_method' => 'cash', 'receipt' => UploadedFile::fake()->create('first.pdf', 10, 'application/pdf')]);
+    $first = EventJoinRequest::sole()->documents[0]['path'];
+
+    $this->get(route('events.show', $event))
+        ->assertSee('Saved with your draft: first.pdf')
+        ->assertSee('value="cash" checked', false);
+
+    // Replaced in a second draft: the first file goes.
+    $this->post(route('events.join', $event), ['draft' => 1, 'payment_method' => 'cash', 'receipt' => UploadedFile::fake()->create('second.pdf', 10, 'application/pdf')]);
+    $second = EventJoinRequest::sole()->documents[0]['path'];
+    Storage::disk('local')->assertMissing($first);
+
+    // Switching to a waiver: the receipt does not count as its documents.
+    $this->post(route('events.join', $event), ['declaration' => 1, 'payment_method' => 'waiver', 'waiver_category' => 'award'] + credentials())
+        ->assertSessionHasErrors('documents');
+
+    // Nor in a draft: saved as a waiver, it holds no receipt, and the receipt goes.
+    $this->post(route('events.join', $event), ['draft' => 1, 'payment_method' => 'waiver']);
+    expect(EventJoinRequest::sole()->documents)->toBe([]);
+    Storage::disk('local')->assertMissing($second);
+
+    $this->post(route('events.join', $event), ['draft' => 1, 'payment_method' => 'cash', 'receipt' => UploadedFile::fake()->create('third.pdf', 10, 'application/pdf')]);
+    $second = EventJoinRequest::sole()->documents[0]['path'];
+
+    // Join with no new receipt: the draft's is sent.
+    $sent = payment('cash');
+    unset($sent['receipt']);
+    $this->post(route('events.join', $event), $sent)->assertSessionHas('success', 'Sent. The office will review your documents.');
+
+    $request = EventJoinRequest::sole();
+    expect($request->status)->toBe('pending')
+        ->and($request->documents[0]['path'])->toBe($second);
+    Storage::disk('local')->assertExists($second);
+});

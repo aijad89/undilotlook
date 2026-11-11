@@ -79,7 +79,15 @@
         collect($stepPrefixes)->first(fn ($step, $prefix) => str_starts_with($key, $prefix)) ?? 'payment',
         $stepOrder
     );
-    $startStep = $errors->any() ? $stepOrder[min(array_map($stepOf, $errors->keys()))] : 'declaration';
+    // After Save draft: back on the step it was saved from.
+    $startStep = $errors->any()
+        ? $stepOrder[min(array_map($stepOf, $errors->keys()))]
+        : (in_array(session('step'), $stepOrder, true) ? session('step') : 'declaration');
+    // The participant's own unsent answers for this event, if they saved some.
+    $draft = $joinRequest?->status === 'draft' ? $joinRequest : null;
+    $draftFiles = $draft ? collect($draft->documents ?? [])->filter(fn ($doc) => str_starts_with($doc['path'], 'join-requests/'))->values() : collect();
+    $draftPaid = $draftFiles->isNotEmpty() && $draft->payment_method !== 'waiver';
+    $draftWaived = $draftFiles->isNotEmpty() && $draft->payment_method === 'waiver';
     $drawOpen =$event->polling_status === 'polling' && $event->polling_deadline && ! $event->polling_deadline->isPast();
 @endphp
 
@@ -121,6 +129,7 @@
                       class="evd-card evd-join-card" id="join-form"
                       data-start="{{ $startStep }}">
                     @csrf
+                    <input type="hidden" name="at" value="{{ $startStep }}">
                     <p class="evd-step-count" data-step-count hidden></p>
 
                     <div class="evd-join" data-step="declaration">
@@ -221,7 +230,7 @@
                             <div class="evd-pay">
                                 @foreach(\App\Models\EventJoinRequest::PAYMENT_METHODS as $key => $label)
                                     <label class="evd-pay-option">
-                                        <input type="radio" name="payment_method" value="{{ $key }}" @checked(old('payment_method') === $key) required>
+                                        <input type="radio" name="payment_method" value="{{ $key }}" @checked(old('payment_method', $draft?->payment_method) === $key) required>
                                         {{ $label }}
                                     </label>
                                 @endforeach
@@ -233,7 +242,10 @@
                              The script shows the one that applies and switches the other off. --}}
                         <div class="evd-join" data-if="payment_method:cash cheque transfer">
                             <label class="evd-question" for="receipt">Payment receipt</label>
-                            <input type="file" id="receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" data-required>
+                            <input type="file" id="receipt" name="receipt" accept=".pdf,.jpg,.jpeg,.png" @unless($draftPaid) data-required @endunless>
+                            @if($draftPaid)
+                                <p class="evd-note" style="margin-top:0;">Saved with your draft: {{ $draftFiles->first()['original'] }}. Leave empty to keep it.</p>
+                            @endif
                             @error('receipt')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                         </div>
 
@@ -243,7 +255,7 @@
                                 <div class="evd-waivers">
                                     @foreach(\App\Models\EventJoinRequest::WAIVER_CATEGORIES as $key => $label)
                                         <label class="evd-pay-option">
-                                            <input type="radio" name="waiver_category" value="{{ $key }}" @checked(old('waiver_category') === $key)
+                                            <input type="radio" name="waiver_category" value="{{ $key }}" @checked(old('waiver_category', $draft?->waiver_category) === $key)
                                                    data-required>
                                             {{ $label }}
                                         </label>
@@ -253,7 +265,10 @@
                             </fieldset>
 
                             <label class="evd-question" for="documents">Supporting documents</label>
-                            <input type="file" id="documents" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple data-required>
+                            <input type="file" id="documents" name="documents[]" accept=".pdf,.jpg,.jpeg,.png" multiple @unless($draftWaived) data-required @endunless>
+                            @if($draftWaived)
+                                <p class="evd-note" style="margin-top:0;">Saved with your draft: {{ $draftFiles->pluck('original')->join(', ') }}. Leave empty to keep them, or pick new ones to replace them.</p>
+                            @endif
                             @error('documents')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                             @foreach($errors->get('documents.*') as $messages)
                                 <p class="evd-msg evd-msg-bad">{{ $messages[0] }}</p>
@@ -266,6 +281,11 @@
                         <button type="button" class="evd-cta evd-cta-btn evd-cta-quiet" data-prev>Previous</button>
                         <button type="button" class="evd-cta evd-cta-btn" data-next>Next</button>
                     </div>
+                    {{-- Keeps what is filled in so far, unchecked for completeness;
+                         nothing goes to the office until Join. --}}
+                    <button type="submit" name="draft" value="1" formnovalidate class="evd-cta evd-cta-btn evd-cta-quiet">
+                        <i class="bi bi-floppy" aria-hidden="true"></i> Save draft
+                    </button>
                 </form>
 
                 <script>
@@ -289,6 +309,7 @@
                     function show(n) {
                         current = n;
                         steps.forEach(function (s, i) { s.hidden = i + 1 !== n; });
+                        form.elements.at.value = steps[n - 1].dataset.step;
                         count.textContent = 'Step ' + n + ' of ' + steps.length;
                         prev.disabled = n === 1;
                         next.hidden = n === steps.length;
@@ -400,6 +421,9 @@
             @elseif($joinRequest?->status === 'pending')
                 <p class="evd-msg evd-msg-wait">Your request to join was sent {{ $joinRequest->updated_at->format('d M Y') }}. The office is reviewing your documents.</p>
             @elseif($event->acceptsJoinRequests())
+                @if($draft && ! session('success'))
+                    <p class="evd-msg evd-msg-wait">You saved a draft on {{ $draft->updated_at->format('d M Y') }}. It has not been sent: finish the steps and press Join this event.</p>
+                @endif
                 @if($joinRequest?->status === 'rejected')
                     <p class="evd-msg evd-msg-bad"><strong>The office did not accept your request:</strong> {{ $joinRequest->reject_reason }} You may send it again.</p>
                 @endif

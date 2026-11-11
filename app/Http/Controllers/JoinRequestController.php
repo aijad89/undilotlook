@@ -40,9 +40,20 @@ class JoinRequestController extends Controller
         }
 
         $existing = $event->joinRequests()->where('company_id', $company->id)->first();
-        if ($existing && $existing->status !== 'rejected') {
+        if ($existing && ! in_array($existing->status, ['draft', 'rejected'], true)) {
             return back()->with('error', 'Your request is already with the office.');
         }
+
+        // Save draft: whatever is filled in so far, checked for form but not for
+        // completeness, and kept as a draft the office does not see.
+        $isDraft = $request->boolean('draft');
+
+        // A draft's payment files count as sent until replaced; a rejected
+        // request's do not.
+        $draftFiles = $existing?->status === 'draft'
+            ? array_values(array_filter($existing->documents ?? [], fn ($doc) => str_starts_with($doc['path'], 'join-requests/')))
+            : [];
+        $draftWaived = $existing?->payment_method === 'waiver';
 
         // Paid: how, and the receipt — nothing else. Waiver: which category, and
         // supporting documents that prove it (the OKU certificate, the award
@@ -77,17 +88,26 @@ class JoinRequestController extends Controller
             'product_images.*' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
         ];
 
-        $data = $request->validate(
-            [
+        $rules = [
                 'declaration' => ['accepted'],
                 'payment_method' => ['required', Rule::in(array_keys(EventJoinRequest::PAYMENT_METHODS))],
-                'receipt' => $waiver ? ['exclude'] : self::FILE_RULE,
+                'receipt' => $waiver ? ['exclude'] : ($draftFiles && ! $draftWaived ? $this->optional(self::FILE_RULE) : self::FILE_RULE),
                 'waiver_category' => $waiver
                     ? ['required', Rule::in(array_keys(EventJoinRequest::WAIVER_CATEGORIES))]
                     : ['exclude'],
-                'documents' => $waiver ? ['required', 'array', 'max:'.self::MAX_FILES] : ['exclude'],
+                'documents' => $waiver ? [$draftFiles && $draftWaived ? 'nullable' : 'required', 'array', 'max:'.self::MAX_FILES] : ['exclude'],
                 'documents.*' => $waiver ? self::FILE_RULE : ['exclude'],
-            ] + $credentialRules,
+            ] + $credentialRules;
+
+        // A draft: the same rules, nothing required, and no expiry check yet.
+        if ($isDraft) {
+            $rules = array_map(fn ($rule) => array_values(array_filter(
+                $this->optional($rule), fn ($part) => ! in_array($part, ['accepted', 'after_or_equal:today'], true)
+            )), $rules);
+        }
+
+        $data = $request->validate(
+            $rules,
             [
                 'declaration.accepted' => 'Tick the declaration to join.',
                 'payment_method.required' => 'Choose how you paid.',
@@ -117,28 +137,29 @@ class JoinRequestController extends Controller
         // A certificate keeps the file on record unless a new one was sent.
         // ponytail: a replaced file is not deleted; an older request may still
         // link to it.
+        // (A draft may leave any of these empty.)
         $certificate = fn ($field) => [
-            'number' => $data["{$field}_number"],
-            'start' => $data["{$field}_start"],
-            'end' => $data["{$field}_end"],
+            'number' => $data["{$field}_number"] ?? null,
+            'start' => $data["{$field}_start"] ?? null,
+            'end' => $data["{$field}_end"] ?? null,
         ] + ($request->hasFile("{$field}_file")
             ? ['path' => $request->file("{$field}_file")->store("certificates/{$company->id}", 'local'), 'original' => $request->file("{$field}_file")->getClientOriginalName()]
-            : array_intersect_key($held["{$field}_cert"], array_flip(['path', 'original'])));
+            : array_intersect_key($held["{$field}_cert"] ?? [], array_flip(['path', 'original'])));
 
         $credentials = [
-            'recognition' => $data['recognition'],
-            'classification' => $data['classification'],
-            'classification_cert' => $data['classification'] === 'yes' ? $certificate('classification') : null,
+            'recognition' => $data['recognition'] ?? null,
+            'classification' => $data['classification'] ?? null,
+            'classification_cert' => ($data['classification'] ?? null) === 'yes' ? $certificate('classification') : null,
             'quality' => $data['quality'] ?? null,
-            'quality_cert' => ($data['quality'] ?? 'none') !== 'none' ? $certificate('quality') : null,
-            'contact_name' => $data['contact_name'],
-            'contact_phone' => $data['contact_phone'],
+            'quality_cert' => in_array($data['quality'] ?? null, [null, 'none'], true) ? null : $certificate('quality'),
+            'contact_name' => $data['contact_name'] ?? null,
+            'contact_phone' => $data['contact_phone'] ?? null,
             'product_images' => $request->hasFile('product_images')
                 ? collect($request->file('product_images'))->map(fn ($file) => [
                     'path' => $file->store("products/{$company->id}", 'local'),
                     'original' => $file->getClientOriginalName(),
                 ])->values()->all()
-                : $held['product_images'],
+                : ($held['product_images'] ?? []),
         ];
         $company->update(['credentials' => $credentials]);
 
@@ -148,27 +169,31 @@ class JoinRequestController extends Controller
             'original' => $file->getClientOriginalName(),
         ];
 
-        $documents = $waiver
-            ? collect($request->file('documents', []))->map(fn ($file) => $keep($file, $file->getClientOriginalName()))->values()->all()
-            : [$keep($request->file('receipt'), 'Payment receipt')];
+        // New files replace the draft's; none sent keeps the draft's own kind.
+        $documents = match (true) {
+            ! $request->filled('payment_method') => [],
+            $waiver && $request->hasFile('documents') => collect($request->file('documents'))->map(fn ($file) => $keep($file, $file->getClientOriginalName()))->values()->all(),
+            ! $waiver && $request->hasFile('receipt') => [$keep($request->file('receipt'), 'Payment receipt')],
+            default => $waiver === $draftWaived ? $draftFiles : [],
+        };
 
-        // The certificates sit with the other files, so the office opens them
-        // from the same list.
+        // The certificates and photos sit with the other files, so the office
+        // opens them from the same list. A draft holds its payment files only.
         foreach (['classification_cert' => 'Classification certificate', 'quality_cert' => 'Quality compliance certificate'] as $key => $name) {
-            if ($credentials[$key]) {
+            if (! $isDraft && $credentials[$key]) {
                 $documents[] = ['name' => $name, 'path' => $credentials[$key]['path'], 'original' => $credentials[$key]['original']];
             }
         }
-        foreach ($credentials['product_images'] as $i => $image) {
+        foreach ($isDraft ? [] : $credentials['product_images'] as $i => $image) {
             $documents[] = ['name' => 'Product photo '.($i + 1)] + $image;
         }
 
-        // A rejected request is asked again in place: its own old files go. The
-        // certificates are the company's, and stay.
+        // Asked again in place: its own old files go unless kept. The
+        // certificates and photos are the company's, and stay.
         if ($existing) {
-            Storage::disk('local')->delete(array_filter(
-                array_column($existing->documents ?? [], 'path'),
-                fn ($path) => str_starts_with($path, 'join-requests/')
+            Storage::disk('local')->delete(array_diff(
+                array_filter(array_column($existing->documents ?? [], 'path'), fn ($path) => str_starts_with($path, 'join-requests/')),
+                array_column($documents, 'path')
             ));
         }
 
@@ -176,18 +201,26 @@ class JoinRequestController extends Controller
             ['event_id' => $event->id, 'company_id' => $company->id],
             [
                 'user_id' => $request->user()->id,
-                'payment_method' => $data['payment_method'],
+                'payment_method' => $data['payment_method'] ?? null,
                 'waiver_category' => $data['waiver_category'] ?? null,
                 'documents' => $documents,
                 'answers' => $credentials,
-                'status' => 'pending',
+                'status' => $isDraft ? 'draft' : 'pending',
                 'reject_reason' => null,
                 'reviewed_by' => null,
                 'reviewed_at' => null,
             ]
         );
 
-        return back()->with('success', 'Sent. The office will review your documents.');
+        return $isDraft
+            ? back()->with('success', 'Draft saved. Come back to finish it any time before registration closes.')->with('step', $request->input('at'))
+            : back()->with('success', 'Sent. The office will review your documents.');
+    }
+
+    /** A rule with `required` made `nullable`. */
+    private function optional(array $rule): array
+    {
+        return array_map(fn ($part) => $part === 'required' ? 'nullable' : $part, $rule);
     }
 
     /**
@@ -197,7 +230,7 @@ class JoinRequestController extends Controller
      */
     private function certificateRules(Request $request, string $field, ?array $onFile): array
     {
-        $same = $onFile
+        $same = ! empty($onFile['path'])
             && $request->input("{$field}_number") === $onFile['number']
             && $request->input("{$field}_end") === $onFile['end'];
 

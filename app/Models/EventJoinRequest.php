@@ -16,6 +16,7 @@ class EventJoinRequest extends Model
     use Auditable, HasFactory;
 
     public const STATUSES = [
+        'draft' => 'Draft, not sent',
         'pending' => 'Waiting for the office',
         'approved' => 'Approved',
         'rejected' => 'Rejected',

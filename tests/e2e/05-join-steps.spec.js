@@ -174,3 +174,37 @@ test('paying asks for the receipt only; a fee waiver asks for a category and doc
     await expect(page.getByText('The office is reviewing your documents')).toBeVisible();
     expect(errors).toEqual([]);
 });
+
+test('Save draft keeps the answers so far and comes back on the same step', async ({ page }) => {
+    const eventId = seed('join-setup.php').trim().split('\n').pop();
+    const errors = watchErrors(page);
+
+    await signInAs(page, 'kayu@e2e.test');
+    await page.goto(`/events/${eventId}`);
+
+    const form = page.locator('#join-form');
+    const next = form.getByRole('button', { name: 'Next' });
+    await form.getByLabel(/I want to join this event, and I declare/).check();
+    await next.click();
+    await form.getByLabel('Tokoh Kraf Negara').check();
+    await next.click();
+    await form.locator('input[name=classification][value=no]').check();
+    await next.click();
+
+    // Half-way through the contact step, nothing required is checked.
+    await form.getByLabel('Name', { exact: true }).fill('Ahmad Kayu');
+    await Promise.all([page.waitForNavigation(), form.getByRole('button', { name: 'Save draft' }).click()]);
+
+    await expect(page.getByText('Draft saved.')).toBeVisible();
+    await expect(form.getByText('Step 4 of 6')).toBeVisible();
+    await expect(form.getByLabel('Name', { exact: true })).toHaveValue('Ahmad Kayu');
+
+    // Later: back from the start, answers in place, and not sent.
+    await page.goto(`/events/${eventId}`);
+    await expect(page.getByText('You saved a draft on')).toBeVisible();
+    await expect(form.getByText('Step 1 of 6')).toBeVisible();
+    await form.getByLabel(/I want to join this event, and I declare/).check();
+    await next.click();
+    await expect(form.getByLabel('Tokoh Kraf Negara')).toBeChecked();
+    expect(errors).toEqual([]);
+});
