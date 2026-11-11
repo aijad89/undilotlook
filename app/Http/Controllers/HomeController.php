@@ -78,9 +78,18 @@ class HomeController extends Controller
             ->sortBy(fn ($r) => $r->event->polling_start_date?->timestamp ?? PHP_INT_MAX)
             ->values();
 
+        // Requests not yet in a draw: what was sent, and where it stands. An
+        // approved one is a draw entry above, and is not repeated.
+        $requests = \App\Models\EventJoinRequest::with('event')
+            ->where('company_id', $user->company?->id)
+            ->whereIn('status', ['draft', 'pending', 'rejected'])
+            ->latest('updated_at')
+            ->get();
+
         return view('dashboard', [
             'user' => $user,
             'entries' => $entries,
+            'requests' => $requests,
             'drawn' => \App\Models\Poll::where('user_id', $user->id)->pluck('event_id')->flip(),
         ]);
     }

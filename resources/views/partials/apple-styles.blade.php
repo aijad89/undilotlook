@@ -215,6 +215,11 @@
 .ap-draw-next { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 16px; border-top: 1px solid var(--ui-sep); font-size: 1rem; color: var(--ui-text-2); }
 .ap-draw-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); gap: 16px; align-items: start; }
 .ap-draw-grid > .ap-draw { margin: 0 !important; }
+/* A request to join: what was sent, read back. */
+.ap-request-body { margin-top: 16px; font-size: 1rem; line-height: 1.6; color: var(--ui-text-2); }
+.ap-request-body ul { margin: 8px 0 0; padding: 0; list-style: none; }
+.ap-request-body i { margin-right: 4px; }
+.ap-request-body + .ap-draw-next { margin-top: 16px; }
 .ap-draw-lot-link { gap: 8px; border-color: var(--ui-gold) !important; background: var(--ui-gold-tint) !important; color: var(--ui-gold-text) !important; font-size: 1rem; }
 .ap-draw-lot-link:hover { background: var(--ui-gold-tint-2) !important; }
 .ap-draw-lot-link i { color: var(--ui-gold); }

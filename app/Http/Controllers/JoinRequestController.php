@@ -134,17 +134,26 @@ class JoinRequestController extends Controller
             ]
         );
 
-        // A certificate keeps the file on record unless a new one was sent.
+        // A certificate keeps the file on record unless a new one was sent, and
+        // only while it is the same certificate (same number, same end date): a
+        // renewal saved in a draft must not carry the old file to Join.
         // ponytail: a replaced file is not deleted; an older request may still
         // link to it.
         // (A draft may leave any of these empty.)
-        $certificate = fn ($field) => [
-            'number' => $data["{$field}_number"] ?? null,
-            'start' => $data["{$field}_start"] ?? null,
-            'end' => $data["{$field}_end"] ?? null,
-        ] + ($request->hasFile("{$field}_file")
-            ? ['path' => $request->file("{$field}_file")->store("certificates/{$company->id}", 'local'), 'original' => $request->file("{$field}_file")->getClientOriginalName()]
-            : array_intersect_key($held["{$field}_cert"] ?? [], array_flip(['path', 'original'])));
+        $certificate = function ($field) use ($data, $request, $held, $company) {
+            $cert = [
+                'number' => $data["{$field}_number"] ?? null,
+                'start' => $data["{$field}_start"] ?? null,
+                'end' => $data["{$field}_end"] ?? null,
+            ];
+            $onFile = $held["{$field}_cert"] ?? [];
+
+            return $cert + match (true) {
+                $request->hasFile("{$field}_file") => ['path' => $request->file("{$field}_file")->store("certificates/{$company->id}", 'local'), 'original' => $request->file("{$field}_file")->getClientOriginalName()],
+                ($onFile['number'] ?? null) === $cert['number'] && ($onFile['end'] ?? null) === $cert['end'] => array_intersect_key($onFile, array_flip(['path', 'original'])),
+                default => [],
+            };
+        };
 
         $credentials = [
             'recognition' => $data['recognition'] ?? null,
@@ -206,10 +215,13 @@ class JoinRequestController extends Controller
                 'documents' => $documents,
                 'answers' => $credentials,
                 'status' => $isDraft ? 'draft' : 'pending',
+            ] + ($isDraft ? [] : [
+                // A draft keeps the last rejection, so its reason stays in
+                // view until the request is sent again.
                 'reject_reason' => null,
                 'reviewed_by' => null,
                 'reviewed_at' => null,
-            ]
+            ])
         );
 
         return $isDraft

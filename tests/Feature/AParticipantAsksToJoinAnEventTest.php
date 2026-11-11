@@ -513,3 +513,86 @@ it('keeps a receipt saved with the draft until Join, and drops a replaced one', 
         ->and($request->documents[0]['path'])->toBe($second);
     Storage::disk('local')->assertExists($second);
 });
+
+it('does not let a draft carry an old certificate file onto a renewed one', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+
+    $this->post(route('events.join', joinable()), ['classification' => 'yes'] + certificate('classification') + payment())
+        ->assertSessionHas('success');
+
+    // Renewed in a draft, no new file: the old file is not kept with it.
+    $renewed = ['classification' => 'yes'] + certificate('classification', 'PKT-002', now()->addYears(2)->toDateString(), file: false);
+    $this->post(route('events.join', $event), ['draft' => 1] + $renewed)->assertSessionHas('success');
+    expect($company->fresh()->credentials['classification_cert'])->not->toHaveKey('path');
+
+    $this->post(route('events.join', $event), ['recognition' => 'none'] + $renewed + payment())
+        ->assertSessionHasErrors('classification_file');
+
+    // Same certificate in a draft: the file stays.
+    $this->post(route('events.join', $event), ['draft' => 1] + $renewed + ['classification_file' => UploadedFile::fake()->create('new.pdf', 10, 'application/pdf')]);
+    $this->post(route('events.join', $event), ['draft' => 1] + $renewed);
+    expect($company->fresh()->credentials['classification_cert']['original'])->toBe('new.pdf');
+});
+
+it('keeps the rejection reason in view on a draft until it is sent again', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'rejected', 'reject_reason' => 'Receipt is unreadable.']);
+    $this->actingAs($company->user, 'web');
+
+    $this->post(route('events.join', $event), ['draft' => 1, 'recognition' => 'none']);
+    expect($request->fresh()->status)->toBe('draft');
+
+    $this->get(route('events.show', $event));
+    $this->get(route('events.show', $event))->assertSee('Receipt is unreadable.');
+
+    $this->post(route('events.join', $event), payment())->assertSessionHas('success');
+    expect($request->fresh()->reject_reason)->toBeNull();
+    $this->get(route('events.show', $event));
+    $this->get(route('events.show', $event))->assertDontSee('Receipt is unreadable.');
+});
+
+it('shows the participant what they sent on their dashboard, files included, and no one else', function () {
+    $event = joinable();
+    $company = Company::factory()->create(['state' => 'Johor']);
+
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), ['classification' => 'yes'] + certificate('classification', 'PKT-777') + payment());
+    $request = EventJoinRequest::sole();
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Requests to join')
+        ->assertSee($event->title)
+        ->assertSee('With the office')
+        ->assertSee('Siti Aminah')
+        ->assertSee('PKT-777')
+        ->assertSee(route('join-requests.document', [$request, 0]))
+        ->assertSee('Product photo 5')
+        ->assertDontSee('Change and send again');
+
+    $other = Company::factory()->create();
+    auth()->forgetGuards();
+    $this->actingAs($other->user, 'web')->get(route('dashboard'))
+        ->assertDontSee('Requests to join')
+        ->assertDontSee('PKT-777');
+});
+
+it('tells a participant on the dashboard that a draft was never sent once registration closes', function () {
+    $event = joinable();
+    $company = Company::factory()->create();
+
+    $this->actingAs($company->user, 'web')->post(route('events.join', $event), ['draft' => 1, 'contact_name' => 'Siti Aminah']);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Draft, not sent')
+        ->assertSee('Finish and send')
+        ->assertDontSee('Registration has closed');
+
+    $event->update(['registration_close_at' => now()->subDay()]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Registration has closed. This draft was never sent to the office.')
+        ->assertDontSee('Finish and send');
+});

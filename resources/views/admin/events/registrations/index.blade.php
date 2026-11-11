@@ -58,26 +58,7 @@
                                     {{-- As the company declared it with this request. --}}
                                     @if($a = $jr->answers)
                                         <div class="mac-text-sm mt-1">
-                                            @isset($a['contact_name'])
-                                                <div>Contact: {{ $a['contact_name'] }}, {{ $a['contact_phone'] }}</div>
-                                            @endisset
-                                            <div>Recognition: {{ \App\Models\Company::RECOGNITIONS[$a['recognition']] ?? '—' }}</div>
-                                            <div>Classification certificate:
-                                                @if($c = $a['classification_cert'])
-                                                    {{ $c['number'] }}, valid until {{ \Illuminate\Support\Carbon::parse($c['end'])->format('d M Y') }}
-                                                @else
-                                                    none
-                                                @endif
-                                            </div>
-                                            @if($a['quality'])
-                                                <div>Quality compliance:
-                                                    @if($q = $a['quality_cert'])
-                                                        {{ \App\Models\Company::QUALITY_STANDARDS[$a['quality']] ?? $a['quality'] }}, {{ $q['number'] }}, valid until {{ \Illuminate\Support\Carbon::parse($q['end'])->format('d M Y') }}
-                                                    @else
-                                                        not applicable
-                                                    @endif
-                                                </div>
-                                            @endif
+                                            @include('partials.join-answers', ['a' => $a])
                                         </div>
                                     @endif
                                 </td>

@@ -77,5 +77,62 @@
         </article>
     @endforeach
     </div>
+
+    @if($requests->isNotEmpty())
+        <div class="ap-section-head">
+            <h3 class="ap-section-title">Requests to join</h3>
+        </div>
+        <div class="ap-draw-grid">
+        @foreach($requests as $jr)
+            @php
+                [$badge, $label] = match ($jr->status) {
+                    'draft' => ['ap-badge-gray', 'Draft, not sent'],
+                    'pending' => ['ap-badge-orange', 'With the office'],
+                    'rejected' => ['ap-badge-red', 'Not approved'],
+                };
+            @endphp
+            <article class="ap-card ap-draw mb-3">
+                <div class="ap-draw-head">
+                    <div>
+                        <h3 class="ap-draw-title">{{ $jr->event->title }}</h3>
+                        <div class="ap-draw-meta">
+                            <span><i class="bi bi-clock" aria-hidden="true"></i>{{ $jr->status === 'draft' ? 'Saved' : 'Sent' }} {{ $jr->updated_at->format('d M Y') }}</span>
+                        </div>
+                    </div>
+                    <span class="ap-badge {{ $badge }}">{{ $label }}</span>
+                </div>
+
+                <div class="ap-request-body">
+                    @if($jr->reject_reason && $jr->status !== 'pending')
+                        <p class="mb-2"><strong>Reason:</strong> {{ $jr->reject_reason }}</p>
+                    @endif
+                    @if($jr->answers)
+                        @include('partials.join-answers', ['a' => $jr->answers])
+                    @endif
+                    @if($jr->payment_method)
+                        <div>Payment: {{ \App\Models\EventJoinRequest::PAYMENT_METHODS[$jr->payment_method] }}@if($jr->waiver_category), {{ \App\Models\EventJoinRequest::WAIVER_CATEGORIES[$jr->waiver_category] ?? $jr->waiver_category }}@endif</div>
+                    @endif
+                    @if($jr->documents)
+                        <ul>
+                            @foreach($jr->documents as $i => $doc)
+                                <li><a href="{{ route('join-requests.document', [$jr, $i]) }}" target="_blank" rel="noopener"><i class="bi bi-file-earmark" aria-hidden="true"></i>{{ $doc['name'] }}</a></li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </div>
+
+                @if($jr->status !== 'pending' && $jr->event->acceptsJoinRequests())
+                    <div class="ap-draw-next">
+                        <a href="{{ route('events.show', $jr->event) }}" class="ap-btn ap-btn-primary">
+                            {{ $jr->status === 'draft' ? 'Finish and send' : 'Change and send again' }}
+                        </a>
+                    </div>
+                @elseif($jr->status === 'draft')
+                    <div class="ap-draw-next">Registration has closed. This draft was never sent to the office.</div>
+                @endif
+            </article>
+        @endforeach
+        </div>
+    @endif
 </div>
 @endsection

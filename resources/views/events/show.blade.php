@@ -424,7 +424,8 @@
                 @if($draft && ! session('success'))
                     <p class="evd-msg evd-msg-wait">You saved a draft on {{ $draft->updated_at->format('d M Y') }}. It has not been sent: finish the steps and press Join this event.</p>
                 @endif
-                @if($joinRequest?->status === 'rejected')
+                {{-- Still shown on a draft made after a rejection, until it is sent again. --}}
+                @if($joinRequest?->reject_reason && in_array($joinRequest->status, ['rejected', 'draft'], true))
                     <p class="evd-msg evd-msg-bad"><strong>The office did not accept your request:</strong> {{ $joinRequest->reject_reason }} You may send it again.</p>
                 @endif
 
