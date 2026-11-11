@@ -36,7 +36,13 @@
         <div class="mac-card mb-3" id="join-requests">
             <div class="mac-card-padded pb-0">
                 <h3 class="mac-card-title">Join requests ({{ $joinRequests->count() }})</h3>
-                <p class="mac-muted mac-text-sm mb-0">Open the files the company sent, then approve with a craft code and booth, or reject with a reason the company will see.</p>
+                <p class="mac-muted mac-text-sm mb-0">
+                    @if($canSetCode)
+                        Open the files the company sent, then approve with a craft code and booth, or reject with a reason the company will see.
+                    @else
+                        Check the payment proof, then approve with ✓, or reject with a reason the company will see. The craft code and booth are the company's own; only HQ can change them.
+                    @endif
+                </p>
             </div>
             <div class="table-responsive">
                 <table class="mac-table">
@@ -45,7 +51,7 @@
                             <th>Company</th>
                             <th>Payment</th>
                             <th>Documents</th>
-                            <th style="width:300px;">Approve</th>
+                            <th style="width:{{ $canSetCode ? 300 : 180 }}px;">Approve</th>
                             <th style="width:280px;">Reject</th>
                         </tr>
                     </thead>
@@ -63,13 +69,11 @@
                                     @endif
                                 </td>
                                 <td class="mac-text-sm">
-                                    {{ \App\Models\EventJoinRequest::PAYMENT_METHODS[$jr->payment_method] ?? '—' }}
-                                    @if($jr->waiver_category)
-                                        <div class="mac-muted">{{ \App\Models\EventJoinRequest::WAIVER_CATEGORIES[$jr->waiver_category] ?? $jr->waiver_category }}</div>
-                                    @endif
+                                    @include('partials.payment-proof', ['jr' => $jr])
                                 </td>
                                 <td class="mac-text-sm">
-                                    @forelse($jr->documents ?? [] as $i => $doc)
+                                    {{-- The payment files are under Payment; these are the company's own. --}}
+                                    @forelse(collect($jr->documents ?? [])->reject(fn ($d) => str_starts_with($d['path'] ?? '', 'join-requests/')) as $i => $doc)
                                         <div><a href="{{ route('join-requests.document', [$jr, $i]) }}" target="_blank" rel="noopener"><i class="bi bi-file-earmark me-1"></i>{{ $doc['name'] }}</a></div>
                                     @empty
                                         <span class="mac-muted">No files</span>
@@ -78,6 +82,7 @@
                                 <td>
                                     <form method="POST" action="{{ route('admin.events.registrations.approve', [$event, $jr]) }}" class="d-flex gap-1">
                                         @csrf
+                                        @if($canSetCode)
                                         <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
                                             <option value="">{{ $jr->company->kraf_code ? 'Own: '.$jr->company->kraf_code : '— None —' }}</option>
                                             @foreach($codes as $code)
@@ -89,6 +94,9 @@
                                                 <option value="{{ $size }}" @selected(($jr->company->plot_size ?? '3x3') === $size)>{{ $size }}</option>
                                             @endforeach
                                         </select>
+                                        @else
+                                        <span class="mac-text-sm align-self-center me-2">{{ $jr->company->kraf_code ?? 'No code' }} · {{ $jr->company->plot_size ?? '3x3' }}</span>
+                                        @endif
                                         <button type="submit" class="mac-action-btn" title="Approve and add to the draw list">
                                             <i class="bi bi-check-lg"></i>
                                         </button>
@@ -120,7 +128,7 @@
             <form method="POST" action="{{ route('admin.events.registrations.store', $event) }}">
                 @csrf
                 <div class="row g-3 align-items-end">
-                    <div class="col-md-6">
+                    <div class="{{ $canSetCode ? 'col-md-6' : 'col-md-11' }}">
                         <label class="mac-label" for="company_id">Companies</label>
                         <select id="company_id" name="company_id[]" class="mac-select" multiple size="6" required>
                             @foreach($candidates as $candidate)
@@ -132,6 +140,7 @@
                         <small class="mac-muted">Ctrl or Shift to pick several.</small>
                     </div>
 
+                    @if($canSetCode)
                     <div class="col-md-3">
                         <label class="mac-label" for="code">Craft code</label>
                         <select id="code" name="code" class="mac-select">
@@ -153,6 +162,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
 
                     <div class="col-md-1">
                         <button type="submit" class="mac-btn-primary w-100">Add</button>
@@ -190,7 +200,8 @@
                             </th>
                             <th>Company</th>
                             <th>Account</th>
-                            <th style="width:220px;">Craft code</th>
+                            <th>Payment</th>
+                            <th style="width:{{ $canSetCode ? 220 : 110 }}px;">Craft code</th>
                             <th style="width:120px;">Booth</th>
                             <th>Lot</th>
                             <th class="text-end">Actions</th>
@@ -219,9 +230,18 @@
                                     @endif
                                 </td>
 
+                                <td class="mac-text-sm">
+                                    @include('partials.payment-proof', ['jr' => $proofs[$registration->company_id] ?? null])
+                                </td>
+
                                 {{-- One row, one small form. The code and size are the
                                      two things the plan is built from, so they are
-                                     edited where they are read. --}}
+                                     edited where they are read, by HQ. A zone admin
+                                     reads them. --}}
+                                @if(! $canSetCode)
+                                <td>{{ $registration->code ?? '—' }}</td>
+                                <td>{{ $registration->plot_size }}</td>
+                                @else
                                 <td colspan="2">
                                     <form method="POST"
                                           action="{{ route('admin.events.registrations.update', [$event, $registration]) }}"
@@ -263,6 +283,7 @@
                                         </button>
                                     </form>
                                 </td>
+                                @endif
 
                                 <td>
                                     @if($registration->plot)
@@ -287,7 +308,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7">
+                                <td colspan="8">
                                     <div class="mac-empty">
                                         <div class="mac-empty-icon"><i class="bi bi-list-check"></i></div>
                                         <p class="mac-empty-text">Nobody is in this draw yet.</p>
@@ -310,12 +331,15 @@
                     <div class="col-md-3">
                         <label class="mac-label" for="bulk-action">Action</label>
                         <select id="bulk-action" name="action" class="mac-select" required>
+                            @if($canSetCode)
                             <option value="set_code">Set craft code</option>
                             <option value="set_size">Set booth size</option>
+                            @endif
                             <option value="remove">Remove from the draw</option>
                         </select>
                     </div>
 
+                    @if($canSetCode)
                     <div class="col-md-3">
                         <label class="mac-label" for="bulk-code">Craft code</label>
                         <select id="bulk-code" name="code" class="mac-select">
@@ -334,6 +358,7 @@
                             @endforeach
                         </select>
                     </div>
+                    @endif
 
                     <div class="col-md-3">
                         <button type="submit" class="mac-btn-primary w-100"

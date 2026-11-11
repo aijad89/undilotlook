@@ -17,7 +17,7 @@ it('adds companies to the draw, with the account the draw keys on', function () 
     $a = Company::factory()->create(['state' => 'Johor']);
     $b = Company::factory()->create(['state' => 'Johor']);
 
-    $this->actingAs(stateAdmin('Johor'), 'admin')
+    $this->actingAs(superAdmin(), 'admin')
         ->post(route('admin.events.registrations.store', $event), [
             'company_id' => [$a->id, $b->id],
             'code' => 'TBPS',
@@ -302,4 +302,65 @@ it('shows each row the lot number it holds', function () {
 
     $this->actingAs(superAdmin(), 'admin')->get(route('admin.events.registrations.index', $event))
         ->assertOk()->assertSee('A-TBP1');
+});
+
+/*
+ * The zone checks the payment and approves; only HQ sets the craft code and
+ * booth size the plan is built from. The zone reads them.
+ */
+it('lets a zone admin approve with the company\'s own code and size, and change neither', function () {
+    Illuminate\Support\Facades\Storage::fake('local');
+    $event = Event::factory()->create();
+    $company = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TBPS', 'plot_size' => '3x6']);
+    Illuminate\Support\Facades\Storage::disk('local')->put("join-requests/{$event->id}/r.jpg", 'jpeg');
+    $request = App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'payment_method' => 'transfer', 'documents' => [
+        ['name' => 'Payment receipt', 'path' => "join-requests/{$event->id}/r.jpg", 'original' => 'resit.jpg'],
+        ['name' => 'Product photo 1', 'path' => "products/{$company->id}/p.jpg", 'original' => 'p.jpg'],
+    ]]);
+    $zone = stateAdmin('Johor');
+    $index = route('admin.events.registrations.index', $event);
+
+    // The request: the proof under Payment, with a preview; no code or size to pick.
+    $page = $this->actingAs($zone, 'admin')->get($index)->assertOk()
+        ->assertSeeInOrder(['Online transfer', 'Payment receipt', 'class="mac-proof-pop"', 'Product photo 1'], false)
+        ->assertSee('TBPS · 3x6');
+    expect($page->getContent())->not->toContain('aria-label="Craft code"');
+
+    // A code or size posted anyway is ignored: the company's own is used.
+    $this->post(route('admin.events.registrations.approve', [$event, $request]), ['code' => 'RKP', 'plot_size' => '3x9'])
+        ->assertSessionHas('success');
+    $row = EventRegistration::sole();
+    expect($row->code)->toBe('TBPS')->and($row->plot_size)->toBe('3x6');
+
+    // On the list: the proof again, the code and size as text.
+    $page = $this->get($index)->assertOk()
+        ->assertSeeInOrder(['<th>Payment</th>', $company->name, 'Online transfer', 'Payment receipt', 'TBPS', '3x6'], false);
+    expect($page->getContent())->not->toContain('value="PUT"')
+        ->not->toContain('value="set_code"');
+
+    // And neither can be changed by posting.
+    $this->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'RKP', 'plot_size' => '3x9'])->assertForbidden();
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_code', 'registration_id' => [$row->id], 'code' => 'RKP'])->assertForbidden();
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_size', 'registration_id' => [$row->id], 'plot_size' => '3x9'])->assertForbidden();
+    $other = Company::factory()->create(['state' => 'Johor']);
+    $this->post(route('admin.events.registrations.store', $event), ['company_id' => [$other->id], 'code' => 'RKP', 'plot_size' => '3x9']);
+    expect($row->fresh()->code)->toBe('TBPS')->and($row->fresh()->plot_size)->toBe('3x6')
+        ->and(EventRegistration::where('company_id', $other->id)->sole()->code)->toBeNull()
+        ->and(EventRegistration::where('company_id', $other->id)->sole()->plot_size)->toBe('3x3');
+
+    // A zone admin may still take a row off the list.
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id]])->assertSessionHas('success');
+    expect(EventRegistration::where('company_id', $company->id)->exists())->toBeFalse();
+});
+
+it('shows a row the office added as having no payment proof, and lets HQ edit its code and size', function () {
+    $event = Event::factory()->create();
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $row = EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs(superAdmin(), 'admin')->get(route('admin.events.registrations.index', $event))
+        ->assertOk()
+        ->assertSee('Added by the office')
+        ->assertSee('value="PUT"', false)
+        ->assertSee('value="set_code"', false);
 });

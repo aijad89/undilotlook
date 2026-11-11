@@ -25,7 +25,7 @@ it('carries a size set on the company page to its draw lists that have not start
     $drawOpen = onDrawList($company, ['polling_status' => 'polling']);
     $holdsLot = onDrawList($company, [], ['plot_id' => Plot::factory()->create()->id]);
 
-    $this->actingAs(stateAdmin('Kedah'), 'admin')
+    $this->actingAs(superAdmin(), 'admin')
         ->put(route('admin.companies.kraf-code.update', $company), ['plot_size' => '3x6'])
         ->assertSessionHas('success');
 
@@ -39,7 +39,7 @@ it('carries a size changed on one draw-list row to the company and its other dra
     $edited = onDrawList($company);
     $other = onDrawList($company);
 
-    $this->actingAs(stateAdmin('Kedah'), 'admin')
+    $this->actingAs(superAdmin(), 'admin')
         ->put(route('admin.events.registrations.update', [$edited->event_id, $edited]), ['plot_size' => '3x6'])
         ->assertSessionHas('code_success');
 
@@ -52,7 +52,7 @@ it('carries a size set in bulk, or picked when adding, to each company', functio
     $a = Company::factory()->create(['state' => 'Kedah', 'plot_size' => '3x3']);
     $b = Company::factory()->create(['state' => 'Kedah', 'plot_size' => '3x3']);
     $rowA = onDrawList($a);
-    $admin = stateAdmin('Kedah');
+    $admin = superAdmin();
 
     $this->actingAs($admin, 'admin')->post(route('admin.events.registrations.bulk', $rowA->event_id), [
         'action' => 'set_size', 'registration_id' => [$rowA->id], 'plot_size' => '3x9',

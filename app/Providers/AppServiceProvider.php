@@ -246,6 +246,18 @@ class AppServiceProvider extends ServiceProvider
             return $admin->hasGlobalAccess();
         });
 
+        /*
+         * The craft code and booth size a company draws under, on the draw list
+         * and on the company's own page. The plan is built from those two, so
+         * HQ sets them; a zone checks the payment, approves, and reads them.
+         * The draw-list routes also serve zone admins (approve, add, remove), so
+         * there EntRegistrationController asks this gate per request and drops
+         * a code or size a zone admin sends.
+         */
+        Gate::define('set-draw-code', function (Admin $admin) {
+            return $admin->hasGlobalAccess();
+        });
+
         /* The audit trail. hq included, Admin rows and all — see AuditTrailController. */
         Gate::define('read-audit-trail', function (Admin $admin) {
             return $admin->hasGlobalAccess();

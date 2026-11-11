@@ -13,7 +13,7 @@ use App\Models\KrafBidang;
 it('saves an active code from the company page, and clears it', function () {
     KrafBidang::factory()->code('TBP')->create();
     $company = Company::factory()->create(['state' => 'Johor']);
-    $admin = stateAdmin('Johor');
+    $admin = superAdmin();
 
     $this->actingAs($admin, 'admin')
         ->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => 'TBP'])
@@ -39,14 +39,20 @@ it('refuses a code that is not on the coding sheet, or retired', function () {
     expect($company->fresh()->kraf_code)->toBeNull();
 });
 
-it('keeps a state admin to their own zone', function () {
+it('shows a state admin the code and size of their own zone\'s company, and lets them change neither', function () {
     KrafBidang::factory()->code('TBP')->create();
-    $company = Company::factory()->create(['state' => 'Melaka']);
+    $company = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TBP', 'plot_size' => '3x6']);
+    $zone = stateAdmin('Johor');
 
-    $this->actingAs(stateAdmin('Johor'), 'admin')
-        ->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => 'TBP'])
+    $page = $this->actingAs($zone, 'admin')->get(route('admin.companies.edit', $company))
+        ->assertOk()
+        ->assertSee('Only HQ can change them.')
+        ->assertSeeInOrder(['Craft code', 'TBP', 'Booth size', '3x6']);
+    expect($page->getContent())->not->toContain(route('admin.companies.kraf-code.update', $company));
+
+    $this->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x9'])
         ->assertForbidden();
-    expect($company->fresh()->kraf_code)->toBeNull();
+    expect($company->fresh()->kraf_code)->toBe('TBP')->and($company->fresh()->plot_size)->toBe('3x6');
 });
 
 it('fills each company\'s own code in on the draw list, unless one is picked there', function () {
@@ -68,9 +74,10 @@ it('fills each company\'s own code in on the draw list, unless one is picked the
         ->and($codes[$kayu->id])->toBe('RKP')
         ->and($codes[$none->id])->toBeNull();
 
-    // A code picked for the batch wins over the company's own.
+    // A code picked for the batch, by HQ, wins over the company's own.
     $other = Event::factory()->create();
-    $this->actingAs($admin, 'admin')->post(route('admin.events.registrations.store', $other), [
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.store', $other), [
         'company_id' => [$batik->id], 'code' => 'TBPS',
     ]);
     expect(EventRegistration::where('event_id', $other->id)->sole()->code)->toBe('TBPS');
@@ -85,7 +92,7 @@ it('never shows the code to the participant', function () {
 
 it('saves a booth size beside the code, and refuses one not on the list', function () {
     $company = Company::factory()->create(['state' => 'Johor']);
-    $admin = stateAdmin('Johor');
+    $admin = superAdmin();
 
     $this->actingAs($admin, 'admin')
         ->put(route('admin.companies.kraf-code.update', $company), ['plot_size' => '3x6'])
@@ -112,7 +119,8 @@ it('fills each company\'s own booth size in on the draw list, else 3x3, unless o
     expect($sizes[$big->id])->toBe('3x6')->and($sizes[$plain->id])->toBe('3x3');
 
     $other = Event::factory()->create();
-    $this->actingAs($admin, 'admin')->post(route('admin.events.registrations.store', $other), [
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.store', $other), [
         'company_id' => [$big->id], 'plot_size' => '3x9',
     ]);
     expect(EventRegistration::where('event_id', $other->id)->sole()->plot_size)->toBe('3x9');

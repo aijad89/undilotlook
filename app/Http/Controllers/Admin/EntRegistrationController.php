@@ -29,6 +29,11 @@ use Illuminate\Validation\Rule;
  * a plot is categorised by. The dropdown offers the active codes; the column
  * stores what was picked.
  *
+ * ONLY HQ SETS THE CODE AND SIZE (gate `set-draw-code`). A zone admin checks the
+ * payment and approves; the row takes the company's own code and size, and the
+ * zone sees them but cannot change them. Every write below that takes a code or
+ * size drops it for a zone admin rather than trusting the form not to send one.
+ *
  * SCOPE IS DOUBLE HERE, and both halves are needed. EventVisibility::authorize()
  * answers "may you open this event at all"; the query below answers "whose rows
  * may you see inside it". Dropping either leaves a hole the other does not cover.
@@ -65,6 +70,14 @@ class EntRegistrationController extends Controller
             $registrations->each(fn ($r) => $r->plot && ! $r->plot->is_allocated && $r->setRelation('plot', null));
         }
 
+        // The request each row came in by, for the payment proof it carries. A
+        // row the office added has none.
+        $proofs = $event->joinRequests()
+            ->whereIn('company_id', $registrations->pluck('company_id'))
+            ->where('status', 'approved')
+            ->get()
+            ->keyBy('company_id');
+
         // Companies that could still be added: in this admin's zone, on the
         // books, and not already in this draw.
         $candidates = Company::query()
@@ -83,6 +96,8 @@ class EntRegistrationController extends Controller
             'event' => $event,
             'joinRequests' => $joinRequests,
             'registrations' => $registrations,
+            'proofs' => $proofs,
+            'canSetCode' => $admin->can('set-draw-code'),
             'candidates' => $candidates,
             'codes' => KrafPicker::codes(),
             'plotSizes' => PlotSizes::all(),
@@ -114,6 +129,10 @@ class EntRegistrationController extends Controller
 
         if ($companies->isEmpty()) {
             return back()->with('error', 'No company from your zone matched that.');
+        }
+
+        if (! $request->user('admin')->can('set-draw-code')) {
+            unset($data['code'], $data['plot_size']);
         }
 
         $added = 0;
@@ -188,6 +207,10 @@ class EntRegistrationController extends Controller
             'plot_size' => ['nullable', Rule::in(PlotSizes::all())],
         ]);
 
+        if (! $request->user('admin')->can('set-draw-code')) {
+            $data = [];
+        }
+
         DB::transaction(fn () => $this->addToList($event, $joinRequest->company, $data['code'] ?? null, $data['plot_size'] ?? null));
 
         return back()->with('success', "{$joinRequest->company->name} added to the draw list.");
@@ -215,7 +238,7 @@ class EntRegistrationController extends Controller
         return back()->with('success', "Request from {$joinRequest->company->name} rejected.");
     }
 
-    /** Set this row's craft code or booth size. */
+    /** Set this row's craft code or booth size. HQ only, by the route's gate. */
     public function update(Request $request, Event $event, EventRegistration $registration)
     {
         EventVisibility::authorize($event);
@@ -285,6 +308,7 @@ class EntRegistrationController extends Controller
         ]);
 
         $admin = $request->user('admin');
+        abort_if($data['action'] !== 'remove' && ! $admin->can('set-draw-code'), 403, 'Only HQ can change the craft code or booth size.');
 
         $rows = $event->registrations()
             ->whereIn('id', $data['registration_id'])

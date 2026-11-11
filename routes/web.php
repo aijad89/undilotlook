@@ -143,7 +143,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
                 Route::post('/', [EntRegistrationController::class, 'store'])->name('store');
                 Route::post('bulk', [EntRegistrationController::class, 'bulk'])->name('bulk');
                 Route::post('undo', [EntRegistrationController::class, 'undo'])->name('undo');
-                Route::put('{registration}', [EntRegistrationController::class, 'update'])->name('update');
+                Route::put('{registration}', [EntRegistrationController::class, 'update'])->middleware('can:set-draw-code')->name('update');
                 Route::delete('{registration}', [EntRegistrationController::class, 'destroy'])->name('destroy');
                 Route::post('join/{joinRequest}/approve', [EntRegistrationController::class, 'approve'])->name('approve');
                 Route::post('join/{joinRequest}/reject', [EntRegistrationController::class, 'reject'])->name('reject');
@@ -193,7 +193,8 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('companies/{company}/kraf', [CompanyController::class, 'storeKraf'])->name('companies.kraf.store');
         Route::delete('companies/{company}/kraf/{selection}', [CompanyController::class, 'destroyKraf'])
             ->name('companies.kraf.destroy');
-        Route::put('companies/{company}/kraf-code', [CompanyController::class, 'updateKrafCode'])->name('companies.kraf-code.update');
+        Route::put('companies/{company}/kraf-code', [CompanyController::class, 'updateKrafCode'])
+            ->middleware('can:set-draw-code')->name('companies.kraf-code.update');
 
         /*
          * Admin accounts, listed in two groups: hq (HQ and super accounts, super

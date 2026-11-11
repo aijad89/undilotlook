@@ -35,7 +35,7 @@ disalin.
 | Admin pertama | dari `.env` — `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` |
 | Log masuk pantas | `http://undilotlook.test/auto` — sebarang akaun, tanpa kata laluan, plus butang *Work the queue* |
 | DB suite pelayar | `undilotlook_e2e`, dicipta dan ditetapkan semula oleh `tests/e2e/serve.js` |
-| Git | `https://github.com/aijad89/undilot` (peribadi), cawangan `main` |
+| Git | `https://github.com/aijad89/undilotlook` (peribadi), cawangan `main` |
 
 `artisan tinker <fail>` **tergantung** pada mesin ini. Guna klien MySQL untuk
 menanya pangkalan data, atau skrip PHP yang memuat `bootstrap/app.php`.
@@ -190,9 +190,14 @@ Baris **di dalam** acara tetap ditapis mengikut zon.
 
 Tindakan tulis berada di bawah `can:` dalam `routes/web.php` (`manage-events`,
 `manage-settings`, `manage-site-content`, `send-announcements`,
-`read-audit-trail`), ditakrif dalam `AppServiceProvider`. Skrin baca terbuka
-kepada semua peranan dan menapis sendiri. Pautan nav untuk skrin bergate disorok
-dengan `when` yang bertanya soalan yang sama.
+`read-audit-trail`, `set-draw-code`), ditakrif dalam `AppServiceProvider`. Skrin
+baca terbuka kepada semua peranan dan menapis sendiri. Pautan nav untuk skrin
+bergate disorok dengan `when` yang bertanya soalan yang sama.
+
+Satu pengecualian: route senarai cabutan melayan admin negeri juga (lulus,
+tambah, buang), jadi `EntRegistrationController` bertanya `set-draw-code` per
+permintaan dan **membuang** kod atau saiz yang dihantar oleh admin negeri —
+bukan menolak permintaan itu.
 
 ### `kraf_bidangs` memegang **dua** senarai
 
@@ -238,6 +243,12 @@ peruntukan awal. **Dua kunci, dua soalan, dengan sengaja.**
 Tiada lajur `status` pada `event_registrations`. Admin meletakkan syarikat ke
 dalam senarai cabutan sesebuah acara dengan kod kraf dan saiz gerai; itulah
 maksud masuk cabutan.
+
+**Hanya HQ menetapkan kod kraf dan saiz gerai** (gate `set-draw-code`) — di
+senarai cabutan dan di halaman syarikat. Admin negeri menyemak bukti bayaran,
+meluluskan dengan ✓, dan baris itu mengambil kod dan saiz syarikat sendiri.
+Syarikat tanpa kod masuk tanpa kod, dan `PollingGuard` menahan cabutan sehingga
+HQ mengisinya.
 
 ### Baris `plot_sizes` ialah pasangan (lokasi, saiz)
 
@@ -301,7 +312,7 @@ from information_schema.REFERENTIAL_CONSTRAINTS rc
 join information_schema.KEY_COLUMN_USAGE kcu
   on kcu.CONSTRAINT_NAME = rc.CONSTRAINT_NAME
  and kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA
-where rc.CONSTRAINT_SCHEMA = 'undilot' and rc.DELETE_RULE = 'CASCADE';
+where rc.CONSTRAINT_SCHEMA = 'undilotlook' and rc.DELETE_RULE = 'CASCADE';
 ```
 
 ### Tiada langkah bina
