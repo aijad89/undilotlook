@@ -92,7 +92,8 @@ test('a participant walks the join steps with Previous and Next, then sends', as
     await step(5);
     await form.getByLabel('Name', { exact: true }).fill('Siti Aminah');
     await form.getByLabel('Mobile number').fill('012-345 6789');
-    await next.click();
+    // Enter means Next, not Save draft.
+    await form.getByLabel('Mobile number').press('Enter');
 
     // Four photos are not a set; five go on.
     await step(6);
@@ -125,9 +126,23 @@ test('a participant walks the join steps with Previous and Next, then sends', as
 
     await form.getByLabel('Online transfer').check();
     await form.locator('#receipt').setInputFiles({ name: 'slip.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 slip') });
-    await Promise.all([page.waitForNavigation(), join.click()]);
+    // A second press while the first is on its way sends nothing: the first is
+    // held back here so there is a moment to press again, as on a slow line.
+    let posts = 0;
+    await page.route(`**/events/${eventId}/join`, async route => {
+        posts++;
+        await new Promise(r => setTimeout(r, 500));
+        await route.continue().catch(() => {});
+    });
+    await page.evaluate(() => {
+        const button = document.querySelector('[data-join-submit]');
+        button.click();
+        setTimeout(() => button.click(), 100);
+    });
 
     await expect(page.getByText('The office is reviewing your documents')).toBeVisible();
+    await expect(page.getByText('already with the office')).toHaveCount(0);
+    expect(posts).toBe(1);
     expect(errors).toEqual([]);
 });
 

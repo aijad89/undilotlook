@@ -81,16 +81,16 @@ class HomeController extends Controller
         // Requests not yet in a draw: what was sent, and where it stands. An
         // event the company is already in (approved, or added by the office) is
         // a draw entry above, and is not repeated; an approved request left over
-        // means the office took the company off the list since. A cancelled event drops out
-        // while its registration is still running; after it closed, the request
-        // stays to say the event was cancelled.
+        // means the office took the company off the list since. A cancelled or
+        // unpublished event drops out while its registration is still running;
+        // after it closed, the request stays to say the event was called off.
         $requests = \App\Models\EventJoinRequest::with('event')
             ->where('company_id', $user->company?->id)
             ->whereIn('status', ['draft', 'pending', 'rejected', 'approved'])
             ->whereNotIn('event_id', $user->registrations()->pluck('event_registrations.event_id'))
             ->latest('updated_at')
             ->get()
-            ->reject(fn ($jr) => $jr->event->polling_status === 'cancelled' && ! $jr->event->registration_close_at?->isPast())
+            ->reject(fn ($jr) => $jr->event->isCalledOff() && ! $jr->event->registration_close_at?->isPast())
             ->values();
 
         return view('dashboard', [

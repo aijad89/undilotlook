@@ -53,6 +53,20 @@ class Company extends Model
     private const QUALITY_CRAFTS = ['BATIK' => 'batik', 'SONGKET' => 'songket_tenun', 'TENUN' => 'songket_tenun'];
 
     /**
+     * The answers to fill the join form with: what the company last sent, with
+     * this event's own draft over it where there is one. A draft stays inside
+     * its event; only a sent request becomes the company's answers.
+     */
+    public function answersFor(?EventJoinRequest $joinRequest): array
+    {
+        $draft = $joinRequest?->status === 'draft'
+            ? array_filter($joinRequest->answers ?? [], fn ($answer) => $answer !== null && $answer !== [])
+            : [];
+
+        return array_merge($this->credentials ?? [], $draft);
+    }
+
+    /**
      * The quality standard this company's craft is held to, or null when it has
      * none (Tekatan and every non-textile craft). Read from the craft code the
      * office set, through the coding sheet's own pecahan_bidang — the participant

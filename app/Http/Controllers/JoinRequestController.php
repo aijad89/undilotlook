@@ -63,9 +63,12 @@ class JoinRequestController extends Controller
         $waiver = $request->input('payment_method') === 'waiver';
 
         // Recognition and certificates: what the company said last time is
-        // already filled in. The quality question is asked only of a craft that
-        // has a standard (Batik, Songket, Tenun).
-        $held = $company->credentials ?? [];
+        // already filled in, under this event's own draft. The quality question
+        // is asked only of a craft that has a standard (Batik, Songket, Tenun).
+        $held = $company->answersFor($existing);
+        // The certificate and photo files on record before this save, so the
+        // ones it replaces can go once nothing points at them.
+        $before = [...self::filePaths($company->credentials ?? []), ...self::filePaths($existing?->answers ?? [])];
         $standard = $company->qualityStandard();
         $credentialRules = [
             'recognition' => ['required', Rule::in(array_keys(Company::RECOGNITIONS))],
@@ -139,16 +142,15 @@ class JoinRequestController extends Controller
         // A certificate keeps the file on record unless a new one was sent, and
         // only while it is the same certificate (same number, same end date): a
         // renewal saved in a draft must not carry the old file to Join.
-        // ponytail: a replaced file is not deleted; an older request may still
-        // link to it.
-        // (A draft may leave any of these empty.)
+        // A draft may leave a field empty; an empty one keeps what is on record,
+        // so clearing the number does not cost the file.
         $certificate = function ($field) use ($data, $request, $held, $company) {
-            $cert = [
-                'number' => $data["{$field}_number"] ?? null,
-                'start' => $data["{$field}_start"] ?? null,
-                'end' => $data["{$field}_end"] ?? null,
-            ];
             $onFile = $held["{$field}_cert"] ?? [];
+            $cert = [
+                'number' => $data["{$field}_number"] ?? $onFile['number'] ?? null,
+                'start' => $data["{$field}_start"] ?? $onFile['start'] ?? null,
+                'end' => $data["{$field}_end"] ?? $onFile['end'] ?? null,
+            ];
 
             return $cert + match (true) {
                 $request->hasFile("{$field}_file") => ['path' => $request->file("{$field}_file")->store("certificates/{$company->id}", 'local'), 'original' => $request->file("{$field}_file")->getClientOriginalName()],
@@ -172,7 +174,11 @@ class JoinRequestController extends Controller
                 ])->values()->all()
                 : ($held['product_images'] ?? []),
         ];
-        $company->update(['credentials' => $credentials]);
+        // Only a sent request becomes the company's answers for every event; a
+        // draft's stay with the draft.
+        if (! $isDraft) {
+            $company->update(['credentials' => $credentials]);
+        }
 
         $keep = fn ($file, $name) => [
             'name' => $name,
@@ -226,9 +232,27 @@ class JoinRequestController extends Controller
             ])
         );
 
+        // Replaced certificates and photos: gone once neither the company nor any
+        // of its requests, on any event, still points at them.
+        $inUse = self::filePaths($company->credentials ?? []);
+        foreach (EventJoinRequest::where('company_id', $company->id)->get(['answers', 'documents']) as $jr) {
+            array_push($inUse, ...self::filePaths($jr->answers ?? []), ...array_column($jr->documents ?? [], 'path'));
+        }
+        Storage::disk('local')->delete(array_values(array_diff(array_unique($before), $inUse)));
+
         return $isDraft
             ? back()->with('success', 'Draft saved. Come back to finish it any time before registration closes.')->with('step', $request->input('at'))
             : back()->with('success', 'Sent. The office will review your documents.');
+    }
+
+    /** The certificate and product photo files a set of answers points at. */
+    private static function filePaths(array $answers): array
+    {
+        return array_values(array_filter([
+            $answers['classification_cert']['path'] ?? null,
+            $answers['quality_cert']['path'] ?? null,
+            ...array_column($answers['product_images'] ?? [], 'path'),
+        ]));
     }
 
     /** A rule with `required` made `nullable`. */

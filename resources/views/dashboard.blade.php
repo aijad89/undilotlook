@@ -87,7 +87,7 @@
         <div class="ap-draw-grid">
         @foreach($requests as $jr)
             @php
-                $cancelled = $jr->event->polling_status === 'cancelled';
+                $cancelled = $jr->event->isCalledOff();
                 [$badge, $label] = $cancelled ? ['ap-badge-red', 'Event cancelled'] : match ($jr->status) {
                     'draft' => ['ap-badge-gray', 'Draft, not sent'],
                     'pending' => ['ap-badge-orange', 'With the office'],

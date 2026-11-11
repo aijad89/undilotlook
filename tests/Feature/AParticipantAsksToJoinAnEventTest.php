@@ -450,7 +450,9 @@ it('saves a draft with whatever is filled in, which the office does not see', fu
         ->assertSessionHas('step', 'classification');
 
     expect(EventJoinRequest::sole()->status)->toBe('draft')
-        ->and($company->fresh()->credentials['recognition'])->toBe('tokoh');
+        ->and(EventJoinRequest::sole()->answers['recognition'])->toBe('tokoh')
+        // The draft's answers stay with it; the company's are untouched until Join.
+        ->and($company->fresh()->credentials)->toBeNull();
 
     // Right after: back on the step it was saved from, saying so once.
     $this->get(route('events.show', $event))
@@ -526,7 +528,7 @@ it('does not let a draft carry an old certificate file onto a renewed one', func
     // Renewed in a draft, no new file: the old file is not kept with it.
     $renewed = ['classification' => 'yes'] + certificate('classification', 'PKT-002', now()->addYears(2)->toDateString(), file: false);
     $this->post(route('events.join', $event), ['draft' => 1] + $renewed)->assertSessionHas('success');
-    expect($company->fresh()->credentials['classification_cert'])->not->toHaveKey('path');
+    expect($event->joinRequests()->sole()->answers['classification_cert'])->not->toHaveKey('path');
 
     $this->post(route('events.join', $event), ['recognition' => 'none'] + $renewed + payment())
         ->assertSessionHasErrors('classification_file');
@@ -534,7 +536,7 @@ it('does not let a draft carry an old certificate file onto a renewed one', func
     // Same certificate in a draft: the file stays.
     $this->post(route('events.join', $event), ['draft' => 1] + $renewed + ['classification_file' => UploadedFile::fake()->create('new.pdf', 10, 'application/pdf')]);
     $this->post(route('events.join', $event), ['draft' => 1] + $renewed);
-    expect($company->fresh()->credentials['classification_cert']['original'])->toBe('new.pdf');
+    expect($event->joinRequests()->sole()->answers['classification_cert']['original'])->toBe('new.pdf');
 });
 
 it('keeps the rejection reason in view on a draft until it is sent again', function () {
@@ -681,11 +683,11 @@ it('tells the participant the office answer, by bell and mail, whichever way the
 
     auth()->forgetGuards();
     $this->actingAs($b->user, 'web')->get(route('notifications.index'))
-        ->assertSee('Request approved')
+        ->assertSee('You are in the draw')
         ->assertSee('Open dashboard')
         ->assertDontSee('Confirm Lot');
 
-    $mail = (new JoinRequestAnswered($ra->fresh()))->toMail($a->user);
+    $mail = (new JoinRequestAnswered($event, 'Blurry receipt'))->toMail($a->user);
     expect($mail->subject)->toBe('Request not approved: Pesta Kraf Utara')
         ->and($mail->introLines)->toContain('Reason: Blurry receipt');
 });
@@ -739,4 +741,103 @@ it('lets a company the office took off the draw list ask again, and puts it back
 
     expect($request->fresh()->status)->toBe('pending')
         ->and($request->fresh()->reviewed_at)->toBeNull();
+});
+
+it('tells a company the office adds directly that it is in the draw, once', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+
+    $office = $this->actingAs(stateAdmin('Johor'), 'admin');
+    $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+    // Added again: already on the list, nothing new to say.
+    $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+
+    $note = $company->user->notifications()->sole();
+    expect($note->type)->toBe(JoinRequestAnswered::class)
+        ->and($note->data['approved'])->toBeTrue()
+        ->and($note->data['message'])->toBe('Your company is in the lot draw for Pesta Kraf Utara.');
+});
+
+it('treats an unpublished event as called off: not answered, and on the dashboard as cancelled', function () {
+    $event = joinable(['status' => 'closed']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])
+        ->assertSessionHas('error');
+    expect($request->fresh()->status)->toBe('pending');
+
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertDontSee('Requests to join');
+
+    $event->update(['registration_close_at' => now()->subDay()]);
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Event cancelled')
+        ->assertDontSee('With the office');
+});
+
+it('keeps a draft inside its own event: other events still fill in what was last sent', function () {
+    $company = Company::factory()->create();
+    $this->actingAs($company->user, 'web');
+    $this->post(route('events.join', joinable()), ['recognition' => 'tokoh'] + payment())->assertSessionHas('success');
+
+    $drafted = joinable();
+    $this->post(route('events.join', $drafted), ['draft' => 1, 'recognition' => 'adiguru', 'contact_name' => 'Ahmad Draf']);
+
+    expect($company->fresh()->credentials['recognition'])->toBe('tokoh');
+    $this->get(route('events.show', joinable()))
+        ->assertSee('value="Siti Aminah"', false)
+        ->assertDontSee('Ahmad Draf');
+    $this->get(route('events.show', $drafted))
+        ->assertSee('value="Ahmad Draf"', false);
+});
+
+it('keeps the certificate file when a draft leaves its number empty', function () {
+    $event = joinable();
+    $company = Company::factory()->create();
+    $this->actingAs($company->user, 'web');
+    $this->post(route('events.join', joinable()), ['classification' => 'yes'] + certificate('classification') + payment());
+    $path = $company->fresh()->credentials['classification_cert']['path'];
+
+    $this->post(route('events.join', $event), ['draft' => 1, 'classification' => 'yes', 'classification_number' => '']);
+
+    expect($event->joinRequests()->sole()->answers['classification_cert'])
+        ->toMatchArray(['number' => 'PKT-001', 'path' => $path]);
+    $this->post(route('events.join', $event), ['recognition' => 'none', 'classification' => 'yes'] + certificate('classification', file: false) + payment())
+        ->assertSessionHas('success');
+});
+
+it('deletes a replaced certificate or photo once nothing points at it, and not before', function () {
+    $company = Company::factory()->create();
+    $this->actingAs($company->user, 'web');
+    $first = joinable();
+    $this->post(route('events.join', $first), ['classification' => 'yes'] + certificate('classification') + payment());
+    $old = $company->fresh()->credentials;
+
+    // Renewed on another event: the first request still shows the old file.
+    $second = joinable();
+    $this->post(route('events.join', $second), ['classification' => 'yes'] + certificate('classification', 'PKT-002') + payment());
+    Storage::disk('local')->assertExists($old['classification_cert']['path']);
+
+    // Photos picked again on every Save draft: the draft's earlier set goes.
+    $third = joinable();
+    $this->post(route('events.join', $third), ['draft' => 1, 'product_images' => photos()]);
+    $draftPhotos = array_column($third->joinRequests()->sole()->answers['product_images'], 'path');
+    $this->post(route('events.join', $third), ['draft' => 1, 'product_images' => photos()]);
+    foreach ($draftPhotos as $path) {
+        Storage::disk('local')->assertMissing($path);
+    }
+
+    // The first request, not approved and sent again with another renewal and
+    // new photos: now nothing points at its old file or photos, and they go.
+    $secondCert = $company->fresh()->credentials['classification_cert']['path'];
+    $first->joinRequests()->sole()->update(['status' => 'rejected']);
+    $this->post(route('events.join', $first), ['classification' => 'yes'] + certificate('classification', 'PKT-003') + payment())
+        ->assertSessionHas('success');
+    Storage::disk('local')->assertMissing($old['classification_cert']['path']);
+    foreach (array_column($old['product_images'], 'path') as $path) {
+        Storage::disk('local')->assertMissing($path);
+    }
+    Storage::disk('local')->assertExists($secondCert); // the second request's
 });

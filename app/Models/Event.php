@@ -176,6 +176,16 @@ class Event extends Model
     }
 
     /**
+     * Called off, as a participant sees it: the draw cancelled, or the event
+     * taken off the public site (unpublished, or back to draft). Its requests
+     * to join are no longer answered.
+     */
+    public function isCalledOff(): bool
+    {
+        return $this->polling_status === 'cancelled' || in_array($this->status, ['draft', 'closed'], true);
+    }
+
+    /**
      * Whether a participant may ask to join now: published, inside the
      * registration window, and the draw not started.
      */

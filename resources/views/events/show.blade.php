@@ -144,7 +144,7 @@
                     {{-- What the company said last time is filled in; a returning
                          participant only confirms it. --}}
                     @php
-                        $held = $company->credentials ?? [];
+                        $held = $company->answersFor($joinRequest);
                         $standard = $company->qualityStandard();
                     @endphp
                     <fieldset class="evd-join evd-step" data-step="recognition">
@@ -327,6 +327,24 @@
                         form.scrollIntoView({ block: 'start', behavior: 'smooth' });
                     });
                     prev.addEventListener('click', function () { show(current - 1); });
+
+                    // Enter in a field means Next, as on any step-by-step form. Left
+                    // alone it would press the form's only submit button, Save draft.
+                    form.addEventListener('keydown', function (e) {
+                        if (e.key !== 'Enter' || e.target.tagName !== 'INPUT') return;
+                        e.preventDefault();
+                        if (!next.hidden && !next.disabled) next.click();
+                    });
+
+                    // Sent once: a second press while the first is on its way would
+                    // arrive after it and be told the request is already in.
+                    var sending = false;
+                    form.addEventListener('submit', function (e) {
+                        if (sending) e.preventDefault();
+                        sending = true;
+                    });
+                    // Back to this page from the browser's history: free to send again.
+                    window.addEventListener('pageshow', function () { sending = false; });
 
                     // A block marked data-if="field:a b" shows only while that radio
                     // is on a or b. A hidden block is switched off, so it is neither

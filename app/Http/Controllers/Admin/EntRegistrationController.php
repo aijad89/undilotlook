@@ -160,11 +160,15 @@ class EntRegistrationController extends Controller
             $company->syncBoothSize($size);
         }
 
-        $event->joinRequests()->where('company_id', $company->id)->where('status', 'pending')->get()
-            ->each(function ($joinRequest) use ($company) {
-                $joinRequest->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
-                $company->user?->notify(new JoinRequestAnswered($joinRequest));
-            });
+        // One at a time, not a mass update, so each is audited.
+        $settled = $event->joinRequests()->where('company_id', $company->id)->where('status', 'pending')->get();
+        $settled->each->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
+
+        // Told it is in, whether it asked or the office added it. Once: a
+        // company already on the list hears nothing new.
+        if ($registration->wasRecentlyCreated || $settled->isNotEmpty()) {
+            $company->user?->notify(new JoinRequestAnswered($event));
+        }
 
         return $registration->wasRecentlyCreated;
     }
@@ -175,8 +179,8 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
-        if ($event->polling_status === 'cancelled') {
-            return back()->with('error', 'This event was cancelled. Its requests cannot be answered.');
+        if ($event->isCalledOff()) {
+            return back()->with('error', 'This event was cancelled or unpublished. Its requests cannot be answered.');
         }
 
         $data = $request->validate([
@@ -195,8 +199,8 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
-        if ($event->polling_status === 'cancelled') {
-            return back()->with('error', 'This event was cancelled. Its requests cannot be answered.');
+        if ($event->isCalledOff()) {
+            return back()->with('error', 'This event was cancelled or unpublished. Its requests cannot be answered.');
         }
 
         $data = $request->validate(['reject_reason' => ['required', 'string', 'max:1000']]);
@@ -206,7 +210,7 @@ class EntRegistrationController extends Controller
             'reviewed_by' => $request->user('admin')->id,
             'reviewed_at' => now(),
         ]);
-        $joinRequest->company->user?->notify(new JoinRequestAnswered($joinRequest));
+        $joinRequest->company->user?->notify(new JoinRequestAnswered($event, $data['reject_reason']));
 
         return back()->with('success', "Request from {$joinRequest->company->name} rejected.");
     }
