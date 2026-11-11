@@ -18,10 +18,22 @@ function joinable(array $attributes = []): Event
     return Event::factory()->create($attributes);
 }
 
-/** Recognition and certificates, at their plainest: none of either. */
+/** Steps 2 and 3 at their plainest: no recognition or certificate, a contact, five photos. */
 function credentials(): array
 {
-    return ['recognition' => 'none', 'classification' => 'no'];
+    return ['recognition' => 'none', 'classification' => 'no', 'contact_name' => 'Siti Aminah', 'contact_phone' => '012-345 6789', 'product_images' => photos()];
+}
+
+/** A set of product photos. */
+function photos(int $count = 5): array
+{
+    return array_map(fn ($i) => UploadedFile::fake()->image("product{$i}.jpg"), range(1, $count));
+}
+
+/** The names of a request's files, the product photos left out. */
+function fileNames(array $documents): array
+{
+    return array_values(array_filter(array_column($documents, 'name'), fn ($name) => ! str_starts_with($name, 'Product photo')));
 }
 
 /** A valid join: declared, credentials, how they paid, and the receipt. */
@@ -60,7 +72,7 @@ it('needs how they paid and a receipt, and keeps nothing else from a paid reques
     expect($request->status)->toBe('pending')
         ->and($request->payment_method)->toBe('cheque')
         // Paid: the receipt only; a supporting document sent anyway is not kept.
-        ->and(array_column($request->documents, 'name'))->toBe(['Payment receipt']);
+        ->and(fileNames($request->documents))->toBe(['Payment receipt']);
     Storage::disk('local')->assertExists($request->documents[0]['path']);
 
     auth()->forgetGuards();
@@ -181,29 +193,34 @@ it('says Register now on the home page only while registration is open', functio
         ->and(App\Models\Event::firstWhere('title', 'Later Fair')->publicStage())->toBe('soon');
 });
 
-it('puts the steps in one form, declaration first, and opens on the step that failed', function () {
+it('asks one question per step, in order, and opens on the first step that failed', function () {
     $event = joinable();
     $company = Company::factory()->create(['state' => 'Johor']);
     $this->actingAs($company->user, 'web');
 
     $this->get(route('events.show', $event))
-        ->assertSeeInOrder(['data-step="1"', 'I want to join this event, and I declare', 'data-step="2"', 'How did you pay?'], false)
-        ->assertSee('data-start="1"', false);
+        ->assertSeeInOrder([
+            'data-step="declaration"', 'I want to join this event, and I declare',
+            'data-step="recognition"', 'Recognition received',
+            'data-step="classification"', 'Classification Certificate?',
+            'data-step="contact"', 'Contact person',
+            'data-step="photos"', 'Product photos',
+            'data-step="payment"', 'How did you pay?',
+        ], false)
+        ->assertSee('data-start="declaration"', false);
 
-    // Declared, nothing else: back on the credentials step.
-    $this->from(route('events.show', $event))->followingRedirects()
-        ->post(route('events.join', $event), ['declaration' => 1])
-        ->assertSee('data-start="2"', false);
+    $failsOn = fn (array $sent) => $this->from(route('events.show', $event))->followingRedirects()
+        ->post(route('events.join', $event), $sent);
 
-    // Declared and credentials given, no payment: back on the payment step.
-    $this->from(route('events.show', $event))->followingRedirects()
-        ->post(route('events.join', $event), ['declaration' => 1] + credentials())
-        ->assertSee('data-start="3"', false);
+    $failsOn(['declaration' => 1])->assertSee('data-start="recognition"', false);
+    $failsOn(['declaration' => 1, 'recognition' => 'none'])->assertSee('data-start="classification"', false);
+    $failsOn(['declaration' => 1, 'recognition' => 'none', 'classification' => 'no'])->assertSee('data-start="contact"', false);
+    $failsOn(['product_images' => photos(4), 'declaration' => 1] + credentials())->assertSee('data-start="photos"', false);
+    $failsOn(['declaration' => 1] + credentials())->assertSee('data-start="payment"', false);
 
     // Not declared: back on the declaration, whatever else is wrong.
-    $this->from(route('events.show', $event))->followingRedirects()
-        ->post(route('events.join', $event))
-        ->assertSee('data-start="1"', false)
+    $failsOn([])
+        ->assertSee('data-start="declaration"', false)
         ->assertSee('Tick the declaration to join.');
 });
 
@@ -242,7 +259,7 @@ it('takes a fee waiver instead of a receipt, with a certificate where the catego
     $request = EventJoinRequest::sole();
     expect($request->payment_method)->toBe('waiver')
         ->and($request->waiver_category)->toBe('first_time')
-        ->and(array_column($request->documents, 'name'))->toBe(['letter.pdf']);
+        ->and(fileNames($request->documents))->toBe(['letter.pdf']);
 
     auth()->forgetGuards();
     $this->actingAs(stateAdmin('Johor'), 'admin')
@@ -261,7 +278,7 @@ it('takes the OKU certificate from Supporting documents, and drops a category se
         'documents' => [UploadedFile::fake()->create('oku.pdf', 100, 'application/pdf')],
     ] + credentials())->assertSessionHas('success');
 
-    expect(array_column(EventJoinRequest::sole()->documents, 'name'))->toBe(['oku.pdf']);
+    expect(fileNames(EventJoinRequest::sole()->documents))->toBe(['oku.pdf']);
 
     $other = joinable();
     $this->post(route('events.join', $other), payment('cash') + ['waiver_category' => 'award'])->assertSessionHas('success');
@@ -303,7 +320,7 @@ it('asks for recognition and the classification certificate, and refuses an expi
     $request = EventJoinRequest::sole();
     expect($request->answers['recognition'])->toBe('adiguru')
         ->and($request->answers['classification_cert']['number'])->toBe('PKT-001')
-        ->and(array_column($request->documents, 'name'))->toBe(['Payment receipt', 'Classification certificate'])
+        ->and(fileNames($request->documents))->toBe(['Payment receipt', 'Classification certificate'])
         ->and($company->fresh()->credentials)->toBe($request->answers);
 
     auth()->forgetGuards();
@@ -358,7 +375,7 @@ it('asks the quality question of Batik, Songket and Tenun only, offering their o
     $this->post(route('events.join', $event), ['quality' => 'songket_tenun'] + payment())->assertSessionHasErrors('quality_number');
     $this->post(route('events.join', $event), ['quality' => 'songket_tenun'] + certificate('quality', 'SPK-9') + payment())
         ->assertSessionHas('success');
-    expect(array_column(EventJoinRequest::sole()->documents, 'name'))->toBe(['Payment receipt', 'Quality compliance certificate']);
+    expect(fileNames(EventJoinRequest::sole()->documents))->toBe(['Payment receipt', 'Quality compliance certificate']);
 
     // Tekatan has no standard: not asked.
     auth()->forgetGuards();
@@ -380,4 +397,36 @@ it('keeps the company certificate when a rejected request is sent again', functi
         ->assertSessionHas('success');
 
     Storage::disk('local')->assertExists($path);
+});
+
+it('asks for a contact person, a mobile number and exactly five product photos, kept for next time', function () {
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $this->actingAs($company->user, 'web');
+    $event = joinable();
+
+    $this->post(route('events.join', $event), ['contact_name' => '', 'contact_phone' => '03-1234 5678', 'product_images' => null] + payment())
+        ->assertSessionHasErrors(['contact_name', 'contact_phone', 'product_images']);
+    $this->post(route('events.join', $event), ['product_images' => photos(4)] + payment())
+        ->assertSessionHasErrors(['product_images' => 'Upload exactly 5 photos of your products.']);
+    $this->post(route('events.join', $event), ['product_images' => [...photos(4), UploadedFile::fake()->create('a.pdf', 10, 'application/pdf')]] + payment())
+        ->assertSessionHasErrors('product_images.4');
+
+    $this->post(route('events.join', $event), payment())->assertSessionHas('success');
+    $request = EventJoinRequest::sole();
+    expect(array_slice(array_column($request->documents, 'name'), -5))->toBe(['Product photo 1', 'Product photo 2', 'Product photo 3', 'Product photo 4', 'Product photo 5'])
+        ->and($request->answers['contact_phone'])->toBe('012-345 6789');
+
+    // Next time: filled in, and the photos on file stand without a new set.
+    $second = joinable();
+    $this->get(route('events.show', $second))
+        ->assertSee('value="Siti Aminah"', false)
+        ->assertSee('5 photos on file');
+    $this->post(route('events.join', $second), ['product_images' => null] + payment())->assertSessionHas('success');
+    expect(EventJoinRequest::where('event_id', $second->id)->sole()->documents[1]['path'])->toBe($request->documents[1]['path']);
+
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->get(route('admin.events.registrations.index', $event))
+        ->assertSee('Contact: Siti Aminah, 012-345 6789')
+        ->assertSee('Product photo 5');
 });

@@ -6,15 +6,31 @@ const { seed } = require('./fixtures/seed');
 /**
  * Joining is one form shown a question at a time. The steps are switched in
  * the browser, so only a browser can check them: Next waits for the declaration,
- * then the certificates, then payment; Previous goes back, and Join appears on
+ * then the certificates, then contact and photos, then payment; Previous goes back, and Join appears on
  * the last step only.
  */
 
-/** Step 2 at its plainest: no recognition, no classification certificate. */
-async function noCredentials(form) {
+/** A real 1x1 PNG: the server reads what a file is, not its name. */
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+const photos = n => Array.from({ length: n }, (_, i) => ({ name: `product${i + 1}.png`, mimeType: 'image/png', buffer: PNG }));
+
+/**
+ * Every step after the declaration at its plainest, one question each: no
+ * recognition, no classification certificate, a contact, five photos.
+ */
+async function plainAnswers(form) {
+    const next = form.getByRole('button', { name: 'Next' });
     await form.getByLabel('Not applicable').first().check();
+    await next.click();
     await form.locator('input[name=classification][value=no]').check();
+    await next.click();
+    await form.getByLabel('Name', { exact: true }).fill('Siti Aminah');
+    await form.getByLabel('Mobile number').fill('012-345 6789');
+    await next.click();
+    await form.locator('#product_images').setInputFiles(photos(5));
+    await next.click();
 }
+
 test('a participant walks the join steps with Previous and Next, then sends', async ({ page }) => {
     const eventId = seed('join-setup.php').trim().split('\n').pop();
     const errors = watchErrors(page);
@@ -26,8 +42,11 @@ test('a participant walks the join steps with Previous and Next, then sends', as
     const next = form.getByRole('button', { name: 'Next' });
     const prev = form.getByRole('button', { name: 'Previous' });
     const join = page.getByRole('button', { name: 'Join this event' });
+    const step = n => expect(form.getByText(`Step ${n} of 7`)).toBeVisible();
 
-    await expect(form.getByText('Step 1 of 3')).toBeVisible();
+    // A tenun maker: declaration, recognition, classification, quality,
+    // contact, photos, payment.
+    await step(1);
     await expect(prev).toBeDisabled();
     await expect(next).toBeDisabled();
     await expect(join).toBeHidden();
@@ -38,50 +57,66 @@ test('a participant walks the join steps with Previous and Next, then sends', as
     await expect(next).toBeEnabled();
     await declare.uncheck();
     await expect(next).toBeDisabled();
-
     await declare.check();
     await next.click();
-    await expect(form.getByText('Step 2 of 3')).toBeVisible();
+
+    // One question at a time: unanswered holds Next.
+    await step(2);
     await expect(declare).toBeHidden();
-    await expect(join).toBeHidden();
-
-    // Step 2: nothing answered holds Next.
+    await expect(form.getByText('Do you hold a Malaysian Handicraft')).toBeHidden();
     await next.click();
-    await expect(form.getByText('Step 2 of 3')).toBeVisible();
-
-    // A tenun maker is asked the quality question, with its own standard only.
-    await expect(form.getByText('Songket / Tenunan Standard entrepreneur')).toBeVisible();
-    await expect(form.getByText('Batik Standard entrepreneur')).toHaveCount(0);
+    await step(2);
+    await form.getByLabel('Adiguru Kraf').check();
+    await next.click();
 
     // Yes to the classification certificate: its number, dates and file are needed.
-    await form.getByLabel('Adiguru Kraf').check();
+    await step(3);
     await form.locator('input[name=classification][value=yes]').check();
     await expect(form.locator('#classification_number')).toBeVisible();
     await expect(form.locator('#classification_file')).toHaveJSProperty('required', true);
-    await form.locator('input[name=quality][value=none]').check();
     await next.click();
-    await expect(form.getByText('Step 2 of 3')).toBeVisible();
-
+    await step(3);
     // No: the certificate fields go, and Next goes on.
     await form.locator('input[name=classification][value=no]').check();
     await expect(form.locator('#classification_number')).toBeHidden();
+    await next.click();
+
+    // The quality question, with its own standard only.
+    await step(4);
+    await expect(form.getByText('Songket / Tenunan Standard entrepreneur')).toBeVisible();
+    await expect(form.getByText('Batik Standard entrepreneur')).toHaveCount(0);
+    await form.locator('input[name=quality][value=none]').check();
     await expect(form.locator('#quality_number')).toBeHidden();
     await next.click();
 
-    await expect(form.getByText('Step 3 of 3')).toBeVisible();
+    await step(5);
+    await form.getByLabel('Name', { exact: true }).fill('Siti Aminah');
+    await form.getByLabel('Mobile number').fill('012-345 6789');
+    await next.click();
+
+    // Four photos are not a set; five go on.
+    await step(6);
+    await form.locator('#product_images').setInputFiles(photos(4));
+    await next.click();
+    await step(6);
+    await expect(form.locator('#product_images')).toHaveJSProperty('validity.customError', true);
+    await form.locator('#product_images').setInputFiles(photos(5));
+    await next.click();
+
+    await step(7);
     await expect(form.getByText('How did you pay?')).toBeVisible();
     await expect(next).toBeHidden();
     await expect(join).toBeVisible();
 
     await prev.click();
-    await expect(form.getByText('Step 2 of 3')).toBeVisible();
+    await step(6);
     await expect(join).toBeHidden();
     await next.click();
 
     // "How did you pay?" is required, waiver included: Join with nothing picked
     // sends nothing, and a waiver with no category is held too.
     await join.click();
-    await expect(form.getByText('Step 3 of 3')).toBeVisible();
+    await step(7);
     await expect(form.locator('input[name=payment_method]').first()).toHaveJSProperty('validity.valueMissing', true);
     await form.getByLabel('Fee waiver').check();
     await join.click();
@@ -107,10 +142,11 @@ test('paying asks for the receipt only; a fee waiver asks for a category and doc
     await form.getByLabel(/I want to join this event, and I declare/).check();
     await form.getByRole('button', { name: 'Next' }).click();
 
-    // Not a textile craft: no quality question.
+    // Not a textile craft: no quality question, so six steps.
+    await expect(form.getByText('Step 2 of 6')).toBeVisible();
     await expect(form.getByText('Quality compliance certificate')).toHaveCount(0);
-    await noCredentials(form);
-    await form.getByRole('button', { name: 'Next' }).click();
+    await plainAnswers(form);
+    await expect(form.getByText('Step 6 of 6')).toBeVisible();
 
     // Paying: the receipt, and no supporting documents.
     await form.getByLabel('Cheque').check();

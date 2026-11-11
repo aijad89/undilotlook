@@ -58,6 +58,9 @@
                                     {{-- As the company declared it with this request. --}}
                                     @if($a = $jr->answers)
                                         <div class="mac-text-sm mt-1">
+                                            @isset($a['contact_name'])
+                                                <div>Contact: {{ $a['contact_name'] }}, {{ $a['contact_phone'] }}</div>
+                                            @endisset
                                             <div>Recognition: {{ \App\Models\Company::RECOGNITIONS[$a['recognition']] ?? '—' }}</div>
                                             <div>Classification certificate:
                                                 @if($c = $a['classification_cert'])

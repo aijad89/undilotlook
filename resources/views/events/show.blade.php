@@ -70,13 +70,16 @@
 @php
     // Whether this participant may still ask to join; the steps are in the form.
     $canJoin = $company && ! $onList && $joinRequest?->status !== 'pending' && $event->acceptsJoinRequests();
-    // Back after an error: open on the first step that has one.
-    $stepOf = fn ($key) => match (true) {
-        $key === 'declaration' => 1,
-        (bool) preg_match('/^(recognition|classification|quality)/', $key) => 2,
-        default => 3,
-    };
-    $startStep = $errors->any() ? min(array_map($stepOf, $errors->keys())) : 1;
+    // Back after an error: open on the first step that has one. Each step is
+    // found by the start of its fields' names; anything else is payment.
+    $stepPrefixes = ['declaration' => 'declaration', 'recognition' => 'recognition', 'classification' => 'classification',
+        'quality' => 'quality', 'contact' => 'contact', 'product' => 'photos'];
+    $stepOrder = [...array_values($stepPrefixes), 'payment'];
+    $stepOf = fn ($key) => array_search(
+        collect($stepPrefixes)->first(fn ($step, $prefix) => str_starts_with($key, $prefix)) ?? 'payment',
+        $stepOrder
+    );
+    $startStep = $errors->any() ? $stepOrder[min(array_map($stepOf, $errors->keys()))] : 'declaration';
     $drawOpen =$event->polling_status === 'polling' && $event->polling_deadline && ! $event->polling_deadline->isPast();
 @endphp
 
@@ -120,7 +123,7 @@
                     @csrf
                     <p class="evd-step-count" data-step-count hidden></p>
 
-                    <div class="evd-join" data-step="1">
+                    <div class="evd-join" data-step="declaration">
                         <h2 class="evd-join-title" id="join-heading">Declaration</h2>
                         <label class="evd-pay-option evd-declare">
                             <input type="checkbox" name="declaration" value="1" @checked(old('declaration')) required>
@@ -135,60 +138,86 @@
                         $held = $company->credentials ?? [];
                         $standard = $company->qualityStandard();
                     @endphp
-                    <div class="evd-join" data-step="2">
-                        <h2 class="evd-join-title">Recognition and certificates</h2>
+                    <fieldset class="evd-join evd-step" data-step="recognition">
+                        <legend class="evd-join-title">Recognition received</legend>
                         @if($held)
                             <p class="evd-note" style="margin-top:0;">Filled in from your last request. Change anything that is no longer right.</p>
                         @endif
+                        <div class="evd-pay">
+                            @foreach(\App\Models\Company::RECOGNITIONS as $key => $label)
+                                <label class="evd-pay-option">
+                                    <input type="radio" name="recognition" value="{{ $key }}" @checked(old('recognition', $held['recognition'] ?? null) === $key) required>
+                                    {{ $label }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('recognition')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                    </fieldset>
 
-                        <fieldset class="evd-step">
-                            <legend class="evd-question">Recognition received</legend>
-                            <div class="evd-pay">
-                                @foreach(\App\Models\Company::RECOGNITIONS as $key => $label)
-                                    <label class="evd-pay-option">
-                                        <input type="radio" name="recognition" value="{{ $key }}" @checked(old('recognition', $held['recognition'] ?? null) === $key) required>
-                                        {{ $label }}
-                                    </label>
-                                @endforeach
-                            </div>
-                            @error('recognition')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
-                        </fieldset>
-
-                        <fieldset class="evd-step">
-                            <legend class="evd-question">Do you hold a Malaysian Handicraft Industry Classification Certificate?</legend>
-                            <div class="evd-pay">
-                                @foreach(['yes' => 'Yes', 'no' => 'No'] as $key => $label)
-                                    <label class="evd-pay-option">
-                                        <input type="radio" name="classification" value="{{ $key }}" @checked(old('classification', $held['classification'] ?? null) === $key) required>
-                                        {{ $label }}
-                                    </label>
-                                @endforeach
-                            </div>
-                            @error('classification')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
-                        </fieldset>
+                    <fieldset class="evd-join evd-step" data-step="classification">
+                        <legend class="evd-join-title">Do you hold a Malaysian Handicraft Industry Classification Certificate?</legend>
+                        <div class="evd-pay">
+                            @foreach(['yes' => 'Yes', 'no' => 'No'] as $key => $label)
+                                <label class="evd-pay-option">
+                                    <input type="radio" name="classification" value="{{ $key }}" @checked(old('classification', $held['classification'] ?? null) === $key) required>
+                                    {{ $label }}
+                                </label>
+                            @endforeach
+                        </div>
+                        @error('classification')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                         @include('events._certificate', ['field' => 'classification', 'when' => 'classification:yes', 'onFile' => $held['classification_cert'] ?? null])
+                    </fieldset>
 
-                        {{-- Only for a craft with a standard: Batik, Songket, Tenun. --}}
-                        @if($standard)
-                            <fieldset class="evd-step">
-                                <legend class="evd-question">Quality compliance certificate</legend>
-                                <div class="evd-pay">
-                                    @foreach([$standard => \App\Models\Company::QUALITY_STANDARDS[$standard], 'none' => 'Not applicable'] as $key => $label)
-                                        <label class="evd-pay-option">
-                                            <input type="radio" name="quality" value="{{ $key }}" @checked(old('quality', $held['quality'] ?? null) === $key) required>
-                                            {{ $label }}
-                                        </label>
-                                    @endforeach
-                                </div>
-                                @error('quality')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
-                            </fieldset>
+                    {{-- Only for a craft with a standard: Batik, Songket, Tenun. --}}
+                    @if($standard)
+                        <fieldset class="evd-join evd-step" data-step="quality">
+                            <legend class="evd-join-title">Quality compliance certificate</legend>
+                            <div class="evd-pay">
+                                @foreach([$standard => \App\Models\Company::QUALITY_STANDARDS[$standard], 'none' => 'Not applicable'] as $key => $label)
+                                    <label class="evd-pay-option">
+                                        <input type="radio" name="quality" value="{{ $key }}" @checked(old('quality', $held['quality'] ?? null) === $key) required>
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                            @error('quality')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                             @include('events._certificate', ['field' => 'quality', 'when' => 'quality:'.$standard, 'onFile' => $held['quality_cert'] ?? null])
-                        @endif
+                        </fieldset>
+                    @endif
+
+                    <div class="evd-join" data-step="contact">
+                        <h2 class="evd-join-title">Contact person</h2>
+                        <label class="evd-question" for="contact_name">Name</label>
+                        <input type="text" class="evd-input" id="contact_name" name="contact_name" maxlength="100" autocomplete="name"
+                               value="{{ old('contact_name', $held['contact_name'] ?? '') }}" required>
+                        @error('contact_name')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+
+                        <label class="evd-question" for="contact_phone">Mobile number</label>
+                        <input type="tel" class="evd-input" id="contact_phone" name="contact_phone" maxlength="20" autocomplete="tel" placeholder="012-345 6789"
+                               value="{{ old('contact_phone', $held['contact_phone'] ?? '') }}" required>
+                        @error('contact_phone')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
                     </div>
 
-                    <div class="evd-join" data-step="3">
+                    <div class="evd-join" data-step="photos">
+                        <h2 class="evd-join-title"><label for="product_images">Product photos</label></h2>
+                        <input type="file" id="product_images" name="product_images[]" accept=".jpg,.jpeg,.png" multiple
+                               data-count="5" @empty($held['product_images']) required @endempty>
+                        <p class="evd-note" style="margin-top:0;">
+                            @if(! empty($held['product_images']))
+                                5 photos on file. Leave empty to keep them, or pick 5 new ones to replace them.
+                            @else
+                                Pick 5 photos, JPG or PNG, up to 5 MB each; hold Ctrl to pick several.
+                            @endif
+                        </p>
+                        @error('product_images')<p class="evd-msg evd-msg-bad">{{ $message }}</p>@enderror
+                        @foreach($errors->get('product_images.*') as $messages)
+                            <p class="evd-msg evd-msg-bad">{{ $messages[0] }}</p>
+                        @endforeach
+                    </div>
+
+                    <div class="evd-join" data-step="payment">
                         <fieldset class="evd-step">
-                            <legend class="evd-question">How did you pay?</legend>
+                            <legend class="evd-join-title">How did you pay?</legend>
                             <div class="evd-pay">
                                 @foreach(\App\Models\EventJoinRequest::PAYMENT_METHODS as $key => $label)
                                     <label class="evd-pay-option">
@@ -243,13 +272,14 @@
                 // After the page has loaded: the Join button is in the side card, further down.
                 document.addEventListener('DOMContentLoaded', function () {
                     var form = document.getElementById('join-form');
-                    var steps = form.querySelectorAll('[data-step]');
+                    // One question per step, in page order; current is a position (1…).
+                    var steps = Array.prototype.slice.call(form.querySelectorAll('[data-step]'));
                     var count = form.querySelector('[data-step-count]');
                     var prev = form.querySelector('[data-prev]');
                     var next = form.querySelector('[data-next]');
                     var submit = document.querySelector('[data-join-submit]');
                     var declaration = form.querySelector('input[name=declaration]');
-                    var current = Number(form.dataset.start) || 1;
+                    var current = 1 + Math.max(0, steps.findIndex(function (s) { return s.dataset.step === form.dataset.start; }));
 
                     // Step 1 not declared: nowhere to go next.
                     function blocked() {
@@ -258,7 +288,7 @@
 
                     function show(n) {
                         current = n;
-                        steps.forEach(function (s) { s.hidden = Number(s.dataset.step) !== n; });
+                        steps.forEach(function (s, i) { s.hidden = i + 1 !== n; });
                         count.textContent = 'Step ' + n + ' of ' + steps.length;
                         prev.disabled = n === 1;
                         next.hidden = n === steps.length;
@@ -268,7 +298,7 @@
 
                     // Next only past a step whose own fields are filled in.
                     next.addEventListener('click', function () {
-                        var fields = form.querySelectorAll('[data-step="' + current + '"] input');
+                        var fields = steps[current - 1].querySelectorAll('input');
                         for (var i = 0; i < fields.length; i++) {
                             if (!fields[i].reportValidity()) return;
                         }
@@ -297,6 +327,11 @@
                     form.addEventListener('change', function (e) {
                         toggle();
                         if (e.target === declaration) next.disabled = blocked();
+                        // A set of photos is exactly data-count, or none to keep those on file.
+                        if (e.target.dataset.count) {
+                            var n = e.target.files.length, want = Number(e.target.dataset.count);
+                            e.target.setCustomValidity(n && n !== want ? 'Pick exactly ' + want + ' photos (you picked ' + n + ').' : '');
+                        }
                     });
                     toggle();
 

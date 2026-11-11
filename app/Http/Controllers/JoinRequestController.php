@@ -23,6 +23,8 @@ class JoinRequestController extends Controller
 
     private const MAX_FILES = 10;
 
+    private const PRODUCT_IMAGES = 5;
+
     public function store(Request $request, Event $event)
     {
         $company = $request->user()->company;
@@ -66,6 +68,15 @@ class JoinRequestController extends Controller
             }
         }
 
+        // Contact person and product photos. The photos on record stand until a
+        // new set is sent, and a set is always five.
+        $credentialRules += [
+            'contact_name' => ['required', 'string', 'max:100'],
+            'contact_phone' => ['required', 'regex:/^\+?6?01\d[- ]?\d{3,4}[- ]?\d{4}$/'],
+            'product_images' => [empty($held['product_images']) ? 'required' : 'nullable', 'array', 'size:'.self::PRODUCT_IMAGES],
+            'product_images.*' => ['required', 'file', 'mimes:jpg,jpeg,png', 'max:5120'],
+        ];
+
         $data = $request->validate(
             [
                 'declaration' => ['accepted'],
@@ -90,11 +101,16 @@ class JoinRequestController extends Controller
                 'quality_end.after_or_equal' => 'This certificate has expired. Renew it before joining.',
                 'classification_file.required' => 'Upload the certificate.',
                 'quality_file.required' => 'Upload the certificate.',
+                'contact_phone.regex' => 'Enter a Malaysian mobile number, e.g. 012-345 6789.',
+                'product_images.required' => 'Upload '.self::PRODUCT_IMAGES.' photos of your products.',
+                'product_images.size' => 'Upload exactly '.self::PRODUCT_IMAGES.' photos of your products.',
+                'product_images.*.mimes' => 'Product photos must be JPG or PNG.',
             ],
             [
                 'classification_number' => 'certificate number', 'quality_number' => 'certificate number',
                 'classification_start' => 'valid from', 'quality_start' => 'valid from',
                 'classification_end' => 'valid until', 'quality_end' => 'valid until',
+                'contact_name' => 'contact person', 'contact_phone' => 'mobile number',
             ]
         );
 
@@ -115,6 +131,14 @@ class JoinRequestController extends Controller
             'classification_cert' => $data['classification'] === 'yes' ? $certificate('classification') : null,
             'quality' => $data['quality'] ?? null,
             'quality_cert' => ($data['quality'] ?? 'none') !== 'none' ? $certificate('quality') : null,
+            'contact_name' => $data['contact_name'],
+            'contact_phone' => $data['contact_phone'],
+            'product_images' => $request->hasFile('product_images')
+                ? collect($request->file('product_images'))->map(fn ($file) => [
+                    'path' => $file->store("products/{$company->id}", 'local'),
+                    'original' => $file->getClientOriginalName(),
+                ])->values()->all()
+                : $held['product_images'],
         ];
         $company->update(['credentials' => $credentials]);
 
@@ -134,6 +158,9 @@ class JoinRequestController extends Controller
             if ($credentials[$key]) {
                 $documents[] = ['name' => $name, 'path' => $credentials[$key]['path'], 'original' => $credentials[$key]['original']];
             }
+        }
+        foreach ($credentials['product_images'] as $i => $image) {
+            $documents[] = ['name' => 'Product photo '.($i + 1)] + $image;
         }
 
         // A rejected request is asked again in place: its own old files go. The
