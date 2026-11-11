@@ -40,7 +40,9 @@ class JoinRequestController extends Controller
         }
 
         $existing = $event->joinRequests()->where('company_id', $company->id)->first();
-        if ($existing && ! in_array($existing->status, ['draft', 'rejected'], true)) {
+        // Only one with the office now blocks. An approved one whose company is
+        // not on the list (checked above) was taken off it, and may ask again.
+        if ($existing?->status === 'pending') {
             return back()->with('error', 'Your request is already with the office.');
         }
 

@@ -25,6 +25,12 @@
         $data = $notification->data;
         $announcement = $announcements[$data['announcement_id'] ?? null] ?? null;
         $lotLink = isset($data['event_id']) ? route('zvote.index', $data['event_id']) : null;
+        // The answer to a request to join: in the draw, or what to change.
+        [$joinLink, $joinLabel] = match (true) {
+            ! isset($data['join_event_id']) => [null, null],
+            ! empty($data['approved']) => [route('dashboard'), 'Open dashboard'],
+            default => [route('events.show', $data['join_event_id']), 'Change and send again'],
+        };
     @endphp
     <div class="ap-card ap-card-padded mb-3" @if(! $notification->read_at) style="background:var(--ui-blue-tint);border-color:var(--ui-blue-border);" @endif>
         <div class="d-flex justify-content-between align-items-start gap-2">
@@ -47,6 +53,9 @@
             @endif
             @if($lotLink)
                 <a href="{{ $lotLink }}" class="ap-btn ap-btn-primary ap-btn-sm">Confirm Lot</a>
+            @endif
+            @if($joinLink)
+                <a href="{{ $joinLink }}" class="ap-btn ap-btn-primary ap-btn-sm">{{ $joinLabel }}</a>
             @endif
             @unless($notification->read_at)
                 <form method="POST" action="{{ route('notifications.read', $notification->id) }}">

@@ -4,6 +4,7 @@ use App\Models\Company;
 use App\Models\Event;
 use App\Models\EventJoinRequest;
 use App\Models\EventRegistration;
+use App\Notifications\JoinRequestAnswered;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
@@ -588,11 +589,154 @@ it('tells a participant on the dashboard that a draft was never sent once regist
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertSee('Draft, not sent')
         ->assertSee('Finish and send')
-        ->assertDontSee('Registration has closed');
+        ->assertDontSee('Registration is not open');
 
     $event->update(['registration_close_at' => now()->subDay()]);
 
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
-        ->assertSee('Registration has closed. This draft was never sent to the office.')
+        ->assertSee("Registration is not open, so this can't be sent. This draft never reached the office.", false)
         ->assertDontSee('Finish and send');
+});
+
+it('leaves off the dashboard a request for an event the company is already in', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $company = Company::factory()->create();
+    EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'draft']);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertSee('Finish and send');
+
+    // The office put the company on the draw list itself; the draft is moot.
+    EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Pesta Kraf Utara')
+        ->assertDontSee('Requests to join')
+        ->assertDontSee('Finish and send');
+});
+
+it('drops a cancelled event while registration runs, and says Event cancelled once it has closed', function () {
+    $event = joinable(['polling_status' => 'cancelled']);
+    $company = Company::factory()->create();
+    EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'pending']);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertDontSee('Requests to join');
+
+    $event->update(['registration_close_at' => now()->subDay()]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Event cancelled')
+        ->assertSee('This event was cancelled.')
+        ->assertDontSee('With the office');
+});
+
+it('dates a rejected request by its review, says why it cannot be sent again, and does not call the dashboard empty', function () {
+    $event = joinable();
+    $company = Company::factory()->create();
+    $this->travelTo(now()->subDays(5));
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id, 'status' => 'pending']);
+    $this->travelBack();
+    $request->update(['status' => 'rejected', 'reject_reason' => 'Blurry receipt', 'reviewed_at' => now()->subDays(2)]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Answered '.now()->subDays(2)->format('d M Y'))
+        ->assertDontSee('Sent '.now()->format('d M Y'))
+        ->assertSee('Your requests to join an event')
+        ->assertDontSee('There is nothing here yet')
+        ->assertSee('<h2 class="ap-section-title">Requests to join</h2>', false)
+        ->assertSee('Change and send again');
+
+    $event->update(['registration_close_at' => now()->subDay()]);
+
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee("Registration is not open, so this can't be sent again.", false)
+        ->assertDontSee('Change and send again');
+});
+
+it('tells the participant the office answer, by bell and mail, whichever way the company was approved', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    [$a, $b, $c] = Company::factory()->count(3)->create(['state' => 'Johor']);
+    [$ra, $rb, $rc] = collect([$a, $b, $c])->map(fn ($co) => EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $co->id]))->all();
+
+    $office = $this->actingAs(stateAdmin('Johor'), 'admin');
+    $office->post(route('admin.events.registrations.reject', [$event, $ra]), ['reject_reason' => 'Blurry receipt']);
+    $office->post(route('admin.events.registrations.approve', [$event, $rb]), ['plot_size' => '3x3']);
+    // Added straight to the list: the pending request is settled, and said so.
+    $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$c->id]]);
+
+    foreach ([[$a, false], [$b, true], [$c, true]] as [$company, $approved]) {
+        $note = $company->user->notifications()->sole();
+        expect($note->type)->toBe(JoinRequestAnswered::class)
+            ->and($note->data['approved'])->toBe($approved)
+            ->and($note->data['join_event_id'])->toBe($event->id)
+            ->and($note->data)->not->toHaveKey('event_id');
+    }
+    expect($a->user->notifications()->sole()->data['message'])->toContain('Blurry receipt');
+
+    auth()->forgetGuards();
+    $this->actingAs($a->user, 'web')->get(route('notifications.index'))
+        ->assertSee('Request not approved')
+        ->assertSee(route('events.show', $event))
+        ->assertSee('Change and send again')
+        ->assertDontSee('Confirm Lot');
+
+    auth()->forgetGuards();
+    $this->actingAs($b->user, 'web')->get(route('notifications.index'))
+        ->assertSee('Request approved')
+        ->assertSee('Open dashboard')
+        ->assertDontSee('Confirm Lot');
+
+    $mail = (new JoinRequestAnswered($ra->fresh()))->toMail($a->user);
+    expect($mail->subject)->toBe('Request not approved: Pesta Kraf Utara')
+        ->and($mail->introLines)->toContain('Reason: Blurry receipt');
+});
+
+it('does not answer a request on a cancelled event', function () {
+    $event = joinable(['polling_status' => 'cancelled']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $office = $this->actingAs(stateAdmin('Johor'), 'admin');
+    $office->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])->assertSessionHas('error');
+    $office->post(route('admin.events.registrations.reject', [$event, $request]), ['reject_reason' => 'x'])->assertSessionHas('error');
+
+    expect($request->fresh()->status)->toBe('pending')
+        ->and(EventRegistration::count())->toBe(0)
+        ->and($company->user->notifications()->count())->toBe(0);
+});
+
+it('lets a company the office took off the draw list ask again, and puts it back on Undo', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $office = $this->actingAs(stateAdmin('Johor'), 'admin');
+    $office->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3']);
+    $office->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Taken off the draw list')
+        ->assertSee('Ask to join again');
+    $this->actingAs($company->user, 'web')->get(route('events.show', $event))
+        ->assertSee("The office took your company off this event's draw list.", false)
+        ->assertSee('I want to join this event, and I declare');
+
+    // Undo puts the company back: in the draw, nothing to ask.
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->post(route('admin.events.registrations.undo', $event));
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('Pesta Kraf Utara')
+        ->assertDontSee('Taken off the draw list');
+
+    // Taken off again, and this time it asks again.
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')
+        ->post(route('events.join', $event), payment())
+        ->assertSessionHas('success');
+
+    expect($request->fresh()->status)->toBe('pending')
+        ->and($request->fresh()->reviewed_at)->toBeNull();
 });

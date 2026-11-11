@@ -428,6 +428,9 @@
                 @if($joinRequest?->reject_reason && in_array($joinRequest->status, ['rejected', 'draft'], true))
                     <p class="evd-msg evd-msg-bad"><strong>The office did not accept your request:</strong> {{ $joinRequest->reject_reason }} You may send it again.</p>
                 @endif
+                @if($joinRequest?->status === 'approved')
+                    <p class="evd-msg evd-msg-bad">The office took your company off this event's draw list. You may ask to join again.</p>
+                @endif
 
                 @guest('web')
                     <a href="{{ route('login') }}" class="evd-cta"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Sign in to join</a>

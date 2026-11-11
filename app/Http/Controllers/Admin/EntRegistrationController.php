@@ -7,6 +7,7 @@ use App\Models\Company;
 use App\Models\Event;
 use App\Models\EventJoinRequest;
 use App\Models\EventRegistration;
+use App\Notifications\JoinRequestAnswered;
 use App\Support\EventVisibility;
 use App\Support\KrafPicker;
 use App\Support\PlotSizes;
@@ -160,7 +161,10 @@ class EntRegistrationController extends Controller
         }
 
         $event->joinRequests()->where('company_id', $company->id)->where('status', 'pending')->get()
-            ->each->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
+            ->each(function ($joinRequest) use ($company) {
+                $joinRequest->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
+                $company->user?->notify(new JoinRequestAnswered($joinRequest));
+            });
 
         return $registration->wasRecentlyCreated;
     }
@@ -171,6 +175,9 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
+        if ($event->polling_status === 'cancelled') {
+            return back()->with('error', 'This event was cancelled. Its requests cannot be answered.');
+        }
 
         $data = $request->validate([
             'code' => ['nullable', 'string', 'max:50'],
@@ -188,6 +195,9 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
+        if ($event->polling_status === 'cancelled') {
+            return back()->with('error', 'This event was cancelled. Its requests cannot be answered.');
+        }
 
         $data = $request->validate(['reject_reason' => ['required', 'string', 'max:1000']]);
 
@@ -196,6 +206,7 @@ class EntRegistrationController extends Controller
             'reviewed_by' => $request->user('admin')->id,
             'reviewed_at' => now(),
         ]);
+        $joinRequest->company->user?->notify(new JoinRequestAnswered($joinRequest));
 
         return back()->with('success', "Request from {$joinRequest->company->name} rejected.");
     }

@@ -11,9 +11,11 @@
         <div>
             <h2 class="ap-page-title">Welcome, {{ $user->name }}</h2>
             <p class="ap-page-subtitle">
-                @if($entries->isEmpty())
+                @if($entries->isEmpty() && $requests->isEmpty())
                     Events whose draw your company is in appear here, with the lot you
-                    draw. There is nothing here yet.
+                    draw, and so do your requests to join. There is nothing here yet.
+                @elseif($entries->isEmpty())
+                    Your requests to join an event, and where each one stands.
                 @else
                     The lot draws your company is in.
                 @endif
@@ -80,15 +82,17 @@
 
     @if($requests->isNotEmpty())
         <div class="ap-section-head">
-            <h3 class="ap-section-title">Requests to join</h3>
+            <h2 class="ap-section-title">Requests to join</h2>
         </div>
         <div class="ap-draw-grid">
         @foreach($requests as $jr)
             @php
-                [$badge, $label] = match ($jr->status) {
+                $cancelled = $jr->event->polling_status === 'cancelled';
+                [$badge, $label] = $cancelled ? ['ap-badge-red', 'Event cancelled'] : match ($jr->status) {
                     'draft' => ['ap-badge-gray', 'Draft, not sent'],
                     'pending' => ['ap-badge-orange', 'With the office'],
                     'rejected' => ['ap-badge-red', 'Not approved'],
+                    'approved' => ['ap-badge-red', 'Taken off the draw list'],
                 };
             @endphp
             <article class="ap-card ap-draw mb-3">
@@ -96,7 +100,8 @@
                     <div>
                         <h3 class="ap-draw-title">{{ $jr->event->title }}</h3>
                         <div class="ap-draw-meta">
-                            <span><i class="bi bi-clock" aria-hidden="true"></i>{{ $jr->status === 'draft' ? 'Saved' : 'Sent' }} {{ $jr->updated_at->format('d M Y') }}</span>
+                            <span><i class="bi bi-clock" aria-hidden="true"></i>{{-- Rejecting moves updated_at, so a rejected request is dated by the review. --}}
+                            {{ match ($jr->status) { 'draft' => 'Saved', 'rejected', 'approved' => 'Answered', default => 'Sent' } }} {{ (in_array($jr->status, ['rejected', 'approved'], true) ? $jr->reviewed_at : $jr->updated_at)->format('d M Y') }}</span>
                         </div>
                     </div>
                     <span class="ap-badge {{ $badge }}">{{ $label }}</span>
@@ -124,11 +129,14 @@
                 @if($jr->status !== 'pending' && $jr->event->acceptsJoinRequests())
                     <div class="ap-draw-next">
                         <a href="{{ route('events.show', $jr->event) }}" class="ap-btn ap-btn-primary">
-                            {{ $jr->status === 'draft' ? 'Finish and send' : 'Change and send again' }}
+                            {{ match ($jr->status) { 'draft' => 'Finish and send', 'approved' => 'Ask to join again', default => 'Change and send again' } }}
                         </a>
                     </div>
-                @elseif($jr->status === 'draft')
-                    <div class="ap-draw-next">Registration has closed. This draft was never sent to the office.</div>
+                @elseif($cancelled)
+                    <div class="ap-draw-next">This event was cancelled.</div>
+                @elseif($jr->status !== 'pending')
+                    {{-- Closed, not yet open again, or the draw already started: the same answer. --}}
+                    <div class="ap-draw-next">Registration is not open, so this can't be sent{{ $jr->status === 'draft' ? '. This draft never reached the office.' : ' again.' }}</div>
                 @endif
             </article>
         @endforeach
