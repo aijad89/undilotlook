@@ -412,6 +412,22 @@ return new class extends Migration
             // Stamped when the close reminder is QUEUED, not when it is delivered.
             $table->timestamp('reminded_at')->nullable();
 
+            // Two checks before a row counts. The zone admin checks the company,
+            // its payment proof, code and booth size, and adds the row; HQ checks
+            // it again and stamps `verified_at`. The draw will not open while any
+            // row is unverified, and the participant hears nothing until then.
+            // `verified_by` survives a zone edit that clears `verified_at`: it is
+            // how a re-check is told apart from a first one. `hq_note` is HQ
+            // sending the row back to the zone with a reason.
+            $table->foreignId('verified_by')->nullable()->constrained('admins')->nullOnDelete();
+            $table->timestamp('verified_at')->nullable();
+            $table->text('hq_note')->nullable();
+
+            // How a company the office added paid — receipt number, date, how —
+            // written by the zone for HQ to check. A company that asked to join
+            // carries its proof on the join request instead.
+            $table->string('payment_note', 500)->nullable();
+
             $table->timestamps();
 
             // One entry per company per event: one draw per event, and a company

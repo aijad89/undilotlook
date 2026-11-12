@@ -308,8 +308,9 @@ it('shows each row the lot number it holds', function () {
  * The zone checks the payment and approves; only HQ sets the craft code and
  * booth size the plan is built from. The zone reads them.
  */
-it('lets a zone admin approve with the company\'s own code and size, and change neither', function () {
+it('lets a zone admin check everything and approve; HQ verifies, or returns it with a note', function () {
     Illuminate\Support\Facades\Storage::fake('local');
+    KrafBidang::factory()->code('RKP')->create();
     $event = Event::factory()->create();
     $company = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TBPS', 'plot_size' => '3x6']);
     Illuminate\Support\Facades\Storage::disk('local')->put("join-requests/{$event->id}/r.jpg", 'jpeg');
@@ -318,35 +319,38 @@ it('lets a zone admin approve with the company\'s own code and size, and change 
         ['name' => 'Product photo 1', 'path' => "products/{$company->id}/p.jpg", 'original' => 'p.jpg'],
     ]]);
     $zone = stateAdmin('Johor');
+    $hq = superAdmin();
     $index = route('admin.events.registrations.index', $event);
 
-    // The request: the proof under Payment, with a preview; no code or size to pick.
-    $page = $this->actingAs($zone, 'admin')->get($index)->assertOk()
+    // The zone sees the proof and picks the code and size itself.
+    $this->actingAs($zone, 'admin')->get($index)->assertOk()
         ->assertSeeInOrder(['Online transfer', 'Payment receipt', 'class="mac-proof-pop"', 'Product photo 1'], false)
-        ->assertSee('TBPS · 3x6');
-    expect($page->getContent())->not->toContain('aria-label="Craft code"');
-
-    // A code or size posted anyway is ignored: the company's own is used.
+        ->assertSee('aria-label="Craft code"', false);
     $this->post(route('admin.events.registrations.approve', [$event, $request]), ['code' => 'RKP', 'plot_size' => '3x9'])
         ->assertSessionHas('success');
     $row = EventRegistration::sole();
-    expect($row->code)->toBe('TBPS')->and($row->plot_size)->toBe('3x6');
+    expect($row->code)->toBe('RKP')->and($row->plot_size)->toBe('3x9')->and($row->verified_at)->toBeNull();
 
-    // On the list: the proof again, the code and size as text.
-    $page = $this->get($index)->assertOk()
-        ->assertSeeInOrder(['<th>Payment</th>', $company->name, 'Online transfer', 'Payment receipt', 'TBPS', '3x6'], false);
-    expect($page->getContent())->not->toContain('value="PUT"')
-        ->not->toContain('value="set_code"');
+    // Only HQ verifies or returns.
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'verify', 'registration_id' => [$row->id]])->assertForbidden();
+    $this->post(route('admin.events.registrations.return', [$event, $row]), ['hq_note' => 'x'])->assertForbidden();
+    expect($row->fresh()->verified_at)->toBeNull();
 
-    // And neither can be changed by posting.
-    $this->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'RKP', 'plot_size' => '3x9'])->assertForbidden();
-    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_code', 'registration_id' => [$row->id], 'code' => 'RKP'])->assertForbidden();
-    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_size', 'registration_id' => [$row->id], 'plot_size' => '3x9'])->assertForbidden();
-    $other = Company::factory()->create(['state' => 'Johor']);
-    $this->post(route('admin.events.registrations.store', $event), ['company_id' => [$other->id], 'code' => 'RKP', 'plot_size' => '3x9']);
-    expect($row->fresh()->code)->toBe('TBPS')->and($row->fresh()->plot_size)->toBe('3x6')
-        ->and(EventRegistration::where('company_id', $other->id)->sole()->code)->toBeNull()
-        ->and(EventRegistration::where('company_id', $other->id)->sole()->plot_size)->toBe('3x3');
+    // HQ returns it with a note; the zone sees it, fixes it, and it waits again.
+    $this->actingAs($hq, 'admin')->get($index)->assertSee('Payment receipt')->assertSee('Waiting for HQ');
+    $this->post(route('admin.events.registrations.return', [$event, $row]), ['hq_note' => 'Booth should be 3x6.'])->assertSessionHas('success');
+    $this->actingAs($zone, 'admin')->get($index)->assertSee('Returned by HQ')->assertSee('Booth should be 3x6.');
+    $this->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'RKP', 'plot_size' => '3x6']);
+    expect($row->fresh()->hq_note)->toBeNull()->and($row->fresh()->verified_at)->toBeNull();
+
+    // HQ verifies; a zone change afterwards, from any door, sends it back.
+    $this->actingAs($hq, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'verify', 'registration_id' => [$row->id]]);
+    expect($row->fresh()->verified_at)->not->toBeNull()->and($row->fresh()->verified_by)->toBe($hq->id);
+    $this->actingAs($zone, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_code', 'registration_id' => [$row->id], 'code' => 'TBPS']);
+    expect($row->fresh()->verified_at)->toBeNull();
+    $this->actingAs($hq, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'verify', 'registration_id' => [$row->id]]);
+    $this->actingAs($zone, 'admin')->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => 'RKP', 'plot_size' => '3x9'])->assertSessionHas('success');
+    expect($row->fresh()->plot_size)->toBe('3x9')->and($row->fresh()->verified_at)->toBeNull();
 
     // A zone admin may still take a row off the list.
     $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id]])->assertSessionHas('success');
@@ -363,4 +367,49 @@ it('shows a row the office added as having no payment proof, and lets HQ edit it
         ->assertSee('Added by the office')
         ->assertSee('value="PUT"', false)
         ->assertSee('value="set_code"', false);
+});
+it('clears HQ note when the zone fixes the row in bulk', function () {
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $row = EventRegistration::factory()->unverified()->create(['company_id' => $company->id, 'hq_note' => 'Wrong code.']);
+
+    $this->actingAs(stateAdmin('Johor'), 'admin')->post(route('admin.events.registrations.bulk', $row->event_id), [
+        'action' => 'set_code', 'registration_id' => [$row->id], 'code' => 'RKP',
+    ])->assertSessionHas('success');
+
+    expect($row->fresh()->hq_note)->toBeNull()->and($row->fresh()->code)->toBe('RKP');
+});
+
+it('keeps the code and size as drawn once the draw has started, for HQ too', function () {
+    $event = Event::factory()->create(['polling_status' => 'polling']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $row = EventRegistration::factory()->coded('TBPS')->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    foreach ([stateAdmin('Johor'), superAdmin()] as $admin) {
+        $this->actingAs($admin, 'admin')->get(route('admin.events.registrations.index', $event))
+            ->assertOk()->assertDontSee('value="set_code"', false);
+        $this->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'RKP', 'plot_size' => '3x9'])
+            ->assertSessionHas('error');
+        $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'set_size', 'registration_id' => [$row->id], 'plot_size' => '3x9'])
+            ->assertSessionHas('error');
+    }
+
+    // Still verified, so the participant still sees it.
+    expect($row->fresh()->code)->toBe('TBPS')->and($row->fresh()->plot_size)->toBe('3x3')
+        ->and($row->fresh()->verified_at)->not->toBeNull();
+});
+
+it('lets the zone write how an office-added company paid, which HQ checks again', function () {
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $row = EventRegistration::factory()->create(['company_id' => $company->id, 'hq_note' => null]);
+    $index = route('admin.events.registrations.index', $row->event_id);
+    $note = route('admin.events.registrations.payment-note', [$row->event_id, $row]);
+
+    $this->actingAs(stateAdmin('Kedah'), 'admin')->put($note, ['payment_note' => 'x'])->assertForbidden();
+
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get($index)->assertSee('no payment note yet');
+    $this->put($note, ['payment_note' => 'Receipt 00123, cash, 3 Nov'])->assertSessionHas('success');
+    expect($row->fresh()->payment_note)->toBe('Receipt 00123, cash, 3 Nov')
+        ->and($row->fresh()->verified_at)->toBeNull();
+
+    $this->actingAs(superAdmin(), 'admin')->get($index)->assertSee('Receipt 00123, cash, 3 Nov');
 });

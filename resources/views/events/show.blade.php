@@ -69,7 +69,7 @@
 
 @php
     // Whether this participant may still ask to join; the steps are in the form.
-    $canJoin = $company && ! $onList && $joinRequest?->status !== 'pending' && $event->acceptsJoinRequests();
+    $canJoin = $company && ! $onList && ! $beingAdded && $joinRequest?->status !== 'pending' && $event->acceptsJoinRequests();
     // Back after an error: open on the first step that has one. Each step is
     // found by the start of its fields' names; anything else is payment.
     $stepPrefixes = ['declaration' => 'declaration', 'recognition' => 'recognition', 'classification' => 'classification',
@@ -438,6 +438,8 @@
                 <a href="{{ route('dashboard') }}" class="evd-cta"><i class="bi bi-check-circle" aria-hidden="true"></i> Go to my dashboard</a>
             @elseif($joinRequest?->status === 'pending')
                 <p class="evd-msg evd-msg-wait">Your request to join was sent {{ $joinRequest->updated_at->format('d M Y') }}. The office is reviewing your documents.</p>
+            @elseif($beingAdded)
+                <p class="evd-msg evd-msg-wait">The office is adding your company to this draw. You will be told once HQ confirms it.</p>
             @elseif($event->acceptsJoinRequests())
                 @if($draft && ! session('success'))
                     <p class="evd-msg evd-msg-wait">You saved a draft on {{ $draft->updated_at->format('d M Y') }}. It has not been sent: finish the steps and press Join this event.</p>

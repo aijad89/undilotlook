@@ -47,6 +47,14 @@ it('refuses an event with no plots', function () {
     expect(PollingGuard::blocker($event))->toContain('no plots');
 });
 
+it('refuses a row HQ has not verified yet', function () {
+    [$event, $rkp, $size] = guardedEvent();
+    Plot::factory()->on($size)->coded($rkp)->create();
+    drawEntry($event, 'RKP', '3x3', ['verified_at' => null]);
+
+    expect(PollingGuard::blocker($event))->toContain('waiting for HQ');
+});
+
 it('refuses a company in the draw that has no account yet', function () {
     [$event, $rkp, $size] = guardedEvent();
     Plot::factory()->on($size)->coded($rkp)->create();

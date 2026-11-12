@@ -39,20 +39,18 @@ it('refuses a code that is not on the coding sheet, or retired', function () {
     expect($company->fresh()->kraf_code)->toBeNull();
 });
 
-it('shows a state admin the code and size of their own zone\'s company, and lets them change neither', function () {
+it('lets a state admin set the code and size of their own zone\'s company, and no other zone\'s', function () {
     KrafBidang::factory()->code('TBP')->create();
     $company = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TBP', 'plot_size' => '3x6']);
-    $zone = stateAdmin('Johor');
 
-    $page = $this->actingAs($zone, 'admin')->get(route('admin.companies.edit', $company))
-        ->assertOk()
-        ->assertSee('Only HQ can change them.')
-        ->assertSeeInOrder(['Craft code', 'TBP', 'Booth size', '3x6']);
-    expect($page->getContent())->not->toContain(route('admin.companies.kraf-code.update', $company));
-
-    $this->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x9'])
+    $this->actingAs(stateAdmin('Kedah'), 'admin')
+        ->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x9'])
         ->assertForbidden();
-    expect($company->fresh()->kraf_code)->toBe('TBP')->and($company->fresh()->plot_size)->toBe('3x6');
+
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get(route('admin.companies.edit', $company))
+        ->assertOk()->assertSee(route('admin.companies.kraf-code.update', $company), false);
+    $this->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x9']);
+    expect($company->fresh()->kraf_code)->toBeNull()->and($company->fresh()->plot_size)->toBe('3x9');
 });
 
 it('fills each company\'s own code in on the draw list, unless one is picked there', function () {

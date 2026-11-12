@@ -17,8 +17,14 @@
             <h2>Draw List</h2>
             <p class="mac-muted mb-0">
                 {{ $event->title }} — {{ $event->start_date->format('d M Y') }}.
-                Being on this list is being in the draw. Approving a join request adds the company here.
+                The zone checks each company and puts it on this list; HQ verifies it.
+                The company is told, and the draw can open, only once HQ has verified every row.
             </p>
+            @if($waitingCount)
+                <a href="{{ route('admin.events.registrations.index', [$event, 'status' => 'waiting']) }}" class="mac-badge mac-badge-orange mt-2 d-inline-block">
+                    {{ $waitingCount }} waiting for HQ
+                </a>
+            @endif
         </div>
 
         @if($undoCount)
@@ -37,11 +43,9 @@
             <div class="mac-card-padded pb-0">
                 <h3 class="mac-card-title">Join requests ({{ $joinRequests->count() }})</h3>
                 <p class="mac-muted mac-text-sm mb-0">
-                    @if($canSetCode)
-                        Open the files the company sent, then approve with a craft code and booth, or reject with a reason the company will see.
-                    @else
-                        Check the payment proof, then approve with ✓, or reject with a reason the company will see. The craft code and booth are the company's own; only HQ can change them.
-                    @endif
+                    Check the company's details, files and payment proof, set its craft code and booth, then approve with ✓
+                    @unless($isHq) — HQ verifies it before the company is told —@endunless
+                    or reject with a reason the company will see.
                 </p>
             </div>
             <div class="table-responsive">
@@ -51,7 +55,7 @@
                             <th>Company</th>
                             <th>Payment</th>
                             <th>Documents</th>
-                            <th style="width:{{ $canSetCode ? 300 : 180 }}px;">Approve</th>
+                            <th style="width:300px;">Approve</th>
                             <th style="width:280px;">Reject</th>
                         </tr>
                     </thead>
@@ -82,7 +86,6 @@
                                 <td>
                                     <form method="POST" action="{{ route('admin.events.registrations.approve', [$event, $jr]) }}" class="d-flex gap-1">
                                         @csrf
-                                        @if($canSetCode)
                                         <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
                                             <option value="">{{ $jr->company->kraf_code ? 'Own: '.$jr->company->kraf_code : '— None —' }}</option>
                                             @foreach($codes as $code)
@@ -94,9 +97,6 @@
                                                 <option value="{{ $size }}" @selected(($jr->company->plot_size ?? '3x3') === $size)>{{ $size }}</option>
                                             @endforeach
                                         </select>
-                                        @else
-                                        <span class="mac-text-sm align-self-center me-2">{{ $jr->company->kraf_code ?? 'No code' }} · {{ $jr->company->plot_size ?? '3x3' }}</span>
-                                        @endif
                                         <button type="submit" class="mac-action-btn" title="Approve and add to the draw list">
                                             <i class="bi bi-check-lg"></i>
                                         </button>
@@ -128,7 +128,7 @@
             <form method="POST" action="{{ route('admin.events.registrations.store', $event) }}">
                 @csrf
                 <div class="row g-3 align-items-end">
-                    <div class="{{ $canSetCode ? 'col-md-6' : 'col-md-11' }}">
+                    <div class="col-md-6">
                         <label class="mac-label" for="company_id">Companies</label>
                         <select id="company_id" name="company_id[]" class="mac-select" multiple size="6" required>
                             @foreach($candidates as $candidate)
@@ -140,7 +140,6 @@
                         <small class="mac-muted">Ctrl or Shift to pick several.</small>
                     </div>
 
-                    @if($canSetCode)
                     <div class="col-md-3">
                         <label class="mac-label" for="code">Craft code</label>
                         <select id="code" name="code" class="mac-select">
@@ -162,7 +161,6 @@
                             @endforeach
                         </select>
                     </div>
-                    @endif
 
                     <div class="col-md-1">
                         <button type="submit" class="mac-btn-primary w-100">Add</button>
@@ -183,9 +181,16 @@
             @endforeach
         </select>
 
+        <select name="status" class="mac-select" aria-label="Filter by HQ check">
+            <option value="">Any check</option>
+            <option value="waiting" @selected(request('status') === 'waiting')>Waiting for HQ</option>
+            <option value="returned" @selected(request('status') === 'returned')>Returned by HQ</option>
+            <option value="verified" @selected(request('status') === 'verified')>Verified</option>
+        </select>
+
         <button type="submit" class="mac-filter-btn">Filter</button>
 
-        @if(request()->hasAny(['search', 'code']))
+        @if(request()->hasAny(['search', 'code', 'status']))
             <a href="{{ route('admin.events.registrations.index', $event) }}" class="mac-clear-btn">Clear</a>
         @endif
     </form>
@@ -201,7 +206,8 @@
                             <th>Company</th>
                             <th>Account</th>
                             <th>Payment</th>
-                            <th style="width:{{ $canSetCode ? 220 : 110 }}px;">Craft code</th>
+                            <th>HQ check</th>
+                            <th style="width:220px;">Craft code</th>
                             <th style="width:120px;">Booth</th>
                             <th>Lot</th>
                             <th class="text-end">Actions</th>
@@ -231,14 +237,43 @@
                                 </td>
 
                                 <td class="mac-text-sm">
-                                    @include('partials.payment-proof', ['jr' => $proofs[$registration->company_id] ?? null])
+                                    @if(isset($proofs[$registration->company_id]))
+                                        @include('partials.payment-proof', ['jr' => $proofs[$registration->company_id]])
+                                    @else
+                                        {{-- Added by the office: no request, so the zone writes how it paid. --}}
+                                        <form method="POST" action="{{ route('admin.events.registrations.payment-note', [$event, $registration]) }}" class="d-flex gap-1">
+                                            @csrf
+                                            @method('PUT')
+                                            <input type="text" name="payment_note" value="{{ $registration->payment_note }}" maxlength="500"
+                                                   class="mac-form-control mac-action-btn-field" placeholder="Receipt no., date, how paid"
+                                                   aria-label="Payment note for {{ $registration->company->name }}">
+                                            <button type="submit" class="mac-action-btn" title="Save payment note"><i class="bi bi-check-lg"></i></button>
+                                        </form>
+                                        @unless($registration->payment_note)
+                                            <div class="mac-muted mt-1">Added by the office, no payment note yet.</div>
+                                        @endunless
+                                    @endif
+                                </td>
+
+                                <td class="mac-text-sm">
+                                    @if($registration->verified_at)
+                                        <span class="mac-badge mac-badge-green">Verified</span>
+                                    @elseif($registration->hq_note)
+                                        <span class="mac-badge mac-badge-red">Returned by HQ</span>
+                                        <div class="mt-1">{{ $registration->hq_note }}</div>
+                                    @else
+                                        <span class="mac-badge mac-badge-orange">Waiting for HQ</span>
+                                        @if($registration->verified_by)
+                                            <div class="mac-muted mt-1">Changed since HQ verified it.</div>
+                                        @endif
+                                    @endif
                                 </td>
 
                                 {{-- One row, one small form. The code and size are the
                                      two things the plan is built from, so they are
-                                     edited where they are read, by HQ. A zone admin
-                                     reads them. --}}
-                                @if(! $canSetCode)
+                                     edited where they are read. From HQ, the button
+                                     is the verification: it saves and verifies. --}}
+                                @if($codeFrozen)
                                 <td>{{ $registration->code ?? '—' }}</td>
                                 <td>{{ $registration->plot_size }}</td>
                                 @else
@@ -278,9 +313,15 @@
                                             @endif
                                         </select>
 
-                                        <button type="submit" class="mac-action-btn" title="Save this row">
-                                            <i class="bi bi-check-lg"></i>
-                                        </button>
+                                        @if($isHq)
+                                            <button type="submit" class="mac-action-btn" title="Verify (saves any change)">
+                                                <i class="bi bi-check2-all"></i>
+                                            </button>
+                                        @else
+                                            <button type="submit" class="mac-action-btn" title="Save — HQ verifies it again">
+                                                <i class="bi bi-check-lg"></i>
+                                            </button>
+                                        @endif
                                     </form>
                                 </td>
                                 @endif
@@ -294,6 +335,18 @@
                                 </td>
 
                                 <td class="text-end">
+                                    @if($isHq)
+                                        <details class="d-inline-block text-start mb-1">
+                                            <summary class="mac-text-sm">Return</summary>
+                                            <form method="POST" action="{{ route('admin.events.registrations.return', [$event, $registration]) }}" class="d-flex gap-1 mt-1">
+                                                @csrf
+                                                <input type="text" name="hq_note" class="mac-form-control mac-action-btn-field" placeholder="What to fix" aria-label="What the zone should fix" required maxlength="1000">
+                                                <button type="submit" class="mac-action-btn mac-action-btn-danger" title="Return to the zone">
+                                                    <i class="bi bi-arrow-return-left"></i>
+                                                </button>
+                                            </form>
+                                        </details>
+                                    @endif
                                     <form method="POST"
                                           action="{{ route('admin.events.registrations.destroy', [$event, $registration]) }}">
                                         @csrf
@@ -308,7 +361,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="8">
+                                <td colspan="9">
                                     <div class="mac-empty">
                                         <div class="mac-empty-icon"><i class="bi bi-list-check"></i></div>
                                         <p class="mac-empty-text">Nobody is in this draw yet.</p>
@@ -331,15 +384,17 @@
                     <div class="col-md-3">
                         <label class="mac-label" for="bulk-action">Action</label>
                         <select id="bulk-action" name="action" class="mac-select" required>
-                            @if($canSetCode)
+                            @if($isHq)
+                            <option value="verify">Verify</option>
+                            @endif
+                            @unless($codeFrozen)
                             <option value="set_code">Set craft code</option>
                             <option value="set_size">Set booth size</option>
-                            @endif
+                            @endunless
                             <option value="remove">Remove from the draw</option>
                         </select>
                     </div>
 
-                    @if($canSetCode)
                     <div class="col-md-3">
                         <label class="mac-label" for="bulk-code">Craft code</label>
                         <select id="bulk-code" name="code" class="mac-select">
@@ -358,7 +413,6 @@
                             @endforeach
                         </select>
                     </div>
-                    @endif
 
                     <div class="col-md-3">
                         <button type="submit" class="mac-btn-primary w-100"

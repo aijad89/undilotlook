@@ -52,7 +52,9 @@ class HomeController extends Controller
         return view('events.show', [
             'event' => $event,
             'company' => $company,
-            'onList' => $company && $event->registrations()->where('company_id', $company->id)->exists(),
+            'onList' => $company && $event->registrations()->verified()->where('company_id', $company->id)->exists(),
+            // Put on the list by the office, waiting for HQ: no form to fill in.
+            'beingAdded' => $company && $event->registrations()->whereNull('verified_at')->where('company_id', $company->id)->exists(),
             'joinRequest' => $company ? $event->joinRequests()->where('company_id', $company->id)->first() : null,
         ]);
     }
@@ -70,9 +72,9 @@ class HomeController extends Controller
     {
         $user = $request->user();
         $company = $user->company;
-        $onList = $user->registrations()->pluck('event_registrations.event_id');
+        $onList = $user->registrations()->verified()->pluck('event_registrations.event_id');
 
-        $entries = $user->registrations()
+        $entries = $user->registrations()->verified()
             ->with(['event', 'plot.plotSize'])
             ->get()
             ->reject(fn ($r) => $r->event->polling_status === 'cancelled')
@@ -106,7 +108,8 @@ class HomeController extends Controller
         $openEvents = $company
             ? Event::where('status', 'open')->where('polling_status', 'draft')
                 ->where('registration_open_at', '<=', now())->where('registration_close_at', '>=', now())
-                ->whereNotIn('id', $onList)
+                // Any row, verified or not: one waiting for HQ is not open to join either.
+                ->whereNotIn('id', $company->eventRegistrations()->pluck('event_id'))
                 ->whereNotIn('id', \App\Models\EventJoinRequest::where('company_id', $company->id)->pluck('event_id'))
                 ->orderBy('registration_close_at')
                 ->get()
@@ -132,7 +135,7 @@ class HomeController extends Controller
     {
         $user = $request->user();
 
-        $entries = $user->registrations()
+        $entries = $user->registrations()->verified()
             ->with(['event', 'plot'])
             ->get()
             ->filter(fn ($r) => $r->event->end_date->isPast() && $r->event->polling_status !== 'cancelled')
@@ -168,7 +171,7 @@ class HomeController extends Controller
 
         abort_unless(
             $company && $event->end_date->isPast() && $event->polling_status !== 'cancelled'
-                && $event->registrations()->where('company_id', $company->id)->exists(),
+                && $event->registrations()->verified()->where('company_id', $company->id)->exists(),
             404
         );
 

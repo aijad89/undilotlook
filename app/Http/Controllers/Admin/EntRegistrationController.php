@@ -29,10 +29,14 @@ use Illuminate\Validation\Rule;
  * a plot is categorised by. The dropdown offers the active codes; the column
  * stores what was picked.
  *
- * ONLY HQ SETS THE CODE AND SIZE (gate `set-draw-code`). A zone admin checks the
- * payment and approves; the row takes the company's own code and size, and the
- * zone sees them but cannot change them. Every write below that takes a code or
- * size drops it for a zone admin rather than trusting the form not to send one.
+ * TWO CHECKS. The zone admin checks everything — the company, its payment
+ * proof, the craft code and booth size — and approves; the row goes on the list
+ * waiting for HQ. HQ (gate `verify-draw-list`) checks it again and either
+ * verifies it, fixing the code or size in the same step, or returns it to the
+ * zone with a note. The join request stays pending and the participant hears
+ * nothing until HQ verifies; the draw does not open while any row waits
+ * (PollingGuard). A zone admin's later change to the code or size clears the
+ * verification again — EventRegistration::booted() — so HQ sees it once more.
  *
  * SCOPE IS DOUBLE HERE, and both halves are needed. EventVisibility::authorize()
  * answers "may you open this event at all"; the query below answers "whose rows
@@ -55,6 +59,12 @@ class EntRegistrationController extends Controller
 
         $registrations = $scoped($event->registrations()->with(['company.user', 'plot']))
             ->when($request->input('code'), fn ($q, $code) => $q->where('code', $code))
+            ->when($request->input('status'), fn ($q, $status) => match ($status) {
+                'waiting' => $q->whereNull('verified_at')->whereNull('hq_note'),
+                'returned' => $q->whereNotNull('hq_note'),
+                'verified' => $q->whereNotNull('verified_at'),
+                default => $q,
+            })
             ->when($request->input('search'), fn ($q, $search) => $q->whereHas(
                 'company', fn ($c) => $c->where('name', 'like', "%{$search}%")
             ))
@@ -70,11 +80,11 @@ class EntRegistrationController extends Controller
             $registrations->each(fn ($r) => $r->plot && ! $r->plot->is_allocated && $r->setRelation('plot', null));
         }
 
-        // The request each row came in by, for the payment proof it carries. A
-        // row the office added has none.
+        // The request each row came in by, for the payment proof it carries —
+        // still pending while the row waits for HQ. A row the office added has none.
         $proofs = $event->joinRequests()
             ->whereIn('company_id', $registrations->pluck('company_id'))
-            ->where('status', 'approved')
+            ->whereIn('status', ['pending', 'approved'])
             ->get()
             ->keyBy('company_id');
 
@@ -87,8 +97,10 @@ class EntRegistrationController extends Controller
             ->orderBy('name')
             ->get(['id', 'name', 'state', 'kraf_code', 'plot_size']);
 
-        // Join requests waiting on the office, in this admin's zone.
+        // Join requests waiting on the zone, in this admin's zone. One the zone
+        // has approved is on the list below, waiting for HQ, and not repeated.
         $joinRequests = $scoped($event->joinRequests()->with('company')->where('status', 'pending'))
+            ->whereNotIn('company_id', $event->registrations()->select('company_id'))
             ->oldest()
             ->get();
 
@@ -97,7 +109,9 @@ class EntRegistrationController extends Controller
             'joinRequests' => $joinRequests,
             'registrations' => $registrations,
             'proofs' => $proofs,
-            'canSetCode' => $admin->can('set-draw-code'),
+            'isHq' => $admin->can('verify-draw-list'),
+            'codeFrozen' => $this->codeFrozen($event),
+            'waitingCount' => $scoped($event->registrations()->whereNull('verified_at'))->count(),
             'candidates' => $candidates,
             'codes' => KrafPicker::codes(),
             'plotSizes' => PlotSizes::all(),
@@ -131,10 +145,6 @@ class EntRegistrationController extends Controller
             return back()->with('error', 'No company from your zone matched that.');
         }
 
-        if (! $request->user('admin')->can('set-draw-code')) {
-            unset($data['code'], $data['plot_size']);
-        }
-
         $added = 0;
 
         DB::transaction(function () use ($companies, $event, $data, &$added) {
@@ -143,9 +153,10 @@ class EntRegistrationController extends Controller
             }
         });
 
-        return back()->with('success', $added === 1
+        return back()->with('success', ($added === 1
             ? 'One company added to the draw list.'
-            : "{$added} companies added to the draw list.");
+            : "{$added} companies added to the draw list.")
+            .($this->isHq($request) ? '' : ' HQ will verify before the company is told.'));
     }
 
     /**
@@ -155,8 +166,8 @@ class EntRegistrationController extends Controller
      * A company cannot be in the same draw twice — there is a unique index
      * saying so. firstOrCreate makes a double submit harmless rather than a 500.
      * A code left blank takes the company's own usual code, if any; the booth
-     * size likewise, 3x3 when neither says. A pending join request from the
-     * company is settled by the add, whichever door it came through.
+     * size likewise, 3x3 when neither says. Added by HQ, the row is verified
+     * at once; added by a zone, it waits for HQ.
      *
      * Returns whether a row was added.
      */
@@ -179,17 +190,56 @@ class EntRegistrationController extends Controller
             $company->syncBoothSize($size);
         }
 
-        // One at a time, not a mass update, so each is audited.
-        $settled = $event->joinRequests()->where('company_id', $company->id)->where('status', 'pending')->get();
-        $settled->each->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
-
-        // Told it is in, whether it asked or the office added it. Once: a
-        // company already on the list hears nothing new.
-        if ($registration->wasRecentlyCreated || $settled->isNotEmpty()) {
-            $company->user?->notify(new JoinRequestAnswered($event));
+        if (auth('admin')->user()->can('verify-draw-list')) {
+            $this->verify($registration);
         }
 
         return $registration->wasRecentlyCreated;
+    }
+
+    /**
+     * HQ's check: the row counts. The company's pending join request is settled
+     * here, not at the zone's approval, and the participant is told — once:
+     * a row HQ verified before, changed by a zone and verified again, says
+     * nothing new.
+     */
+    private function verify(EventRegistration $registration): void
+    {
+        $first = $registration->verified_by === null;
+
+        $registration->update([
+            'verified_at' => now(),
+            'verified_by' => auth('admin')->id(),
+            'hq_note' => null,
+        ]);
+
+        // One at a time, not a mass update, so each is audited.
+        $settled = $registration->event->joinRequests()
+            ->where('company_id', $registration->company_id)->where('status', 'pending')->get();
+        $settled->each->update(['status' => 'approved', 'reviewed_by' => auth('admin')->id(), 'reviewed_at' => now()]);
+
+        if ($first || $settled->isNotEmpty()) {
+            $registration->company->user?->notify(new JoinRequestAnswered($registration->event));
+        }
+    }
+
+    private const FROZEN = 'The draw has started: the craft code and booth size can no longer change.';
+
+    /**
+     * Once the draw has started the code and size stay as drawn, for HQ too.
+     * A zone change would also clear the verification, and the participant
+     * pages read verified rows only — the company would vanish from its own
+     * dashboard mid-draw. Company::syncBoothSize() asks the same of the
+     * company page.
+     */
+    private function codeFrozen(Event $event): bool
+    {
+        return $event->polling_status !== 'draft';
+    }
+
+    private function isHq(Request $request): bool
+    {
+        return $request->user('admin')->can('verify-draw-list');
     }
 
     /** Approve a join request: the company goes on the draw list with this code and size. */
@@ -207,13 +257,11 @@ class EntRegistrationController extends Controller
             'plot_size' => ['nullable', Rule::in(PlotSizes::all())],
         ]);
 
-        if (! $request->user('admin')->can('set-draw-code')) {
-            $data = [];
-        }
-
         DB::transaction(fn () => $this->addToList($event, $joinRequest->company, $data['code'] ?? null, $data['plot_size'] ?? null));
 
-        return back()->with('success', "{$joinRequest->company->name} added to the draw list.");
+        return back()->with('success', $this->isHq($request)
+            ? "{$joinRequest->company->name} added to the draw list."
+            : "{$joinRequest->company->name} added to the draw list. HQ will verify before the company is told.");
     }
 
     /** Reject a join request. The reason is shown to the participant, who may ask again. */
@@ -238,7 +286,11 @@ class EntRegistrationController extends Controller
         return back()->with('success', "Request from {$joinRequest->company->name} rejected.");
     }
 
-    /** Set this row's craft code or booth size. HQ only, by the route's gate. */
+    /**
+     * Set this row's craft code and booth size. From a zone admin it answers
+     * HQ's note, if any, and goes back to waiting for HQ. From HQ it is the
+     * check itself: saved and verified in one step.
+     */
     public function update(Request $request, Event $event, EventRegistration $registration)
     {
         EventVisibility::authorize($event);
@@ -249,17 +301,56 @@ class EntRegistrationController extends Controller
             'plot_size' => ['required', Rule::in(PlotSizes::all())],
         ]);
 
+        if ($this->codeFrozen($event)) {
+            return back()->with('error', self::FROZEN);
+        }
+
         if ($registration->code !== ($data['code'] ?? null)) {
             $data['code_updated_at'] = now();
         }
 
-        DB::transaction(function () use ($registration, $data) {
-            $registration->update($data);
+        $isHq = $this->isHq($request);
+
+        DB::transaction(function () use ($registration, $data, $isHq) {
+            $registration->update($data + ['hq_note' => null]);
             // The company's booth size follows, and with it its other draw lists.
             $registration->company->syncBoothSize($data['plot_size']);
+
+            if ($isHq) {
+                $this->verify($registration);
+            }
         });
 
-        return back()->with('code_success', 'Saved.');
+        return back()->with('code_success', $isHq ? 'Saved and verified.' : 'Saved. Waiting for HQ to verify.');
+    }
+
+    /**
+     * How a company the office added paid, for HQ to check. Writing it answers
+     * HQ's note, and from a zone admin sends the row back to HQ (booted()).
+     * Not frozen with the code and size: it changes nothing the draw reads.
+     */
+    public function paymentNote(Request $request, Event $event, EventRegistration $registration)
+    {
+        EventVisibility::authorize($event);
+        $this->authorizeScope($request, $registration);
+
+        $data = $request->validate(['payment_note' => ['nullable', 'string', 'max:500']]);
+
+        $registration->update($data + ['hq_note' => null]);
+
+        return back()->with('success', 'Payment note saved.');
+    }
+
+    /** HQ sends a row back to its zone, with what to fix. It stays on the list, unverified. */
+    public function returnToZone(Request $request, Event $event, EventRegistration $registration)
+    {
+        EventVisibility::authorize($event);
+
+        $data = $request->validate(['hq_note' => ['required', 'string', 'max:1000']]);
+
+        $registration->update($data + ['verified_at' => null]);
+
+        return back()->with('success', "{$registration->company->name} returned to its zone.");
     }
 
     /**
@@ -300,7 +391,7 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
 
         $data = $request->validate([
-            'action' => ['required', Rule::in(['remove', 'set_code', 'set_size'])],
+            'action' => ['required', Rule::in(['remove', 'set_code', 'set_size', 'verify'])],
             'registration_id' => ['required', 'array', 'min:1'],
             'registration_id.*' => ['integer'],
             'code' => ['required_if:action,set_code', 'nullable', 'string', 'max:50'],
@@ -308,7 +399,7 @@ class EntRegistrationController extends Controller
         ]);
 
         $admin = $request->user('admin');
-        abort_if($data['action'] !== 'remove' && ! $admin->can('set-draw-code'), 403, 'Only HQ can change the craft code or booth size.');
+        abort_if($data['action'] === 'verify' && ! $admin->can('verify-draw-list'), 403, 'Only HQ verifies the draw list.');
 
         $rows = $event->registrations()
             ->whereIn('id', $data['registration_id'])
@@ -341,9 +432,20 @@ class EntRegistrationController extends Controller
             )));
         }
 
-        $changes = $data['action'] === 'set_code'
+        if ($data['action'] === 'verify') {
+            DB::transaction(fn () => $rows->each(fn ($r) => $this->verify($r)));
+
+            return back()->with('success', "{$rows->count()} verified.");
+        }
+
+        if ($this->codeFrozen($event)) {
+            return back()->with('error', self::FROZEN);
+        }
+
+        // A fix answers HQ's note, as the row's own save does.
+        $changes = ($data['action'] === 'set_code'
             ? ['code' => $data['code'], 'code_updated_at' => now()]
-            : ['plot_size' => $data['plot_size']];
+            : ['plot_size' => $data['plot_size']]) + ['hq_note' => null];
 
         DB::transaction(function () use ($rows, $changes, $data) {
             $rows->each->update($changes);
@@ -413,6 +515,10 @@ class EntRegistrationController extends Controller
                 'plot_size' => $r->plot_size,
                 'confirmed_participation' => $r->confirmed_participation,
                 'confirmed_at' => $r->confirmed_at,
+                'verified_by' => $r->verified_by,
+                'verified_at' => $r->verified_at,
+                'hq_note' => $r->hq_note,
+                'payment_note' => $r->payment_note,
             ])
             ->values()
             ->all()]);

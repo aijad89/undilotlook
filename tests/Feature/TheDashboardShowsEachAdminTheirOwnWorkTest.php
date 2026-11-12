@@ -98,3 +98,33 @@ it('gives each role only the shortcuts it may use, and zones only to HQ and supe
     $this->actingAs(superAdmin(), 'admin')->get(route('admin.dashboard'))
         ->assertSee($newEvent, false)->assertSee($announce, false)->assertSee('By zone')->assertSee('Kedah');
 });
+
+it('tells HQ what waits to be verified, and each zone what HQ returned to it', function () {
+    $event = Event::factory()->create(['title' => 'MICF Test']);
+    registered($event, 'Perak', ['verified_at' => null]);
+    registered($event, 'Johor', ['verified_at' => null]);
+    registered($event, 'Perak', ['verified_at' => null, 'hq_note' => 'Wrong code.']);
+    registered($event, 'Johor');
+
+    $this->actingAs(superAdmin(), 'admin')->get(route('admin.dashboard'))
+        ->assertSee('MICF Test: 2 draw-list rows waiting for HQ to verify')
+        ->assertDontSee('returned by HQ');
+
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Perak'), 'admin')->get(route('admin.dashboard'))
+        ->assertSee('MICF Test: 1 draw-list row returned by HQ')
+        ->assertDontSee('waiting for HQ to verify');
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->get(route('admin.dashboard'))
+        ->assertDontSee('returned by HQ');
+});
+
+it('does not count a join request the zone already approved as one to review', function () {
+    $event = Event::factory()->create(['title' => 'MICF Test']);
+    $approved = registered($event, 'Perak', ['verified_at' => null]);
+    App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $approved->company_id]);
+    App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Perak'])->id]);
+
+    $this->actingAs(stateAdmin('Perak'), 'admin')->get(route('admin.dashboard'))
+        ->assertSee('MICF Test: 1 join request to review');
+});

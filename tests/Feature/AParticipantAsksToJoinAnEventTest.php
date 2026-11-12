@@ -105,7 +105,7 @@ it('refuses a join request outside the registration window', function () {
     expect(EventJoinRequest::count())->toBe(0);
 });
 
-it('lets the office of the zone approve onto the draw list, and no other zone', function () {
+it('lets the office of the zone approve onto the draw list, and no other zone; HQ verifying settles the request', function () {
     $event = joinable();
     $company = Company::factory()->create(['state' => 'Johor', 'kraf_code' => 'TBPS']);
     $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
@@ -122,13 +122,26 @@ it('lets the office of the zone approve onto the draw list, and no other zone', 
         ->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])
         ->assertSessionHas('success');
 
+    // On the list, waiting for HQ: the participant still sees a request with the office.
     $row = EventRegistration::sole();
     expect($row->company_id)->toBe($company->id)
         ->and($row->code)->toBe('TBPS')
+        ->and($row->verified_at)->toBeNull()
+        ->and($request->fresh()->status)->toBe('pending');
+    $this->get(route('admin.events.registrations.index', $event))->assertDontSee('Join requests (1)')->assertSee('Waiting for HQ');
+
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertSee('With the office');
+
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')
+        ->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'TBPS', 'plot_size' => '3x3']);
+    expect($row->fresh()->verified_at)->not->toBeNull()
         ->and($request->fresh()->status)->toBe('approved');
 
     auth()->forgetGuards();
-    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertSee($event->title);
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee($event->title)->assertDontSee('With the office');
 });
 
 it('shows a rejection reason to the participant, who may send again', function () {
@@ -179,13 +192,19 @@ it('serves a document to its own company and the zone office only', function () 
     $this->actingAs($company->user, 'web')->get($url)->assertOk();
 });
 
-it('settles a pending request when the office adds the company directly', function () {
+it('settles a pending request when the office adds the company directly, once HQ verifies', function () {
     $event = joinable();
     $company = Company::factory()->create(['state' => 'Johor']);
     $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
 
     $this->actingAs(stateAdmin('Johor'), 'admin')
         ->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+    expect($request->fresh()->status)->toBe('pending');
+
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.bulk', $event), [
+        'action' => 'verify', 'registration_id' => [EventRegistration::sole()->id],
+    ])->assertSessionHas('success');
 
     expect($request->fresh()->status)->toBe('approved');
 });
@@ -672,6 +691,13 @@ it('tells the participant the office answer, by bell and mail, whichever way the
     // Added straight to the list: the pending request is settled, and said so.
     $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$c->id]]);
 
+    // Nothing for b or c until HQ verifies.
+    expect($b->user->notifications()->count() + $c->user->notifications()->count())->toBe(0);
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.bulk', $event), [
+        'action' => 'verify', 'registration_id' => EventRegistration::pluck('id')->all(),
+    ]);
+
     foreach ([[$a, false], [$b, true], [$c, true]] as [$company, $approved]) {
         $note = $company->user->notifications()->sole();
         expect($note->type)->toBe(JoinRequestAnswered::class)
@@ -720,7 +746,10 @@ it('lets a company the office took off the draw list ask again, and puts it back
 
     $office = $this->actingAs(stateAdmin('Johor'), 'admin');
     $office->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3']);
-    $office->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->put(route('admin.events.registrations.update', [$event, EventRegistration::sole()]), ['plot_size' => '3x3']);
+    auth()->forgetGuards();
+    $this->actingAs(stateAdmin('Johor'), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
 
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
@@ -750,14 +779,23 @@ it('lets a company the office took off the draw list ask again, and puts it back
         ->and($request->fresh()->reviewed_at)->toBeNull();
 });
 
-it('tells a company the office adds directly that it is in the draw, once', function () {
+it('tells a company the office adds directly that it is in the draw, once HQ verifies, and once only', function () {
     $event = joinable(['title' => 'Pesta Kraf Utara']);
     $company = Company::factory()->create(['state' => 'Johor']);
+    $zone = stateAdmin('Johor');
+    $hq = superAdmin();
 
-    $office = $this->actingAs(stateAdmin('Johor'), 'admin');
-    $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+    $this->actingAs($zone, 'admin')->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
     // Added again: already on the list, nothing new to say.
-    $office->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+    $this->actingAs($zone, 'admin')->post(route('admin.events.registrations.store', $event), ['company_id' => [$company->id]]);
+    expect($company->user->notifications()->count())->toBe(0);
+
+    $row = EventRegistration::sole();
+    $this->actingAs($hq, 'admin')->put(route('admin.events.registrations.update', [$event, $row]), ['plot_size' => '3x3']);
+    // The zone changes the size: back to HQ, who verifies again. Still one message.
+    $this->actingAs($zone, 'admin')->put(route('admin.events.registrations.update', [$event, $row]), ['plot_size' => '3x6']);
+    expect($row->fresh()->verified_at)->toBeNull();
+    $this->actingAs($hq, 'admin')->put(route('admin.events.registrations.update', [$event, $row]), ['plot_size' => '3x6']);
 
     $note = $company->user->notifications()->sole();
     expect($note->type)->toBe(JoinRequestAnswered::class)
@@ -941,4 +979,22 @@ it('builds the user menu from the nav list', function () {
 
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
         ->assertSeeInOrder(['ap-dropdown-menu', 'href="'.route('dashboard').'"', 'Dashboard', 'href="'.route('profile').'"', 'Profile', 'Sign Out'], false);
+});
+
+it('tells a company the office is adding that it is being added, and takes no request from it', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $row = EventRegistration::factory()->unverified()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs($company->user, 'web')->get(route('events.show', $event))
+        ->assertSee('The office is adding your company to this draw.')
+        ->assertDontSee('I want to join this event, and I declare');
+    $this->get(route('dashboard'))->assertDontSee('Pesta Kraf Utara');
+    $this->post(route('events.join', $event), payment())
+        ->assertSessionHas('error', 'The office is adding your company to this draw. You will be told once HQ confirms it.');
+    expect(EventJoinRequest::count())->toBe(0);
+
+    // Verified: in the draw.
+    $row->update(['verified_at' => now()]);
+    $this->get(route('events.show', $event))->assertSee("Your company is in this event's draw.", false);
 });

@@ -42,6 +42,13 @@ class EventRegistrationFactory extends Factory
             'confirmed_participation' => false,
             'confirmed_at' => null,
             'reminded_at' => null,
+
+            // Verified by default: most tests are about the draw, which only
+            // opens once HQ has checked every row. unverified() for the rest.
+            'verified_by' => null,
+            'verified_at' => now(),
+            'hq_note' => null,
+            'payment_note' => null,
         ];
     }
 
@@ -52,5 +59,11 @@ class EventRegistrationFactory extends Factory
             'code' => $code,
             'code_updated_at' => now(),
         ]);
+    }
+
+    /** Added by a zone admin, not yet checked by HQ. */
+    public function unverified(): static
+    {
+        return $this->state(fn () => ['verified_at' => null]);
     }
 }

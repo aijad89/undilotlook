@@ -19,7 +19,7 @@ use App\Models\Plot;
  * but finishes badly — someone seated outside their own craft — is a warning,
  * shown beside the button, because it is a judgement an admin makes.
  *
- * Every registration of the event is in the draw: the row is the approval.
+ * Every registration of the event is in the draw, once HQ has verified it.
  */
 class PollingGuard
 {
@@ -27,6 +27,7 @@ class PollingGuard
     {
         return static::noWindow($event)
             ?? static::noPlots($event)
+            ?? static::unverified($event)
             ?? static::missingAccounts($event)
             ?? static::missingCodes($event)
             ?? static::codesWithNoPlot($event)
@@ -46,6 +47,16 @@ class PollingGuard
         return Plot::where('event_id', $event->id)->exists()
             ? null
             : 'Cannot start polling: no plots have been created for this event yet.';
+    }
+
+    /** HQ checks every row the zones approved before any of them draws. */
+    private static function unverified(Event $event): ?string
+    {
+        $waiting = EventRegistration::where('event_id', $event->id)->whereNull('verified_at')->count();
+
+        return $waiting === 0
+            ? null
+            : "Cannot start polling: {$waiting} registration(s) in the draw are still waiting for HQ to verify them.";
     }
 
     /** A drawn lot is recorded against the account; a company without one can win nothing. */

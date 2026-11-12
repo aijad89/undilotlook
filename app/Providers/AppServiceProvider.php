@@ -247,14 +247,13 @@ class AppServiceProvider extends ServiceProvider
         });
 
         /*
-         * The craft code and booth size a company draws under, on the draw list
-         * and on the company's own page. The plan is built from those two, so
-         * HQ sets them; a zone checks the payment, approves, and reads them.
-         * The draw-list routes also serve zone admins (approve, add, remove), so
-         * there EntRegistrationController asks this gate per request and drops
-         * a code or size a zone admin sends.
+         * HQ's second check on the draw list. A zone admin checks a company and
+         * puts it on the list; HQ verifies the row, fixing its code or size, or
+         * returns it to the zone with a note. The draw-list routes serve both,
+         * so EntRegistrationController asks this gate per request; only the
+         * return has it on the route.
          */
-        Gate::define('set-draw-code', function (Admin $admin) {
+        Gate::define('verify-draw-list', function (Admin $admin) {
             return $admin->hasGlobalAccess();
         });
 

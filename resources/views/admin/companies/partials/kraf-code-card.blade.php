@@ -21,17 +21,8 @@
 
     <p class="mac-muted mac-text-sm">
         Both are filled in for this company when it is added to an event's draw
-        list. The participant does not see them.@cannot('set-draw-code') Only HQ can change them.@endcannot
+        list. The participant does not see them.@cannot('verify-draw-list') A change to the booth size sends that company's draw-list rows back to HQ to verify.@endcannot
     </p>
-
-    @cannot('set-draw-code')
-        <dl class="row mb-0">
-            <dt class="col-sm-4 mac-label">Craft code</dt>
-            <dd class="col-sm-8">{{ $company->kraf_code ?? '—' }}</dd>
-            <dt class="col-sm-4 mac-label">Booth size</dt>
-            <dd class="col-sm-8 mb-0">{{ $company->plot_size ?? '—' }}</dd>
-        </dl>
-    @else
 
     <form method="POST" action="{{ route('admin.companies.kraf-code.update', $company) }}"
           class="row g-2 align-items-end">
@@ -69,5 +60,4 @@
             <button type="submit" class="mac-btn-secondary w-100">Save</button>
         </div>
     </form>
-    @endcannot
 </div>

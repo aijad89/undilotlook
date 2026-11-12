@@ -9,9 +9,10 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * One company's place in one event's draw.
  *
- * THE EXISTENCE OF THE ROW IS THE APPROVAL. There is no status column and no
- * workflow: an admin puts a company into the list with a craft code and a booth
- * size, and that is what being in the draw means. The system this replaces
+ * THE EXISTENCE OF THE ROW IS THE ZONE'S APPROVAL; `verified_at` IS HQ'S. A
+ * zone admin puts a company into the list with a craft code and a booth size,
+ * HQ checks it again, and only then does the participant hear of it or the
+ * draw open (PollingGuard). The system this replaces
  * carried a seven-value status and the screens around it; the draw read none of
  * it.
  *
@@ -40,6 +41,10 @@ class EventRegistration extends Model
         'plot_id',
         'confirmed_participation',
         'confirmed_at',
+        'verified_by',
+        'verified_at',
+        'hq_note',
+        'payment_note',
     ];
 
     /**
@@ -51,6 +56,7 @@ class EventRegistration extends Model
         'code_updated_at' => 'datetime',
         'confirmed_at' => 'datetime',
         'reminded_at' => 'datetime',
+        'verified_at' => 'datetime',
         'confirmed_participation' => 'boolean',
     ];
 
@@ -89,5 +95,34 @@ class EventRegistration extends Model
             ->orWhereNotExists(fn ($p) => $p->selectRaw('1')->from('polls')
                 ->whereColumn('polls.user_id', 'event_registrations.user_id')
                 ->whereColumn('polls.event_id', 'event_registrations.event_id')));
+    }
+
+    /**
+     * A ZONE ADMIN'S CHANGE UNDOES HQ'S CHECK — to the code, the size, or the
+     * payment note HQ verified against. Here rather than in each door,
+     * because the code and size are written from four of them — the row, the
+     * bulk form, and the company page through Company::syncBoothSize(). A change
+     * by HQ keeps whatever verification HQ itself is setting.
+     */
+    protected static function booted(): void
+    {
+        static::updating(function (self $registration) {
+            $admin = auth('admin')->user();
+
+            if ($admin instanceof Admin && ! $admin->hasGlobalAccess() && $registration->isDirty(['code', 'plot_size', 'payment_note'])) {
+                $registration->verified_at = null;
+            }
+        });
+    }
+
+    /** HQ has checked it, and nothing has changed since. */
+    public function scopeVerified($query)
+    {
+        return $query->whereNotNull('event_registrations.verified_at');
+    }
+
+    public function verifier()
+    {
+        return $this->belongsTo(Admin::class, 'verified_by');
     }
 }

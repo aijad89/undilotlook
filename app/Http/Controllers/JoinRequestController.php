@@ -45,8 +45,13 @@ class JoinRequestController extends Controller
             return back()->with('error', 'Registration for this event is not open.');
         }
 
-        if ($event->registrations()->where('company_id', $company->id)->exists()) {
-            return back()->with('error', 'Your company is already in this draw.');
+        // On the list already: in the draw, or put there by the office and
+        // waiting for HQ. Either way there is nothing to ask for.
+        $row = $event->registrations()->where('company_id', $company->id)->first();
+        if ($row) {
+            return back()->with('error', $row->verified_at
+                ? 'Your company is already in this draw.'
+                : 'The office is adding your company to this draw. You will be told once HQ confirms it.');
         }
 
         $existing = $event->joinRequests()->where('company_id', $company->id)->first();

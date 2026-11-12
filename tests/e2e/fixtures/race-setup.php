@@ -45,6 +45,7 @@ foreach (['a', 'b'] as $who) {
         'user_id' => $company->user_id,
         'code' => 'RKP',
         'plot_size' => '3x3',
+        'verified_at' => now(),
     ])->id;
 }
 

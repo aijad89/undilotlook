@@ -190,14 +190,14 @@ Baris **di dalam** acara tetap ditapis mengikut zon.
 
 Tindakan tulis berada di bawah `can:` dalam `routes/web.php` (`manage-events`,
 `manage-settings`, `manage-site-content`, `send-announcements`,
-`read-audit-trail`, `set-draw-code`), ditakrif dalam `AppServiceProvider`. Skrin
+`read-audit-trail`, `verify-draw-list`), ditakrif dalam `AppServiceProvider`. Skrin
 baca terbuka kepada semua peranan dan menapis sendiri. Pautan nav untuk skrin
 bergate disorok dengan `when` yang bertanya soalan yang sama.
 
 Satu pengecualian: route senarai cabutan melayan admin negeri juga (lulus,
-tambah, buang), jadi `EntRegistrationController` bertanya `set-draw-code` per
-permintaan dan **membuang** kod atau saiz yang dihantar oleh admin negeri —
-bukan menolak permintaan itu.
+tambah, sunting, buang), jadi `EntRegistrationController` bertanya
+`verify-draw-list` per permintaan untuk tahu sama ada tulisan itu juga
+pengesahan HQ. Hanya `return` membawa gate itu di route.
 
 ### `kraf_bidangs` memegang **dua** senarai
 
@@ -238,17 +238,34 @@ apa dalam skema menghalang null tiba.
 `user_id` **tetap ditulis dan dibaca** — oleh `plots.allocated_to`, `polls`, dan
 peruntukan awal. **Dua kunci, dua soalan, dengan sengaja.**
 
-### Kewujudan baris pendaftaran ialah kelulusannya
+### Dua semakan: baris ialah kelulusan zon, `verified_at` ialah HQ
 
-Tiada lajur `status` pada `event_registrations`. Admin meletakkan syarikat ke
-dalam senarai cabutan sesebuah acara dengan kod kraf dan saiz gerai; itulah
-maksud masuk cabutan.
+Tiada lajur `status` pada `event_registrations`. **Admin negeri menyemak
+semua** — butiran syarikat, bukti bayaran, kod kraf, saiz gerai — dan
+meletakkannya ke senarai cabutan. Baris itu menunggu HQ.
 
-**Hanya HQ menetapkan kod kraf dan saiz gerai** (gate `set-draw-code`) — di
-senarai cabutan dan di halaman syarikat. Admin negeri menyemak bukti bayaran,
-meluluskan dengan ✓, dan baris itu mengambil kod dan saiz syarikat sendiri.
-Syarikat tanpa kod masuk tanpa kod, dan `PollingGuard` menahan cabutan sehingga
-HQ mengisinya.
+**HQ menyemak semula** (gate `verify-draw-list`): sahkan (boleh membetulkan kod
+atau saiz dalam langkah yang sama), atau pulangkan kepada zon dengan nota
+(`hq_note`). Zon membetulkan, baris menunggu HQ lagi.
+
+**HQ boleh memintas zon, dengan sengaja.** Permintaan yang HQ luluskan atau
+syarikat yang HQ tambah terus disahkan — tiada semakan zon. Itu keputusan, bukan
+lubang; jangan "betulkan".
+
+- Permintaan sertai kekal `pending` dan peserta **tidak diberitahu** sehingga
+  HQ mengesahkan. Bacaan portal menggunakan skop `verified()`.
+- `PollingGuard` menahan cabutan selagi ada baris belum disahkan.
+- Perubahan kod atau saiz oleh admin negeri — dari mana-mana pintu, termasuk
+  halaman syarikat melalui `syncBoothSize()` — **mengosongkan** `verified_at`.
+  Ini satu tempat: `EventRegistration::booted()`.
+- Syarikat yang ditambah pejabat tiada permintaan, jadi tiada bukti bayaran:
+  zon menulis `payment_note` (no. resit, tarikh, cara). Mengubahnya juga
+  mengosongkan `verified_at`. Tidak dibekukan bila cabutan bermula.
+- Kod dan saiz **dibekukan** sebaik `polling_status` bukan `draft`, untuk HQ
+  juga — jika tidak, suntingan zon mengosongkan pengesahan dan syarikat hilang
+  dari papan pemuka pesertanya sendiri di tengah cabutan.
+- `verified_by` tidak dikosongkan; ia membezakan semakan semula daripada yang
+  pertama, supaya peserta diberitahu sekali sahaja.
 
 ### Baris `plot_sizes` ialah pasangan (lokasi, saiz)
 
