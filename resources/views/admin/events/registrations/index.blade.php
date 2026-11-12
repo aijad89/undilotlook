@@ -84,6 +84,9 @@
                                     @endforelse
                                 </td>
                                 <td>
+                                    @if($zoneLocked)
+                                    <span class="mac-text-sm mac-muted">The draw has started: only HQ can approve now.</span>
+                                    @else
                                     <form method="POST" action="{{ route('admin.events.registrations.approve', [$event, $jr]) }}" class="d-flex gap-1">
                                         @csrf
                                         <select name="code" class="mac-select mac-action-btn-field" style="min-width: 110px" aria-label="Craft code">
@@ -101,6 +104,7 @@
                                             <i class="bi bi-check-lg"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                                 <td>
                                     <form method="POST" action="{{ route('admin.events.registrations.reject', [$event, $jr]) }}" class="d-flex gap-1">
@@ -119,10 +123,38 @@
         </div>
     @endif
 
+    @if($rejected->isNotEmpty())
+        <details class="mac-card mb-3" id="rejected">
+            <summary class="mac-card-padded mac-card-title" style="cursor: pointer">Rejected by zones ({{ $rejected->count() }})</summary>
+            <p class="mac-muted mac-text-sm px-4 mb-2">
+                Told to the company at once, with the reason below. The company may change its request and send it again.
+            </p>
+            <div class="table-responsive">
+                <table class="mac-table">
+                    <thead>
+                        <tr><th>Company</th><th>Reason</th><th>Rejected by</th><th>When</th></tr>
+                    </thead>
+                    <tbody>
+                        @foreach($rejected as $jr)
+                            <tr>
+                                <td><strong>{{ $jr->company->name }}</strong><div class="mac-text-sm mac-muted">{{ $jr->company->state }}</div></td>
+                                <td class="mac-text-sm">{{ $jr->reject_reason }}</td>
+                                <td class="mac-text-sm">{{ $jr->reviewer?->name ?? '—' }}</td>
+                                <td class="mac-text-sm text-nowrap">{{ $jr->reviewed_at?->format('d M Y') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </details>
+    @endif
+
     <div class="mac-card mac-card-padded mb-3">
         <h3 class="mac-card-title">Add companies</h3>
 
-        @if($candidates->isEmpty())
+        @if($zoneLocked)
+            <p class="mac-muted mb-0">The draw has started: only HQ can add companies now.</p>
+        @elseif($candidates->isEmpty())
             <p class="mac-muted mb-0">Every company in your zone is already in this draw.</p>
         @else
             <form method="POST" action="{{ route('admin.events.registrations.store', $event) }}">
@@ -347,6 +379,8 @@
                                             </form>
                                         </details>
                                     @endif
+                                    {{-- Told it is in: only HQ takes it out. --}}
+                                    @if($isHq || ! $registration->first_verified_at)
                                     <form method="POST"
                                           action="{{ route('admin.events.registrations.destroy', [$event, $registration]) }}">
                                         @csrf
@@ -357,6 +391,7 @@
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
+                                    @endif
                                 </td>
                             </tr>
                         @empty

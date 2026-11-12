@@ -122,7 +122,8 @@ it('puts back exactly what the last removal took', function () {
     $event = Event::factory()->create();
     $company = Company::factory()->create(['state' => 'Johor']);
 
-    EventRegistration::factory()->coded('TBPS')->create([
+    // Not yet confirmed to the company, so the zone may still take it out.
+    EventRegistration::factory()->coded('TBPS')->unverified()->create([
         'event_id' => $event->id,
         'company_id' => $company->id,
         'user_id' => $company->user_id,
@@ -353,8 +354,8 @@ it('lets a zone admin check everything and approve; HQ verifies, or returns it w
     $this->actingAs($zone, 'admin')->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => 'RKP', 'plot_size' => '3x9'])->assertSessionHas('success');
     expect($row->fresh()->plot_size)->toBe('3x9')->and($row->fresh()->verified_at)->toBeNull();
 
-    // A zone admin may still take a row off the list.
-    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id]])->assertSessionHas('success');
+    // HQ verified it once, so the company was told: only HQ takes it off the list.
+    $this->actingAs($hq, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id]])->assertSessionHas('success');
     expect(EventRegistration::where('company_id', $company->id)->exists())->toBeFalse();
 });
 
@@ -413,4 +414,41 @@ it('lets the zone write how an office-added company paid, which HQ checks again'
         ->and($row->fresh()->verified_at)->toBeNull();
 
     $this->actingAs(superAdmin(), 'admin')->get($index)->assertSee('Receipt 00123, cash, 3 Nov');
+});
+
+it('lets a zone admin remove only a row the company has not been told of; HQ removes the rest', function () {
+    $event = Event::factory()->create();
+    $told = EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Johor'])->id]);
+    $waiting = EventRegistration::factory()->unverified()->create(['event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Johor'])->id]);
+    $zone = stateAdmin('Johor');
+
+    $this->actingAs($zone, 'admin')->delete(route('admin.events.registrations.destroy', [$event, $told]))
+        ->assertSessionHas('error', 'Only HQ can remove that company from the list now.');
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$told->id, $waiting->id]])
+        ->assertSessionHas('success', '1 removed from the draw list. 1 kept: only HQ can remove them now.');
+    expect($told->fresh())->not->toBeNull()->and($waiting->fresh())->toBeNull();
+
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, $told]))
+        ->assertSessionHas('success');
+    expect($told->fresh())->toBeNull();
+});
+
+it('lets only HQ add a company once the draw has started, verified at once', function () {
+    $event = Event::factory()->create(['polling_status' => 'polling']);
+    [$a, $b, $c] = Company::factory()->count(3)->create(['state' => 'Johor']);
+    $request = App\Models\EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $c->id]);
+    $zone = stateAdmin('Johor');
+
+    $this->actingAs($zone, 'admin')->get(route('admin.events.registrations.index', $event))
+        ->assertSee('The draw has started: only HQ can add companies now.')
+        ->assertSee('The draw has started: only HQ can approve now.');
+    $this->post(route('admin.events.registrations.store', $event), ['company_id' => [$a->id]])
+        ->assertSessionHas('error', 'The draw has started: only HQ can add companies now.');
+    $this->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])
+        ->assertSessionHas('error');
+    expect(EventRegistration::count())->toBe(0)->and($request->fresh()->status)->toBe('pending');
+
+    $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.store', $event), ['company_id' => [$b->id]])
+        ->assertSessionHas('success');
+    expect(EventRegistration::sole()->verified_at)->not->toBeNull();
 });

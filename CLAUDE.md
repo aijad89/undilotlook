@@ -267,6 +267,14 @@ lubang; jangan "betulkan".
 - Kod dan saiz **dibekukan** sebaik `polling_status` bukan `draft`, untuk HQ
   juga — jika tidak, suntingan zon mengosongkan pengesahan dan syarikat hilang
   dari papan pemuka pesertanya sendiri di tengah cabutan.
+- Admin negeri hanya membuang baris yang **belum** diberitahu kepada syarikat
+  (`first_verified_at` null). Mengeluarkan syarikat daripada cabutan yang ia
+  sudah diberitahu ialah keputusan HQ (`zoneMayRemove()`).
+- Sebaik cabutan bermula, admin negeri **tidak menambah atau meluluskan**
+  sesiapa (`zoneLocked()`); hanya HQ, dan baris HQ disahkan serta-merta. Tiada
+  baris menunggu HQ boleh wujud semasa cabutan berjalan.
+- Penolakan zon terus kepada peserta; HQ melihatnya selepas itu (papan pemuka
+  7 hari, dan "Rejected by zones" pada senarai cabutan) — `rejectedByZone()`.
 - `first_verified_at` tidak pernah dikosongkan; ia membezakan semakan semula
   daripada yang pertama, supaya peserta diberitahu sekali sahaja.
 

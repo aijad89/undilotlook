@@ -69,4 +69,17 @@ class EventJoinRequest extends Model
     {
         return $this->belongsTo(Company::class);
     }
+
+    /** The admin who answered it. */
+    public function reviewer()
+    {
+        return $this->belongsTo(Admin::class, 'reviewed_by');
+    }
+
+    /** Rejected by a zone admin, not by HQ: what HQ looks back over. */
+    public function scopeRejectedByZone($query)
+    {
+        return $query->where('status', 'rejected')
+            ->whereHas('reviewer', fn ($a) => $a->whereNotIn('role', ['hq', Admin::SUPER_ROLE]));  // the roles hasGlobalAccess() names
+    }
 }

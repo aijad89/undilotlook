@@ -110,10 +110,16 @@ class EntRegistrationController extends Controller
         return view('admin.events.registrations.index', [
             'event' => $event,
             'joinRequests' => $joinRequests,
+            // HQ looks back over what the zones turned away: a rejection goes to
+            // the participant at once and HQ is not asked, so it is shown here.
+            'rejected' => $admin->can('verify-draw-list')
+                ? $event->joinRequests()->rejectedByZone()->with(['company', 'reviewer'])->latest('reviewed_at')->get()
+                : collect(),
             'registrations' => $registrations,
             'proofs' => $proofs,
             'isHq' => $admin->can('verify-draw-list'),
             'codeFrozen' => $this->codeFrozen($event),
+            'zoneLocked' => $this->zoneLocked($request, $event),
             'waitingCount' => $scoped($event->registrations()->whereNull('verified_at')->whereNull('hq_note'))->count(),
             'candidates' => $candidates,
             'codes' => KrafPicker::codes(),
@@ -139,6 +145,10 @@ class EntRegistrationController extends Controller
             'code' => ['nullable', 'string', 'max:50'],
             'plot_size' => ['nullable', Rule::in(PlotSizes::all())],
         ]);
+
+        if ($this->zoneLocked($request, $event)) {
+            return back()->with('error', self::HQ_ONLY_NOW);
+        }
 
         // Re-read the companies through the same scope the picker used, so a
         // typed id from another zone is not added by posting it directly.
@@ -242,6 +252,30 @@ class EntRegistrationController extends Controller
         return $event->polling_status !== 'draft';
     }
 
+    /**
+     * A zone admin removes only what HQ has not yet confirmed to the company,
+     * and nothing holding a lot. Taking a company out of a draw it was told it
+     * is in is HQ's call, like every other zone change after HQ's check.
+     */
+    private function zoneMayRemove(Request $request, EventRegistration $registration): bool
+    {
+        return $this->isHq($request)
+            || (! $registration->plot_id && ! $registration->first_verified_at);
+    }
+
+    private const HQ_ONLY_NOW = 'The draw has started: only HQ can add companies now.';
+
+    /**
+     * Once the draw has started a zone adds no one. A zone's row waits for HQ,
+     * and a row waiting while the draw runs is a company that may miss it — or
+     * reach the lot page before anyone checked it. HQ's own add is verified at
+     * once, so HQ may still add a latecomer.
+     */
+    private function zoneLocked(Request $request, Event $event): bool
+    {
+        return ! $this->isHq($request) && $this->codeFrozen($event);
+    }
+
     private function isHq(Request $request): bool
     {
         return $request->user('admin')->can('verify-draw-list');
@@ -255,6 +289,9 @@ class EntRegistrationController extends Controller
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
         if ($event->isCalledOff()) {
             return back()->with('error', 'This event was cancelled or unpublished. Its requests cannot be answered.');
+        }
+        if ($this->zoneLocked($request, $event)) {
+            return back()->with('error', self::HQ_ONLY_NOW);
         }
 
         $data = $request->validate([
@@ -373,11 +410,13 @@ class EntRegistrationController extends Controller
         EventVisibility::authorize($event);
         $this->authorizeScope($request, $registration);
 
-        if ($registration->plot_id) {
+        if (! $this->zoneMayRemove($request, $registration)) {
             // Worded the same for a set-aside lot, which a zone admin must not learn of.
-            return back()->with('error', $request->user('admin')->hasGlobalAccess()
-                ? 'That company holds a lot. Withdraw the lot before removing it from the list.'
-                : 'Only HQ can remove that company from the list now.');
+            return back()->with('error', 'Only HQ can remove that company from the list now.');
+        }
+
+        if ($registration->plot_id) {
+            return back()->with('error', 'That company holds a lot. Withdraw the lot before removing it from the list.');
         }
 
         $this->rememberForUndo([$registration]);
@@ -420,8 +459,8 @@ class EntRegistrationController extends Controller
         }
 
         if ($data['action'] === 'remove') {
-            $holding = $rows->whereNotNull('plot_id');
-            $removable = $rows->whereNull('plot_id');
+            $holding = $rows->filter(fn ($r) => $r->plot_id || ! $this->zoneMayRemove($request, $r));
+            $removable = $rows->diff($holding);
 
             $this->rememberForUndo($removable);
 

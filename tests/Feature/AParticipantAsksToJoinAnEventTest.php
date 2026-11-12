@@ -749,7 +749,7 @@ it('lets a company the office took off the draw list ask again, and puts it back
     auth()->forgetGuards();
     $this->actingAs(superAdmin(), 'admin')->put(route('admin.events.registrations.update', [$event, EventRegistration::sole()]), ['plot_size' => '3x3']);
     auth()->forgetGuards();
-    $this->actingAs(stateAdmin('Johor'), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
 
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
@@ -769,7 +769,7 @@ it('lets a company the office took off the draw list ask again, and puts it back
 
     // Taken off again, and this time it asks again.
     auth()->forgetGuards();
-    $this->actingAs(stateAdmin('Johor'), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')
         ->post(route('events.join', $event), payment())

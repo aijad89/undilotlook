@@ -75,6 +75,7 @@ class DashboardController extends Controller
                         ->whereColumn('event_registrations.company_id', 'event_join_requests.company_id')),
                 'registrations as hq_waiting' => fn ($q) => $inZone($q)->whereNull('verified_at')->whereNull('hq_note'),
                 'registrations as hq_returned' => fn ($q) => $inZone($q)->whereNotNull('hq_note'),
+                'joinRequests as zone_rejected' => fn ($q) => $q->rejectedByZone()->where('reviewed_at', '>=', now()->subDays(7)),
                 'plots as plots_total',
                 // A set-aside lot is a surprise to the zone until it is confirmed.
                 'plots as plots_taken' => fn ($q) => $q->where('is_allocated', true)
@@ -115,6 +116,10 @@ class DashboardController extends Controller
             if ($global && $event->hq_waiting > 0) {
                 $rows[] = ['warn', "{$event->title}: {$event->hq_waiting} draw-list ".str('row')->plural($event->hq_waiting).' waiting for HQ to verify',
                     route('admin.events.registrations.index', [$event, 'status' => 'waiting'])];
+            }
+            if ($global && $event->zone_rejected > 0) {
+                $rows[] = ['warn', "{$event->title}: {$event->zone_rejected} join ".str('request')->plural($event->zone_rejected).' rejected by zones in the last 7 days',
+                    route('admin.events.registrations.index', $event).'#rejected'];
             }
             if (! $global && $event->hq_returned > 0) {
                 $rows[] = ['bad', "{$event->title}: {$event->hq_returned} draw-list ".str('row')->plural($event->hq_returned).' returned by HQ',

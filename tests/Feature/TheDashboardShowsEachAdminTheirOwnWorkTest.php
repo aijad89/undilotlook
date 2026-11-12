@@ -128,3 +128,26 @@ it('does not count a join request the zone already approved as one to review', f
     $this->actingAs(stateAdmin('Perak'), 'admin')->get(route('admin.dashboard'))
         ->assertSee('MICF Test: 1 join request to review');
 });
+
+it('shows HQ what the zones rejected, with the reason, and not what HQ rejected itself', function () {
+    $event = Event::factory()->create(['title' => 'MICF Test']);
+    $zone = stateAdmin('Perak', ['name' => 'Zone Perak']);
+    $reject = fn ($admin, $reason, $daysAgo = 0) => App\Models\EventJoinRequest::factory()->create([
+        'event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Perak'])->id,
+        'status' => 'rejected', 'reject_reason' => $reason, 'reviewed_by' => $admin->id, 'reviewed_at' => now()->subDays($daysAgo),
+    ]);
+    $reject($zone, 'Receipt is blurry');
+    $reject($zone, 'Old reason', 10);
+    $reject(superAdmin(), 'HQ said no');
+
+    $this->actingAs(superAdmin(), 'admin')->get(route('admin.dashboard'))
+        ->assertSee('MICF Test: 1 join request rejected by zones in the last 7 days');
+    $this->get(route('admin.events.registrations.index', $event))
+        ->assertSee('Rejected by zones (2)')
+        ->assertSeeInOrder(['Receipt is blurry', 'Zone Perak'])
+        ->assertDontSee('HQ said no');
+
+    auth()->forgetGuards();
+    $this->actingAs($zone, 'admin')->get(route('admin.dashboard'))->assertDontSee('rejected by zones');
+    $this->get(route('admin.events.registrations.index', $event))->assertDontSee('Rejected by zones');
+});
