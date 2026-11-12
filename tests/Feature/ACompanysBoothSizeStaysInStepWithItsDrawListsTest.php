@@ -64,3 +64,19 @@ it('carries a size set in bulk, or picked when adding, to each company', functio
     ]);
     expect($b->fresh()->plot_size)->toBe('3x6');
 });
+
+it('tells the admin a booth size reached other draw lists, and that a zone change waits for HQ there', function () {
+    $company = Company::factory()->create(['state' => 'Kedah', 'plot_size' => '3x3']);
+    $edited = onDrawList($company);
+    $other = onDrawList($company);
+    $row = fn ($size) => ['code' => null, 'plot_size' => $size];
+
+    $this->actingAs(stateAdmin('Kedah'), 'admin')
+        ->put(route('admin.events.registrations.update', [$edited->event_id, $edited]), $row('3x6'))
+        ->assertSessionHas('code_success', 'Saved. Waiting for HQ to verify. Booth size also changed on 1 other draw list; it waits for HQ to approve again.');
+    expect($other->fresh()->verified_at)->toBeNull();
+
+    $this->actingAs(superAdmin(), 'admin')
+        ->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x9'])
+        ->assertSessionHas('success', 'Craft code and booth size saved. Booth size also changed on 2 other draw lists.');
+});

@@ -86,13 +86,13 @@
                                 <td>
                                     <form method="POST" action="{{ route('admin.events.registrations.approve', [$event, $jr]) }}" class="d-flex gap-1">
                                         @csrf
-                                        <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
+                                        <select name="code" class="mac-select mac-action-btn-field" style="min-width: 110px" aria-label="Craft code">
                                             <option value="">{{ $jr->company->kraf_code ? 'Own: '.$jr->company->kraf_code : '— None —' }}</option>
                                             @foreach($codes as $code)
                                                 <option value="{{ $code->code }}">{{ $code->code }}</option>
                                             @endforeach
                                         </select>
-                                        <select name="plot_size" class="mac-select mac-action-btn-field" aria-label="Booth">
+                                        <select name="plot_size" class="mac-select mac-action-btn-field" style="min-width: 90px" aria-label="Booth">
                                             @foreach($plotSizes as $size)
                                                 <option value="{{ $size }}" @selected(($jr->company->plot_size ?? '3x3') === $size)>{{ $size }}</option>
                                             @endforeach
@@ -207,8 +207,8 @@
                             <th>Account</th>
                             <th>Payment</th>
                             <th>HQ check</th>
-                            <th style="width:220px;">Craft code</th>
-                            <th style="width:120px;">Booth</th>
+                            <th>Craft code</th>
+                            <th>Booth</th>
                             <th>Lot</th>
                             <th class="text-end">Actions</th>
                         </tr>
@@ -228,7 +228,7 @@
                                     <strong>{{ $registration->company->name }}</strong>
                                     <div class="mac-text-sm mac-muted">{{ $registration->company->state }}</div>
                                 </td>
-                                <td class="mac-text-sm">
+                                <td class="mac-text-sm" style="overflow-wrap: anywhere">
                                     @if($registration->user_id)
                                         {{ $registration->company->user->email }}
                                     @else
@@ -245,7 +245,7 @@
                                             @csrf
                                             @method('PUT')
                                             <input type="text" name="payment_note" value="{{ $registration->payment_note }}" maxlength="500"
-                                                   class="mac-form-control mac-action-btn-field" placeholder="Receipt no., date, how paid"
+                                                   class="mac-form-control mac-action-btn-field" style="min-width: 120px" placeholder="Receipt no., date"
                                                    aria-label="Payment note for {{ $registration->company->name }}">
                                             <button type="submit" class="mac-action-btn" title="Save payment note"><i class="bi bi-check-lg"></i></button>
                                         </form>
@@ -263,7 +263,7 @@
                                         <div class="mt-1">{{ $registration->hq_note }}</div>
                                     @else
                                         <span class="mac-badge mac-badge-orange">Waiting for HQ</span>
-                                        @if($registration->verified_by)
+                                        @if($registration->first_verified_at)
                                             <div class="mac-muted mt-1">Changed since HQ verified it.</div>
                                         @endif
                                     @endif
@@ -283,7 +283,7 @@
                                           class="d-flex gap-1">
                                         @csrf
                                         @method('PUT')
-                                        <select name="code" class="mac-select mac-action-btn-field" aria-label="Craft code">
+                                        <select name="code" class="mac-select mac-action-btn-field" style="min-width: 110px" aria-label="Craft code">
                                             <option value="">— None —</option>
                                             @foreach($codes as $code)
                                                 <option value="{{ $code->code }}" @selected($registration->code === $code->code)>
@@ -300,7 +300,7 @@
                                             @endif
                                         </select>
 
-                                        <select name="plot_size" class="mac-select mac-action-btn-field" aria-label="Booth">
+                                        <select name="plot_size" class="mac-select mac-action-btn-field" style="min-width: 90px" aria-label="Booth">
                                             @foreach($plotSizes as $size)
                                                 <option value="{{ $size }}" @selected($registration->plot_size === $size)>
                                                     {{ $size }}

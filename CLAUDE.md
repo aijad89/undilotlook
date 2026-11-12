@@ -253,7 +253,10 @@ syarikat yang HQ tambah terus disahkan — tiada semakan zon. Itu keputusan, buk
 lubang; jangan "betulkan".
 
 - Permintaan sertai kekal `pending` dan peserta **tidak diberitahu** sehingga
-  HQ mengesahkan. Bacaan portal menggunakan skop `verified()`.
+  HQ mengesahkan. Bacaan portal menggunakan skop `announced()`
+  (`first_verified_at`), **bukan** `verified_at`: syarikat yang sudah
+  diberitahu tidak hilang dari portalnya sendiri bila zon menyunting dan HQ
+  menyemak semula.
 - `PollingGuard` menahan cabutan selagi ada baris belum disahkan.
 - Perubahan kod atau saiz oleh admin negeri — dari mana-mana pintu, termasuk
   halaman syarikat melalui `syncBoothSize()` — **mengosongkan** `verified_at`.
@@ -264,8 +267,8 @@ lubang; jangan "betulkan".
 - Kod dan saiz **dibekukan** sebaik `polling_status` bukan `draft`, untuk HQ
   juga — jika tidak, suntingan zon mengosongkan pengesahan dan syarikat hilang
   dari papan pemuka pesertanya sendiri di tengah cabutan.
-- `verified_by` tidak dikosongkan; ia membezakan semakan semula daripada yang
-  pertama, supaya peserta diberitahu sekali sahaja.
+- `first_verified_at` tidak pernah dikosongkan; ia membezakan semakan semula
+  daripada yang pertama, supaya peserta diberitahu sekali sahaja.
 
 ### Baris `plot_sizes` ialah pasangan (lokasi, saiz)
 

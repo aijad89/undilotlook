@@ -467,7 +467,9 @@
                     <a href="{{ route('login') }}" class="evd-cta"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Sign in to confirm your lot</a>
                 @endauth
             @endif
-            <p class="evd-note">Your login is created by the office. Sign in to join an event; the office reviews your documents before adding you to the draw.</p>
+            @guest('web')
+                <p class="evd-note">Your login is created by the office. Sign in to join an event; the office reviews your documents before adding you to the draw.</p>
+            @endguest
         </aside>
     </div>
 </div>

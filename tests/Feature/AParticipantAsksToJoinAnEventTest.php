@@ -995,6 +995,26 @@ it('tells a company the office is adding that it is being added, and takes no re
     expect(EventJoinRequest::count())->toBe(0);
 
     // Verified: in the draw.
-    $row->update(['verified_at' => now()]);
+    $row->update(['verified_at' => now(), 'first_verified_at' => now()]);
     $this->get(route('events.show', $event))->assertSee("Your company is in this event's draw.", false);
+});
+
+it('keeps a company in its own portal while HQ re-checks a zone change', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $company = Company::factory()->create(['state' => 'Johor', 'plot_size' => '3x3']);
+    $row = EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    // The zone changes the booth size on the company page; the row goes back to HQ.
+    $this->actingAs(stateAdmin('Johor'), 'admin')
+        ->put(route('admin.companies.kraf-code.update', $company), ['kraf_code' => '', 'plot_size' => '3x6']);
+    expect($row->fresh()->verified_at)->toBeNull();
+
+    auth()->forgetGuards();
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))->assertSee('Pesta Kraf Utara');
+    $this->get(route('events.show', $event))->assertSee("Your company is in this event's draw.", false);
+
+    // Verified again by HQ: nothing new to tell.
+    auth()->forgetGuards();
+    $this->actingAs(superAdmin(), 'admin')->put(route('admin.events.registrations.update', [$event, $row]), ['plot_size' => '3x6']);
+    expect($company->user->notifications()->count())->toBe(0);
 });

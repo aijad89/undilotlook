@@ -49,7 +49,7 @@ class JoinRequestController extends Controller
         // waiting for HQ. Either way there is nothing to ask for.
         $row = $event->registrations()->where('company_id', $company->id)->first();
         if ($row) {
-            return back()->with('error', $row->verified_at
+            return back()->with('error', $row->first_verified_at
                 ? 'Your company is already in this draw.'
                 : 'The office is adding your company to this draw. You will be told once HQ confirms it.');
         }

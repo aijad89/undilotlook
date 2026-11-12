@@ -47,6 +47,7 @@ class EventRegistrationFactory extends Factory
             // opens once HQ has checked every row. unverified() for the rest.
             'verified_by' => null,
             'verified_at' => now(),
+            'first_verified_at' => now(),
             'hq_note' => null,
             'payment_note' => null,
         ];
@@ -64,6 +65,6 @@ class EventRegistrationFactory extends Factory
     /** Added by a zone admin, not yet checked by HQ. */
     public function unverified(): static
     {
-        return $this->state(fn () => ['verified_at' => null]);
+        return $this->state(fn () => ['verified_at' => null, 'first_verified_at' => null]);
     }
 }

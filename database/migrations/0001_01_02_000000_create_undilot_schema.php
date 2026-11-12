@@ -416,11 +416,13 @@ return new class extends Migration
             // its payment proof, code and booth size, and adds the row; HQ checks
             // it again and stamps `verified_at`. The draw will not open while any
             // row is unverified, and the participant hears nothing until then.
-            // `verified_by` survives a zone edit that clears `verified_at`: it is
-            // how a re-check is told apart from a first one. `hq_note` is HQ
-            // sending the row back to the zone with a reason.
+            // `first_verified_at` is when the participant was told, and is never
+            // cleared: a zone edit sends the row back to HQ (`verified_at` null)
+            // but the company stays in its own portal, and is not told twice.
+            // `hq_note` is HQ sending the row back to the zone with a reason.
             $table->foreignId('verified_by')->nullable()->constrained('admins')->nullOnDelete();
             $table->timestamp('verified_at')->nullable();
+            $table->timestamp('first_verified_at')->nullable();
             $table->text('hq_note')->nullable();
 
             // How a company the office added paid — receipt number, date, how —

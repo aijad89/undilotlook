@@ -47,6 +47,9 @@ class EntRegistrationController extends Controller
     /** How many removed rows an undo may hold. One bulk operation's worth. */
     private const UNDO_LIMIT = 200;
 
+    /** Other draw lists this request's booth sizes reached, for the message. */
+    private int $moved = 0;
+
     public function index(Request $request, Event $event)
     {
         EventVisibility::authorize($event);
@@ -111,7 +114,7 @@ class EntRegistrationController extends Controller
             'proofs' => $proofs,
             'isHq' => $admin->can('verify-draw-list'),
             'codeFrozen' => $this->codeFrozen($event),
-            'waitingCount' => $scoped($event->registrations()->whereNull('verified_at'))->count(),
+            'waitingCount' => $scoped($event->registrations()->whereNull('verified_at')->whereNull('hq_note'))->count(),
             'candidates' => $candidates,
             'codes' => KrafPicker::codes(),
             'plotSizes' => PlotSizes::all(),
@@ -156,7 +159,8 @@ class EntRegistrationController extends Controller
         return back()->with('success', ($added === 1
             ? 'One company added to the draw list.'
             : "{$added} companies added to the draw list.")
-            .($this->isHq($request) ? '' : ' HQ will verify before the company is told.'));
+            .($this->isHq($request) ? '' : ' HQ will verify before the company is told.')
+            .Company::boothMovedNote($this->moved, $this->isHq($request)));
     }
 
     /**
@@ -187,7 +191,7 @@ class EntRegistrationController extends Controller
 
         // A size picked here becomes the company's own too.
         if ($registration->wasRecentlyCreated && $size) {
-            $company->syncBoothSize($size);
+            $this->moved += $company->syncBoothSize($size);
         }
 
         if (auth('admin')->user()->can('verify-draw-list')) {
@@ -205,10 +209,11 @@ class EntRegistrationController extends Controller
      */
     private function verify(EventRegistration $registration): void
     {
-        $first = $registration->verified_by === null;
+        $first = $registration->first_verified_at === null;
 
         $registration->update([
             'verified_at' => now(),
+            'first_verified_at' => $registration->first_verified_at ?? now(),
             'verified_by' => auth('admin')->id(),
             'hq_note' => null,
         ]);
@@ -259,9 +264,10 @@ class EntRegistrationController extends Controller
 
         DB::transaction(fn () => $this->addToList($event, $joinRequest->company, $data['code'] ?? null, $data['plot_size'] ?? null));
 
-        return back()->with('success', $this->isHq($request)
+        return back()->with('success', ($this->isHq($request)
             ? "{$joinRequest->company->name} added to the draw list."
-            : "{$joinRequest->company->name} added to the draw list. HQ will verify before the company is told.");
+            : "{$joinRequest->company->name} added to the draw list. HQ will verify before the company is told.")
+            .Company::boothMovedNote($this->moved, $this->isHq($request)));
     }
 
     /** Reject a join request. The reason is shown to the participant, who may ask again. */
@@ -314,14 +320,15 @@ class EntRegistrationController extends Controller
         DB::transaction(function () use ($registration, $data, $isHq) {
             $registration->update($data + ['hq_note' => null]);
             // The company's booth size follows, and with it its other draw lists.
-            $registration->company->syncBoothSize($data['plot_size']);
+            $this->moved += $registration->company->syncBoothSize($data['plot_size']);
 
             if ($isHq) {
                 $this->verify($registration);
             }
         });
 
-        return back()->with('code_success', $isHq ? 'Saved and verified.' : 'Saved. Waiting for HQ to verify.');
+        return back()->with('code_success', ($isHq ? 'Saved and verified.' : 'Saved. Waiting for HQ to verify.')
+            .Company::boothMovedNote($this->moved, $isHq));
     }
 
     /**
@@ -453,11 +460,11 @@ class EntRegistrationController extends Controller
             // A size set here becomes each company's own, and moves its other draw lists.
             if ($data['action'] === 'set_size') {
                 $rows->load('company')->pluck('company')->unique('id')
-                    ->each->syncBoothSize($data['plot_size']);
+                    ->each(fn ($company) => $this->moved += $company->syncBoothSize($data['plot_size']));
             }
         });
 
-        return back()->with('success', "{$rows->count()} updated.");
+        return back()->with('success', "{$rows->count()} updated.".Company::boothMovedNote($this->moved, $admin->can('verify-draw-list')));
     }
 
     /**
@@ -517,6 +524,7 @@ class EntRegistrationController extends Controller
                 'confirmed_at' => $r->confirmed_at,
                 'verified_by' => $r->verified_by,
                 'verified_at' => $r->verified_at,
+                'first_verified_at' => $r->first_verified_at,
                 'hq_note' => $r->hq_note,
                 'payment_note' => $r->payment_note,
             ])

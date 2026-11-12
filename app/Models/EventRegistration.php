@@ -43,6 +43,7 @@ class EventRegistration extends Model
         'confirmed_at',
         'verified_by',
         'verified_at',
+        'first_verified_at',
         'hq_note',
         'payment_note',
     ];
@@ -57,6 +58,7 @@ class EventRegistration extends Model
         'confirmed_at' => 'datetime',
         'reminded_at' => 'datetime',
         'verified_at' => 'datetime',
+        'first_verified_at' => 'datetime',
         'confirmed_participation' => 'boolean',
     ];
 
@@ -115,10 +117,14 @@ class EventRegistration extends Model
         });
     }
 
-    /** HQ has checked it, and nothing has changed since. */
-    public function scopeVerified($query)
+    /**
+     * The participant has been told it is in: HQ verified it once. Stays so
+     * while a zone edit waits for HQ again — a company already told it is in
+     * does not drop out of its own portal because the office is re-checking.
+     */
+    public function scopeAnnounced($query)
     {
-        return $query->whereNotNull('event_registrations.verified_at');
+        return $query->whereNotNull('event_registrations.first_verified_at');
     }
 
     public function verifier()

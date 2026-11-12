@@ -339,6 +339,7 @@ it('lets a zone admin check everything and approve; HQ verifies, or returns it w
     // HQ returns it with a note; the zone sees it, fixes it, and it waits again.
     $this->actingAs($hq, 'admin')->get($index)->assertSee('Payment receipt')->assertSee('Waiting for HQ');
     $this->post(route('admin.events.registrations.return', [$event, $row]), ['hq_note' => 'Booth should be 3x6.'])->assertSessionHas('success');
+    $this->get($index)->assertDontSee('1 waiting for HQ');
     $this->actingAs($zone, 'admin')->get($index)->assertSee('Returned by HQ')->assertSee('Booth should be 3x6.');
     $this->put(route('admin.events.registrations.update', [$event, $row]), ['code' => 'RKP', 'plot_size' => '3x6']);
     expect($row->fresh()->hq_note)->toBeNull()->and($row->fresh()->verified_at)->toBeNull();

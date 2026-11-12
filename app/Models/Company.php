@@ -139,23 +139,42 @@ class Company extends Model
      * each change. Clearing the company's size (null) leaves the rows alone —
      * a draw-list row always needs a size.
      */
-    public function syncBoothSize(?string $size): void
+    public function syncBoothSize(?string $size): int
     {
-        DB::transaction(function () use ($size) {
+        return DB::transaction(function () use ($size) {
             $this->plot_size = $size; // not fillable: admin only
             $this->save();
 
             if ($size === null) {
-                return;
+                return 0;
             }
 
-            $this->eventRegistrations()
+            $rows = $this->eventRegistrations()
                 ->whereNull('plot_id')
                 ->where('plot_size', '!=', $size)
                 ->whereHas('event', fn ($e) => $e->where('polling_status', 'draft'))
-                ->get()
-                ->each->update(['plot_size' => $size]);
+                ->get();
+            $rows->each->update(['plot_size' => $size]);
+
+            return $rows->count();
         });
+    }
+
+    /**
+     * What to tell the admin when a booth size reached other draw lists. From a
+     * zone admin those rows went back to HQ (EventRegistration::booted()), and
+     * the zone should know it touched lists it was not looking at.
+     */
+    public static function boothMovedNote(int $moved, bool $byHq): string
+    {
+        if ($moved === 0) {
+            return '';
+        }
+
+        $lists = $moved === 1 ? '1 other draw list' : "{$moved} other draw lists";
+
+        return " Booth size also changed on {$lists}"
+            .($byHq ? '.' : '; '.($moved === 1 ? 'it waits' : 'they wait').' for HQ to approve again.');
     }
 
     /**

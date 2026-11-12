@@ -140,6 +140,7 @@ class DemoEventsSeeder extends Seeder
             'code_updated_at' => now(),
             'plot_size' => $company->plot_size ?? '3x3',
             'verified_at' => now(),
+            'first_verified_at' => now(),
         ];
     }
 

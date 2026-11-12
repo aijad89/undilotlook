@@ -76,6 +76,7 @@ class E2eSeeder extends Seeder
                 'code' => $code,
                 'plot_size' => $size,
                 'verified_at' => now(),
+                'first_verified_at' => now(),
             ]);
         }
     }

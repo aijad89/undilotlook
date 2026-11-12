@@ -343,9 +343,10 @@ class CompanyController extends Controller
         // Neither is fillable: both are admin-only. The booth size also moves the
         // company's draw-list rows in events whose draw has not started.
         $company->kraf_code = $data['kraf_code'] ?? null;
-        $company->syncBoothSize($data['plot_size'] ?? null);
+        $moved = $company->syncBoothSize($data['plot_size'] ?? null);
 
-        return $this->backTo('craft-code')->with('success', 'Craft code and booth size saved.');
+        return $this->backTo('craft-code')->with('success', 'Craft code and booth size saved.'
+            .Company::boothMovedNote($moved, $request->user('admin')->can('verify-draw-list')));
     }
 
     /**
