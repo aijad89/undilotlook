@@ -177,12 +177,17 @@ class Event extends Model
 
     /**
      * Called off, as a participant sees it: the draw cancelled, or the event
-     * taken off the public site (unpublished, or back to draft). Its requests
-     * to join are no longer answered.
+     * put back to draft. Its requests to join are no longer answered.
+     *
+     * NOT Unpublished (`closed`). The scheduler unpublishes an event by itself
+     * when registration closes (auto_close), while requests sent before the
+     * close are still with the office and the draw goes on. Counting that as
+     * called off froze those requests and told their companies the event was
+     * cancelled.
      */
     public function isCalledOff(): bool
     {
-        return $this->polling_status === 'cancelled' || in_array($this->status, ['draft', 'closed'], true);
+        return $this->polling_status === 'cancelled' || $this->status === 'draft';
     }
 
     /**

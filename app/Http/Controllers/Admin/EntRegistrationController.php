@@ -309,7 +309,7 @@ class EntRegistrationController extends Controller
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
         if ($event->isCalledOff()) {
-            return back()->with('error', 'This event was cancelled or unpublished. Its requests cannot be answered.');
+            return back()->with('error', 'This event was cancelled or put back to draft. Its requests cannot be answered.');
         }
         if ($this->zoneLocked($request, $event)) {
             return back()->with('error', self::HQ_ONLY_NOW);
@@ -335,7 +335,7 @@ class EntRegistrationController extends Controller
         $this->authorizeCompany($request, $joinRequest->company);
         abort_unless($joinRequest->status === 'pending', 409, 'That request has already been answered.');
         if ($event->isCalledOff()) {
-            return back()->with('error', 'This event was cancelled or unpublished. Its requests cannot be answered.');
+            return back()->with('error', 'This event was cancelled or put back to draft. Its requests cannot be answered.');
         }
 
         $data = $request->validate(['reject_reason' => ['required', 'string', 'max:1000']]);

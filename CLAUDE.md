@@ -275,6 +275,10 @@ lubang; jangan "betulkan".
 - Sebaik cabutan bermula, admin negeri **tidak menambah atau meluluskan**
   sesiapa (`zoneLocked()`); hanya HQ, dan baris HQ disahkan serta-merta. Tiada
   baris menunggu HQ boleh wujud semasa cabutan berjalan.
+- **Unpublished (`closed`) bukan "dibatalkan".** `Event::isCalledOff()` hanya
+  cabutan `cancelled` atau acara kembali ke `draft`. auto_close menyahterbit
+  acara sendiri bila pendaftaran tutup, sementara permintaan yang dihantar
+  sebelum itu masih di pejabat — ia mesti boleh dijawab.
 - Penolakan zon terus kepada peserta; HQ melihatnya selepas itu (papan pemuka
   7 hari, dan "Rejected by zones" pada senarai cabutan) — `rejectedByZone()`.
 - `first_verified_at` tidak pernah dikosongkan; ia membezakan semakan semula

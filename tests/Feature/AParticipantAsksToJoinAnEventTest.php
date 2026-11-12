@@ -803,14 +803,32 @@ it('tells a company the office adds directly that it is in the draw, once HQ ver
         ->and($note->data['message'])->toBe('Your company is in the lot draw for Pesta Kraf Utara.');
 });
 
-it('treats an unpublished event as called off: not answered, and on the dashboard as cancelled', function () {
-    $event = joinable(['status' => 'closed']);
+it('still answers a request on an event unpublished when registration closed', function () {
+    // What auto_close leaves behind: registration over, the event unpublished,
+    // a request sent before the close still with the office.
+    $event = joinable(['status' => 'closed', 'registration_close_at' => now()->subDay()]);
     $company = Company::factory()->create(['state' => 'Johor']);
     $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
 
+    $this->actingAs($company->user, 'web')->get(route('dashboard'))
+        ->assertSee('With the office')
+        ->assertDontSee('Event cancelled');
+
+    auth()->forgetGuards();
     $this->actingAs(stateAdmin('Johor'), 'admin')
         ->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])
-        ->assertSessionHas('error');
+        ->assertSessionHas('success');
+    expect(EventRegistration::where('company_id', $company->id)->exists())->toBeTrue();
+});
+
+it('treats an event put back to draft as called off: not answered, and on the dashboard as cancelled', function () {
+    $event = joinable(['status' => 'draft']);
+    $company = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $company->id]);
+
+    $this->actingAs(superAdmin(), 'admin')
+        ->post(route('admin.events.registrations.approve', [$event, $request]), ['plot_size' => '3x3'])
+        ->assertSessionHas('error', 'This event was cancelled or put back to draft. Its requests cannot be answered.');
     expect($request->fresh()->status)->toBe('pending');
 
     auth()->forgetGuards();
