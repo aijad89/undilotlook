@@ -109,7 +109,7 @@ it('refuses to remove a row that holds a lot, one at a time and in bulk', functi
 
     $this->actingAs($admin, 'admin')
         ->post(route('admin.events.registrations.bulk', $event), [
-            'action' => 'remove',
+            'action' => 'remove', 'removal_reason' => 'Payment refunded',
             'registration_id' => [$holder->id, $other->id],
         ])
         ->assertRedirect();
@@ -355,7 +355,7 @@ it('lets a zone admin check everything and approve; HQ verifies, or returns it w
     expect($row->fresh()->plot_size)->toBe('3x9')->and($row->fresh()->verified_at)->toBeNull();
 
     // HQ verified it once, so the company was told: only HQ takes it off the list.
-    $this->actingAs($hq, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id]])->assertSessionHas('success');
+    $this->actingAs($hq, 'admin')->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$row->id], 'removal_reason' => 'Payment refunded'])->assertSessionHas('success');
     expect(EventRegistration::where('company_id', $company->id)->exists())->toBeFalse();
 });
 
@@ -428,7 +428,7 @@ it('lets a zone admin remove only a row the company has not been told of; HQ rem
         ->assertSessionHas('success', '1 removed from the draw list. 1 kept: only HQ can remove them now.');
     expect($told->fresh())->not->toBeNull()->and($waiting->fresh())->toBeNull();
 
-    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, $told]))
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, $told]), ['removal_reason' => 'Payment refunded'])
         ->assertSessionHas('success');
     expect($told->fresh())->toBeNull();
 });
@@ -451,4 +451,15 @@ it('lets only HQ add a company once the draw has started, verified at once', fun
     $this->actingAs(superAdmin(), 'admin')->post(route('admin.events.registrations.store', $event), ['company_id' => [$b->id]])
         ->assertSessionHas('success');
     expect(EventRegistration::sole()->verified_at)->not->toBeNull();
+});
+
+it('sends nothing back to a zone once the draw has started', function () {
+    $event = Event::factory()->create(['polling_status' => 'polling']);
+    $row = EventRegistration::factory()->create(['event_id' => $event->id]);
+
+    $this->actingAs(superAdmin(), 'admin')->get(route('admin.events.registrations.index', $event))
+        ->assertDontSee(route('admin.events.registrations.return', [$event, $row]));
+    $this->post(route('admin.events.registrations.return', [$event, $row]), ['hq_note' => 'Fix it'])
+        ->assertSessionHas('error', 'The draw has started: a row can no longer go back to its zone.');
+    expect($row->fresh()->hq_note)->toBeNull()->and($row->fresh()->verified_at)->not->toBeNull();
 });

@@ -37,7 +37,7 @@ class Company extends Model
         'credentials' => 'array',
     ];
 
-    /** Recognition received � one at most. */
+    /** Recognition received — one at most. */
     public const RECOGNITIONS = [
         'adiguru' => 'Adiguru Kraf',
         'tokoh' => 'Tokoh Kraf Negara',
@@ -69,7 +69,7 @@ class Company extends Model
     /**
      * The quality standard this company's craft is held to, or null when it has
      * none (Tekatan and every non-textile craft). Read from the craft code the
-     * office set, through the coding sheet's own pecahan_bidang � the participant
+     * office set, through the coding sheet's own pecahan_bidang — the participant
      * is never asked what they make.
      */
     public function qualityStandard(): ?string
@@ -138,6 +138,9 @@ class Company extends Model
      * Row by row through the model, not a mass update, so `Auditable` records
      * each change. Clearing the company's size (null) leaves the rows alone —
      * a draw-list row always needs a size.
+     *
+     * Returns how many rows it moved — the caller's own row, already at the
+     * new size, is not among them — for boothMovedNote().
      */
     public function syncBoothSize(?string $size): int
     {

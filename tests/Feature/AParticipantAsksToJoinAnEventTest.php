@@ -749,7 +749,7 @@ it('lets a company the office took off the draw list ask again, and puts it back
     auth()->forgetGuards();
     $this->actingAs(superAdmin(), 'admin')->put(route('admin.events.registrations.update', [$event, EventRegistration::sole()]), ['plot_size' => '3x3']);
     auth()->forgetGuards();
-    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]), ['removal_reason' => 'Payment refunded']);
 
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')->get(route('dashboard'))
@@ -769,7 +769,7 @@ it('lets a company the office took off the draw list ask again, and puts it back
 
     // Taken off again, and this time it asks again.
     auth()->forgetGuards();
-    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]));
+    $this->actingAs(superAdmin(), 'admin')->delete(route('admin.events.registrations.destroy', [$event, EventRegistration::sole()]), ['removal_reason' => 'Payment refunded']);
     auth()->forgetGuards();
     $this->actingAs($company->user, 'web')
         ->post(route('events.join', $event), payment())
@@ -1017,4 +1017,37 @@ it('keeps a company in its own portal while HQ re-checks a zone change', functio
     auth()->forgetGuards();
     $this->actingAs(superAdmin(), 'admin')->put(route('admin.events.registrations.update', [$event, $row]), ['plot_size' => '3x6']);
     expect($company->user->notifications()->count())->toBe(0);
+});
+
+it('tells a company HQ takes off the draw why, and tells one never told nothing', function () {
+    $event = joinable(['title' => 'Pesta Kraf Utara']);
+    $told = Company::factory()->create(['state' => 'Johor']);
+    $request = EventJoinRequest::factory()->create(['event_id' => $event->id, 'company_id' => $told->id, 'status' => 'approved']);
+    $toldRow = EventRegistration::factory()->create(['event_id' => $event->id, 'company_id' => $told->id]);
+    $waitingRow = EventRegistration::factory()->unverified()->create(['event_id' => $event->id, 'company_id' => Company::factory()->create(['state' => 'Johor'])->id]);
+    $hq = superAdmin();
+
+    // A told company needs a reason, one at a time and in bulk.
+    $this->actingAs($hq, 'admin')->delete(route('admin.events.registrations.destroy', [$event, $toldRow]))->assertSessionHas('error');
+    $this->post(route('admin.events.registrations.bulk', $event), ['action' => 'remove', 'registration_id' => [$toldRow->id, $waitingRow->id]])
+        ->assertSessionHas('error', '1 of these companies was told they are in the draw. Give a reason; it is sent to them.');
+    expect(EventRegistration::count())->toBe(2);
+
+    $this->post(route('admin.events.registrations.bulk', $event), [
+        'action' => 'remove', 'registration_id' => [$toldRow->id, $waitingRow->id], 'removal_reason' => 'Payment refunded',
+    ])->assertSessionHas('success');
+
+    $note = $told->user->notifications()->sole();
+    expect($note->type)->toBe(App\Notifications\RemovedFromDraw::class)
+        ->and($note->data['message'])->toContain('Reason: Payment refunded')
+        ->and($request->fresh()->removed_reason)->toBe('Payment refunded')
+        ->and($waitingRow->company->user->notifications()->count())->toBe(0);
+
+    auth()->forgetGuards();
+    $this->actingAs($told->user, 'web')->get(route('dashboard'))->assertSee('Reason: Payment refunded');
+    $this->get(route('events.show', $event))->assertSee('Payment refunded');
+
+    // Asking again clears it.
+    $this->post(route('events.join', $event), payment())->assertSessionHas('success');
+    expect($request->fresh()->removed_reason)->toBeNull();
 });

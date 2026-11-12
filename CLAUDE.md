@@ -269,7 +269,9 @@ lubang; jangan "betulkan".
   dari papan pemuka pesertanya sendiri di tengah cabutan.
 - Admin negeri hanya membuang baris yang **belum** diberitahu kepada syarikat
   (`first_verified_at` null). Mengeluarkan syarikat daripada cabutan yang ia
-  sudah diberitahu ialah keputusan HQ (`zoneMayRemove()`).
+  sudah diberitahu ialah keputusan HQ (`zoneMayRemove()`). HQ mesti memberi
+  sebab; syarikat menerima `RemovedFromDraw` dan sebab itu disimpan pada
+  `event_join_requests.removed_reason` (baris pendaftaran sudah tiada).
 - Sebaik cabutan bermula, admin negeri **tidak menambah atau meluluskan**
   sesiapa (`zoneLocked()`); hanya HQ, dan baris HQ disahkan serta-merta. Tiada
   baris menunggu HQ boleh wujud semasa cabutan berjalan.

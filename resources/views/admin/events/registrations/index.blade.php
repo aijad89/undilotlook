@@ -256,7 +256,7 @@
                                            class="tick-row" form="bulk-form"
                                            aria-label="Select {{ $registration->company->name }}">
                                 </td>
-                                <td>
+                                <td style="overflow-wrap: anywhere">
                                     <strong>{{ $registration->company->name }}</strong>
                                     <div class="mac-text-sm mac-muted">{{ $registration->company->state }}</div>
                                 </td>
@@ -367,7 +367,7 @@
                                 </td>
 
                                 <td class="text-end">
-                                    @if($isHq)
+                                    @if($isHq && ! $codeFrozen)
                                         <details class="d-inline-block text-start mb-1">
                                             <summary class="mac-text-sm">Return</summary>
                                             <form method="POST" action="{{ route('admin.events.registrations.return', [$event, $registration]) }}" class="d-flex gap-1 mt-1">
@@ -379,8 +379,20 @@
                                             </form>
                                         </details>
                                     @endif
-                                    {{-- Told it is in: only HQ takes it out. --}}
-                                    @if($isHq || ! $registration->first_verified_at)
+                                    {{-- Told it is in: only HQ takes it out, and says why. --}}
+                                    @if($registration->first_verified_at && $isHq)
+                                        <details class="d-inline-block text-start">
+                                            <summary class="mac-text-sm">Remove</summary>
+                                            <form method="POST" action="{{ route('admin.events.registrations.destroy', [$event, $registration]) }}" class="d-flex gap-1 mt-1">
+                                                @csrf
+                                                @method('DELETE')
+                                                <input type="text" name="removal_reason" class="mac-form-control mac-action-btn-field" style="min-width: 140px" placeholder="Reason, sent to the company" aria-label="Why {{ $registration->company->name }} is removed" required maxlength="1000">
+                                                <button type="submit" class="mac-action-btn mac-action-btn-danger" title="Remove from the draw list">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </form>
+                                        </details>
+                                    @elseif(! $registration->first_verified_at)
                                     <form method="POST"
                                           action="{{ route('admin.events.registrations.destroy', [$event, $registration]) }}">
                                         @csrf
@@ -457,6 +469,13 @@
                     </div>
                 </div>
 
+            @if($isHq)
+            <div class="mt-3">
+                <label class="mac-label" for="bulk-reason">Reason for removing</label>
+                <input type="text" id="bulk-reason" name="removal_reason" class="mac-form-control" maxlength="1000"
+                       placeholder="Needed for companies already told they are in; sent to them">
+            </div>
+            @endif
             <p class="mac-muted mac-text-sm mt-2 mb-0">
                 A row holding a lot is kept, whatever is ticked. Withdraw the lot first.
             </p>

@@ -449,7 +449,7 @@
                     <p class="evd-msg evd-msg-bad"><strong>The office did not accept your request:</strong> {{ $joinRequest->reject_reason }} You may send it again.</p>
                 @endif
                 @if($joinRequest?->status === 'approved')
-                    <p class="evd-msg evd-msg-bad">The office took your company off this event's draw list. You may ask to join again.</p>
+                    <p class="evd-msg evd-msg-bad">The office took your company off this event's draw list.@if($joinRequest->removed_reason) <strong>Reason:</strong> {{ $joinRequest->removed_reason }}@endif You may ask to join again.</p>
                 @endif
 
                 @guest('web')

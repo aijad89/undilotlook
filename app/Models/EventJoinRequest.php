@@ -50,6 +50,7 @@ class EventJoinRequest extends Model
         'answers',
         'status',
         'reject_reason',
+        'removed_reason',
         'reviewed_by',
         'reviewed_at',
     ];

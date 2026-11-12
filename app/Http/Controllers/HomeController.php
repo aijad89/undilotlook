@@ -202,7 +202,9 @@ class HomeController extends Controller
             $todo[] = match ($jr->status) {
                 'draft' => ['warn', "Finish your request to join {$jr->event->title}. Registration closes {$closes}.", route('events.show', $jr->event), 'Finish and send'],
                 'rejected' => ['warn', "The office did not approve your request to join {$jr->event->title}. Change it and send it again by {$closes}.", route('events.show', $jr->event), 'Change and send again'],
-                'approved' => ['warn', "Your company was taken off the draw list for {$jr->event->title}. You may ask to join again by {$closes}.", route('events.show', $jr->event), 'Ask to join again'],
+                'approved' => ['warn', "Your company was taken off the draw list for {$jr->event->title}."
+                    .($jr->removed_reason ? " Reason: {$jr->removed_reason}" : '')
+                    ." You may ask to join again by {$closes}.", route('events.show', $jr->event), 'Ask to join again'],
                 default => null,
             };
         }

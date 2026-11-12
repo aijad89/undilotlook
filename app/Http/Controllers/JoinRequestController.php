@@ -249,6 +249,7 @@ class JoinRequestController extends Controller
                 // A draft keeps the last rejection, so its reason stays in
                 // view until the request is sent again.
                 'reject_reason' => null,
+                'removed_reason' => null,
                 'reviewed_by' => null,
                 'reviewed_at' => null,
             ])

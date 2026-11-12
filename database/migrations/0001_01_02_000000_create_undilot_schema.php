@@ -465,6 +465,10 @@ return new class extends Migration
 
             $table->string('status', 20)->default('pending');
             $table->text('reject_reason')->nullable();
+            // Why HQ took the company off the draw list after it was told it is
+            // in. On the request because the row itself is gone; shown with
+            // "taken off" until the company asks again.
+            $table->text('removed_reason')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('admins')->nullOnDelete();
             $table->timestamp('reviewed_at')->nullable();
             $table->timestamps();

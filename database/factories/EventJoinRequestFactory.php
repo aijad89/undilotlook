@@ -27,6 +27,7 @@ class EventJoinRequestFactory extends Factory
             'answers' => null,
             'status' => 'pending',
             'reject_reason' => null,
+            'removed_reason' => null,
             'reviewed_by' => null,
             'reviewed_at' => null,
         ];

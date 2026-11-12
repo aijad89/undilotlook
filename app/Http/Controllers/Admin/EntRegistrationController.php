@@ -8,6 +8,7 @@ use App\Models\Event;
 use App\Models\EventJoinRequest;
 use App\Models\EventRegistration;
 use App\Notifications\JoinRequestAnswered;
+use App\Notifications\RemovedFromDraw;
 use App\Support\EventVisibility;
 use App\Support\KrafPicker;
 use App\Support\PlotSizes;
@@ -276,6 +277,26 @@ class EntRegistrationController extends Controller
         return ! $this->isHq($request) && $this->codeFrozen($event);
     }
 
+    /**
+     * Take one row off the list. A company that was told it is in hears that it
+     * is out, and why; the reason stays on its join request, if it came by one,
+     * for its dashboard and event page. One never told hears nothing.
+     */
+    private function removeFromList(EventRegistration $registration, ?string $reason): void
+    {
+        $registration->delete();
+
+        if (! $registration->first_verified_at) {
+            return;
+        }
+
+        $registration->event->joinRequests()
+            ->where('company_id', $registration->company_id)->where('status', 'approved')
+            ->get()->each->update(['removed_reason' => $reason]);
+
+        $registration->company->user?->notify(new RemovedFromDraw($registration->event, $reason));
+    }
+
     private function isHq(Request $request): bool
     {
         return $request->user('admin')->can('verify-draw-list');
@@ -385,10 +406,18 @@ class EntRegistrationController extends Controller
         return back()->with('success', 'Payment note saved.');
     }
 
-    /** HQ sends a row back to its zone, with what to fix. It stays on the list, unverified. */
+    /**
+     * HQ sends a row back to its zone, with what to fix. It stays on the list,
+     * unverified. Not once the draw has started: the code and size are frozen
+     * then, so the zone could fix nothing — HQ corrects the row itself.
+     */
     public function returnToZone(Request $request, Event $event, EventRegistration $registration)
     {
         EventVisibility::authorize($event);
+
+        if ($this->codeFrozen($event)) {
+            return back()->with('error', 'The draw has started: a row can no longer go back to its zone.');
+        }
 
         $data = $request->validate(['hq_note' => ['required', 'string', 'max:1000']]);
 
@@ -419,9 +448,14 @@ class EntRegistrationController extends Controller
             return back()->with('error', 'That company holds a lot. Withdraw the lot before removing it from the list.');
         }
 
+        $reason = $request->validate(['removal_reason' => ['nullable', 'string', 'max:1000']])['removal_reason'] ?? null;
+        if ($registration->first_verified_at && blank($reason)) {
+            return back()->with('error', 'This company was told it is in the draw. Give a reason; it is sent to the company.');
+        }
+
         $this->rememberForUndo([$registration]);
 
-        $registration->delete();
+        DB::transaction(fn () => $this->removeFromList($registration, $reason));
 
         return back()->with('success', 'Removed from the draw list.');
     }
@@ -442,6 +476,7 @@ class EntRegistrationController extends Controller
             'registration_id.*' => ['integer'],
             'code' => ['required_if:action,set_code', 'nullable', 'string', 'max:50'],
             'plot_size' => ['required_if:action,set_size', 'nullable', Rule::in(PlotSizes::all())],
+            'removal_reason' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $admin = $request->user('admin');
@@ -462,12 +497,18 @@ class EntRegistrationController extends Controller
             $holding = $rows->filter(fn ($r) => $r->plot_id || ! $this->zoneMayRemove($request, $r));
             $removable = $rows->diff($holding);
 
+            $told = $removable->whereNotNull('first_verified_at')->count();
+            if ($told > 0 && blank($data['removal_reason'] ?? null)) {
+                return back()->with('error', ($told === 1 ? '1 of these companies was' : "{$told} of these companies were")
+                    .' told they are in the draw. Give a reason; it is sent to them.');
+            }
+
             $this->rememberForUndo($removable);
 
             // Through the model one at a time, not a mass delete: `Auditable`
             // listens to Eloquent events, and a query-builder delete fires none
             // of them — the rows would go with nothing written about them.
-            DB::transaction(fn () => $removable->each->delete());
+            DB::transaction(fn () => $removable->each(fn ($r) => $this->removeFromList($r, $data['removal_reason'] ?? null)));
 
             return back()->with('success', trim(sprintf(
                 '%d removed from the draw list.%s',
