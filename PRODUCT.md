@@ -13,9 +13,12 @@ web
   draw rows, though every non-draft event is visible to them so they can fill it.
   They work **at a desk**, for long stretches: building events, putting companies
   into a draw list, laying out the lot plan, opening and closing voting, assigning
-  the rest, exporting results. A zone admin checks each join request's payment
-  proof and approves it; the company comes in with its own craft code and booth
-  size, which only HQ and super can change.
+  the rest, exporting results. A zone admin checks everything about each company
+  — details, payment proof (or a payment note for one the office added), craft
+  code, booth size — and approves it; HQ checks it again and verifies it, fixes
+  it in the same step, or returns it to the zone with a note. HQ may also approve
+  directly, skipping the zone, to save time. The participant is told, and the
+  draw can open, only once HQ has verified every row.
 - **Usahawan (craft entrepreneurs)** — the participants. Mostly **on a phone**. Many
   are **older**, some have **low confidence with apps**. Their job is small and
   high-stakes: see which fair they are in, confirm their lot once, see it revealed,
@@ -41,7 +44,7 @@ until the company confirms.
 ## Operating Context
 
 - **Office flow:** event → draw list (company + craft code + booth size; both are
-  suggested from the company's own record) → lot plan (locations, each holding
+  suggested from the company's own record; zone approves, HQ verifies) → lot plan (locations, each holding
   several booth sizes, with craft-code allocations or codes painted onto plots) →
   open voting → participants confirm → close → assign remaining → completed.
   Opening and closing can run on a schedule. The plan freezes once the first lot is
