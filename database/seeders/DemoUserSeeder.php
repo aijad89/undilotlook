@@ -23,7 +23,7 @@ class DemoUserSeeder extends Seeder
 {
     /** [company name, craft code], one per zone in AdminZones order. */
     private const COMPANIES = [
-        ['Batik Warisan Johor', 'TBP'],
+        ['Batik Warisan Johor', 'TBPS'],
         ['Tenun Melaka Enterprise', 'TTN'],
         ['Ukiran Kayu Seri Menanti', 'RKH'],
         ['Seramik Klang Studio', 'TTK'],

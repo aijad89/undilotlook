@@ -37,8 +37,11 @@ class EnforceUserIsActive
                 $request->session()->invalidate();
                 $request->session()->regenerateToken();
 
-                return redirect()->route('login')
-                    ->with('error', 'Your account has been deactivated. Please contact the administrator.');
+                // withErrors, not with('error'): the login page shows only
+                // $errors and `status`, so a flashed `error` is never seen.
+                return redirect()->route('login')->withErrors(['email' => $user->is_active
+                    ? 'Your company has been deactivated. Please contact the administrator.'
+                    : 'Your account has been deactivated. Please contact the administrator.']);
             }
 
             Cache::put("online_status_web_{$user->id}", now(), now()->addMinutes(5));

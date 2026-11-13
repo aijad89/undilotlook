@@ -44,6 +44,8 @@ class DemoEventsSeeder extends Seeder
         'Ekspo Kraf Melaka 2026' => ['MITC, Ayer Keroh', 'Melaka', 8],
         'Karnival Kraf Sabah 2025' => ['Pusat Pameran SICC, Kota Kinabalu', 'Sabah', 13],
         'Hari Kraf Kebangsaan 2025' => ['Kompleks Kraf Kuala Lumpur', 'Selangor, Kuala Lumpur dan Putrajaya', 14],
+        'Pesta Kraf Utara 2025' => ['Dataran Alor Setar, Alor Setar', 'Kedah', 17],
+        'Ekspo Kraf Pahang 2025' => ['Dataran Kuantan, Kuantan', 'Pahang', 20],
     ];
 
     public function run(): void

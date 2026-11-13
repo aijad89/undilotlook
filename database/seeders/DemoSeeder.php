@@ -17,7 +17,8 @@ use Illuminate\Database\Seeder;
  * Plants, in order: a sample craft hierarchy, 14 state admins + 1 HQ, 14
  * participants with a company each, and two events — one with its draw list
  * filled from those companies; then DemoEventsSeeder's open, coming and past
- * events. Re-runnable: everything is matched by name or email first.
+ * events; then DemoScenarioSeeder's "Uji: …" events, one per state the manual
+ * test sheet needs. Re-runnable: everything is matched by name or email first.
  */
 class DemoSeeder extends Seeder
 {
@@ -49,6 +50,7 @@ class DemoSeeder extends Seeder
         $this->call([DemoAdminSeeder::class, DemoUserSeeder::class]);
         $this->events();
         $this->call(DemoEventsSeeder::class);
+        $this->call(DemoScenarioSeeder::class);
     }
 
     private function hierarchy(): void
@@ -92,7 +94,9 @@ class DemoSeeder extends Seeder
             'max_participants' => 100,
         ]);
 
-        foreach (Company::whereNotNull('kraf_code')->get() as $company) {
+        // Filled once, when the event is new: a re-run would otherwise add every
+        // company planted since, such as DemoScenarioSeeder's Johor extras.
+        foreach ($fair->wasRecentlyCreated ? Company::whereNotNull('kraf_code')->get() : [] as $company) {
             EventRegistration::firstOrCreate(
                 ['event_id' => $fair->id, 'company_id' => $company->id],
                 ['user_id' => $company->user_id, 'code' => $company->kraf_code, 'plot_size' => $company->plot_size ?? '3x3', 'verified_at' => now(), 'first_verified_at' => now()],
